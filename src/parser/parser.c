@@ -108,7 +108,9 @@ struct ast *parse_command(enum parser_status *status, struct lexer *lexer)
 struct ast *parse_simple_command(enum parser_status *status, struct lexer *lexer)
 {
     //Implement WORD
-
+    //Token WORD
+    //WORD is anything that isnt reserved
+    //Struct AST implementation
     // { element }
     while (status == PARSER_OK)
     {
