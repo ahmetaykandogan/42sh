@@ -8,7 +8,7 @@ size_t fifo_size(struct fifo *fifo)
     return fifo->size;
 }
 
-void fifo_push(struct fifo *fifo, struct token *elt)
+void fifo_push(struct fifo *fifo, struct lextoken *elt)
 {
     struct list *new_val = malloc(sizeof(struct fifo));
     if (new_val == NULL)
@@ -28,7 +28,7 @@ void fifo_push(struct fifo *fifo, struct token *elt)
     fifo->size++;
 }
 
-struct token *fifo_head(struct fifo *fifo)
+struct lextoken *fifo_head(struct fifo *fifo)
 {
     return fifo->head->data;
 }
@@ -46,6 +46,7 @@ void fifo_pop(struct fifo *fifo)
     fifo->size--;
 }
 
+/*
 void fifo_print(const struct fifo *fifo)
 {
     if (fifo == NULL)
@@ -57,3 +58,4 @@ void fifo_print(const struct fifo *fifo)
         i = i->next;
     }
 }
+*/

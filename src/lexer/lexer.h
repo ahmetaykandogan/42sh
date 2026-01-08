@@ -3,9 +3,7 @@
 
 #include "../utils/fifo/fifo.h"
 
-// strtok() jusqu'a un ["] puis on fait une fonction de lexing de string 
-
-enum token 
+enum token
 {
     IF,
     THEN,
@@ -20,7 +18,7 @@ enum token
     WORDS
 };
 
-struct lex
+struct lextoken
 {
     enum token tok;
     char *value;
@@ -28,6 +26,6 @@ struct lex
 
 char *read_file(char *file, char *script);
 
-struct lexer lexer(char *input);
+struct fifo *lexer(char *input);
 
 #endif /* ! LEXER_H */
