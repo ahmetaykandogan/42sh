@@ -7,7 +7,7 @@
 
 struct list
 {
-    struct lex *data;
+    struct lextoken *data;
     struct list *next;
 };
 
@@ -20,8 +20,8 @@ struct fifo
 
 struct fifo *fifo_init(void);
 size_t fifo_size(struct fifo *fifo);
-void fifo_push(struct fifo *fifo, struct lex *elt);
-struct lex *fifo_head(struct fifo *fifo);
+void fifo_push(struct fifo *fifo, struct lextoken *elt);
+struct lextoken *fifo_head(struct fifo *fifo);
 void fifo_pop(struct fifo *fifo);
 void fifo_clear(struct fifo *fifo);
 void fifo_destroy(struct fifo *fifo);
