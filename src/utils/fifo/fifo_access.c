@@ -1,0 +1,59 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "fifo.h"
+
+size_t fifo_size(struct fifo *fifo)
+{
+    return fifo->size;
+}
+
+void fifo_push(struct fifo *fifo, struct token *elt)
+{
+    struct list *new_val = malloc(sizeof(struct fifo));
+    if (new_val == NULL)
+        return;
+    new_val->data = elt;
+    new_val->next = NULL;
+    if (fifo->head == 0)
+    {
+        fifo->head = new_val;
+        fifo->tail = new_val;
+    }
+    else
+    {
+        fifo->tail->next = new_val;
+        fifo->tail = new_val;
+    }
+    fifo->size++;
+}
+
+struct token *fifo_head(struct fifo *fifo)
+{
+    return fifo->head->data;
+}
+
+void fifo_pop(struct fifo *fifo)
+{
+    if (fifo->size == 0)
+        return;
+    struct list *tmp = fifo->head;
+    fifo->head = fifo->head->next;
+    if (fifo->head == NULL)
+        fifo->tail = NULL;
+    free(tmp->data);
+    free(tmp);
+    fifo->size--;
+}
+
+void fifo_print(const struct fifo *fifo)
+{
+    if (fifo == NULL)
+        return;
+    struct list *i = fifo->head;
+    while (i != 0)
+    {
+        printf("%d %d\n", i->data->type, i->data->value);
+        i = i->next;
+    }
+}

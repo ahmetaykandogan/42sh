@@ -1,5 +1,12 @@
 #include "lexer.h"
 
-char *read_file(char *file, char *script);
+char *read_file(char *file, char *script)
+{
+    /* lire le fichier et mettre tout le contenu dans un tableau (string) */
+    // TODO
+}
 
-void lexer(char *input);
+struct fifo lexer(char *input)
+{
+
+}
