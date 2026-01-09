@@ -1,6 +1,10 @@
 #ifndef READ_FILE_H
 #define READ_FILE_H
 
-char *read_file(char *file);
+#include <stdio.h>
+
+FILE *open_file(char *file);
+
+char *read_file(FILE *file);
 
 #endif /* ! READ_FILE_H */

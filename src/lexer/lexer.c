@@ -3,9 +3,11 @@
 
 #include <string.h>
 
+#include "../utils/extra/malloc_err.h"
+
 static struct lextoken *create_lextoken(enum token tok, char *value)
 {
-    struct lextoken *token;
+    struct lextoken *token = malloc_err(sizeof(struct lextoken));
     token->tok = tok;
     if (!value)
         token->value = NULL;
@@ -19,29 +21,29 @@ static struct lextoken *create_lextoken(enum token tok, char *value)
 static struct lextoken *lexing_case(char *token)
 {
     /* IF THEN ELIF ELSE FI */
-    if (strcmp(token, "if"))
+    if (strcmp(token, "if") == 0)
         return create_lextoken(IF, NULL);
 
-    else if (strcmp(token, "then"))
+    else if (strcmp(token, "then") == 0)
         return create_lextoken(THEN, NULL);
 
-    else if (strcmp(token, "elif"))
+    else if (strcmp(token, "elif") == 0)
         return create_lextoken(ELIF, NULL);
 
-    else if (strcmp(token, "else"))
+    else if (strcmp(token, "else") == 0)
         return create_lextoken(ELSE, NULL);
 
-    else if (strcmp(token, "fi"))
+    else if (strcmp(token, "fi") == 0)
         return create_lextoken(FI, NULL);
 
     /* COLUMN NEWLINE APSTRPH */
-    else if (strcmp(token, ";"))
+    else if (strcmp(token, ";") == 0)
         return create_lextoken(COLUMN, NULL);
 
-    else if (strcmp(token, "\n"))
+    else if (strcmp(token, "\n") == 0)
         return create_lextoken(NEWLINE, NULL);
 
-    else if (strcmp(token, "\'"))
+    else if (strcmp(token, "\'") == 0)
         return create_lextoken(APSTRPH, NULL);
 
     /* DEFAULT CASE : WORDS */
@@ -65,7 +67,15 @@ struct fifo *lexer(char *input)
 
 struct fifo *lexing_from_file(char *path)
 {
-    char *script = read_file(path);
+    char *script = read_file(open_file(path));
+    struct fifo *lex_queue = lexer(script);
+
+    return lex_queue;
+}
+
+struct fifo *lexing_from_stdin(FILE *f)
+{
+    char *script = read_file(f);
     struct fifo *lex_queue = lexer(script);
 
     return lex_queue;
