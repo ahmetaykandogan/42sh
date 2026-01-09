@@ -28,4 +28,6 @@ char *read_file(char *file, char *script);
 
 struct fifo *lexer(char *input);
 
+struct fifo *lexing_from_file(char *path);
+
 #endif /* ! LEXER_H */

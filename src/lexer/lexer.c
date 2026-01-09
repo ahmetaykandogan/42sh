@@ -67,3 +67,13 @@ struct fifo *lexer(char *input)
 
     return queue;
 }
+
+struct fifo *lexing_from_file(char *path)
+{
+    char *script = malloc(sizeof(char *));
+    read_file(path, script);
+    struct fifo *lex_queue = lexer(script);
+    free(script);
+
+    return lex_queue;
+}
