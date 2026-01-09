@@ -1,12 +1,7 @@
 #include "lexer.h"
+#include "read_file.h"
 
 #include <string.h>
-
-char *read_file(char *file, char *script)
-{
-    /* lire le fichier et mettre tout le contenu dans un tableau (string) */
-    // TODO
-}
 
 static struct lextoken *create_lextoken(enum token tok, char *value)
 {
@@ -70,10 +65,8 @@ struct fifo *lexer(char *input)
 
 struct fifo *lexing_from_file(char *path)
 {
-    char *script = malloc(sizeof(char *));
-    read_file(path, script);
+    char *script = read_file(path);
     struct fifo *lex_queue = lexer(script);
-    free(script);
 
     return lex_queue;
 }
