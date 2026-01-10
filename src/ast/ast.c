@@ -40,7 +40,7 @@ void ast_cmd_add_word(struct ast_cmd *in, char *word)
     out[count] = word;
     out[count + 1] = NULL;
     in->words = out;
-};
+}
 
 void ast_list_add_ast(struct ast_list *in, struct ast *ast)
 {
@@ -49,7 +49,7 @@ void ast_list_add_ast(struct ast_list *in, struct ast *ast)
     out[count] = ast;
     in->children = out;
     in->child_count += 1;
-};
+}
 
 //-----------------LOOKUP TABLE FOR DESTROY FUNCTIONS-----------------
 
