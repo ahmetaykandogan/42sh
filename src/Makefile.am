@@ -2,7 +2,9 @@
 SUBDIRS = ast \
       parser \
       lexer \
-      utils
+      utils \
+      builtins \
+      pretty_printer \
 
 bin_PROGRAMS = 42sh
 
@@ -16,4 +18,6 @@ bin_PROGRAMS = 42sh
        ast/libast.a \
        parser/libparser.a \
        lexer/liblexer.a \
-       utils/libextra.a
+       utils/libextra.a \
+       builtins/libbuiltins.a \
+       pretty_printer/libpretty.a
