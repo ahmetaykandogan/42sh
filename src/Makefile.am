@@ -4,7 +4,7 @@ SUBDIRS = ast \
       lexer \
       utils \
       builtins \
-      pretty_printer \
+      pretty_printer
 
 bin_PROGRAMS = 42sh
 

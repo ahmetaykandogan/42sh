@@ -1,6 +1,7 @@
 #ifndef AST_H
 #define AST_H
 
+#include <assert.h>
 #include <stdlib.h>
 
 enum ast_type //All the pseudo types of AST nodes
