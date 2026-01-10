@@ -11,7 +11,6 @@ enum ast_type //All the pseudo types of AST nodes
 };
 
 //To understand how this works, see the 42SH Design AST documentation
-//(I still dont understand how this works fully)
 //But basically this allows that we can cast every struct ast to their specific type during execution
 //We can for example do:
 // struct ast *node = ...;
@@ -42,7 +41,6 @@ struct ast_list
 {
     struct ast base;
     struct ast **children;
-    // this may be only left and right, but I think it's not?
     size_t child_count;
 };
 
@@ -57,7 +55,9 @@ struct ast_list *ast_list_init();
 
 
 void ast_cmd_add_word(struct ast_cmd *in, char *word);
+//TODO realloc words array inside ast_cmd toincreaze size by 1
 void ast_list_add_ast(struct ast_list *in, struct ast *ast);
+//TODO same for this
 
 //----------------------------------DESTROY AST TYPES------------------------------
 
@@ -67,5 +67,9 @@ void struct_ast_destroy(struct ast *node); // generic destroy function for all a
 void ast_cmd_destroy(struct ast_cmd *node);
 void ast_if_destroy(struct ast_if *node);
 void ast_list_destroy(struct ast_list *node);
+
+
+//TODO PRETTY PRINT FUNCTIONS FOR DEBUGGING
+
 
 #endif /* ! AST_H */

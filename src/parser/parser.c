@@ -62,6 +62,7 @@ static struct ast *parse_list(enum parser_status *status, struct fifo *lexer)
     // { ';' and_or }
     while (1)
     {
+        //TODO Fix grammar rule tied to first ;
         struct lextoken *token = fifo_head(lexer);
         if (!token || token->type != TOKEN_SEMICOLON)
             break;
@@ -122,7 +123,7 @@ struct ast *parse_simple_command(enum parser_status *status, struct fifo *lexer)
 {
     //WORD
     struct lextoken *token = fifo_head(lexer);
-    struct ast_cmd *command = ast_cmd_init();
+    struct ast_cmd *command = ast_cmd_init(); //initialize command ast node
 
     if (!token || token->type != TOKEN_WORDS)
     {
@@ -158,11 +159,12 @@ void *parse_element(enum parser_status *status, struct fifo *lexer, struct ast *
         ast_cmd_add_word(out, token->value);
         fifo_pop(lexer);
         *status = PARSER_OK;
-        return out;
+        
     }
-
-    *status = PARSER_ERROR;
-    return NULL;
+    else
+    {
+        *status = PARSER_ERROR;
+    }
 }
 
 
