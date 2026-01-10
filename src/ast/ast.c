@@ -29,3 +29,25 @@ struct ast_list *ast_list_init()
 }
 
 
+//--------------------------------ADDINGS------------------------------------
+
+void ast_cmd_add_word(struct ast_cmd *in, char *word)
+{
+    struct ast_cmd *out = realloc(in, sizeof(struct ast_cmd));
+    out->base.type = AST_CMD;
+    out->words = word;
+    return out;
+};
+
+void ast_list_add_ast(struct ast_list *in, struct ast *ast)
+{
+    struct ast_list *out = realloc(in, sizeof(struct ast_list));
+    out->base.type = AST_LIST;
+    out->children = ast;
+    out->child_count += 1;
+    return out;
+};
+
+//----------------------------------DESTROY AST TYPES------------------------------
+
+
