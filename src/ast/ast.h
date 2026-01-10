@@ -59,6 +59,16 @@ void ast_cmd_add_word(struct ast_cmd *in, char *word);
 void ast_list_add_ast(struct ast_list *in, struct ast *ast);
 //TODO same for this
 
+//---------------------LOOKUP TABLE FOR DESTROY FUNCTIONS-----------------
+
+const char *ast_repr(enum ast_type type);
+typedef void (*run_type)(struct ast *ast);
+void run_ast(struct ast *ast);
+static void ast_run_cmd(struct ast *ast);
+static void ast_run_if(struct ast *ast);
+static void ast_run_list(struct ast *ast);
+
+
 //----------------------------------DESTROY AST TYPES------------------------------
 
 void struct_ast_destroy(struct ast *node); // generic destroy function for all ast types
