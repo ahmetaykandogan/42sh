@@ -29,7 +29,6 @@ struct ast_cmd
 {
     struct ast base;
     char **words; // NULL terminated char* list */
-    int nb_word;
 };
 struct ast_if
 {
@@ -58,5 +57,15 @@ struct ast_list *ast_list_init();
 
 
 void ast_cmd_add_word(struct ast_cmd *in, char *word);
-void ast_list_add_ast(struct ast_list *in, stuct ast_cmd *ast);
+void ast_list_add_ast(struct ast_list *in, struct ast *ast);
+
+//----------------------------------DESTROY AST TYPES------------------------------
+
+void struct_ast_destroy(struct ast *node); // generic destroy function for all ast types
+//either a lookup table or a switch case inside to call the specific destroy function
+
+void ast_cmd_destroy(struct ast_cmd *node);
+void ast_if_destroy(struct ast_if *node);
+void ast_list_destroy(struct ast_list *node);
+
 #endif /* ! AST_H */

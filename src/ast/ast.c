@@ -6,7 +6,6 @@ struct ast_cmd *ast_cmd_init()
     struct ast_cmd *out = calloc(1, sizeof(struct ast_cmd));
     out->base.type = AST_CMD;
     out->words = calloc(1,sizeof(char *));
-    out->nb_word = 0;
     return out;
 }
 
