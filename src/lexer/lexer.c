@@ -1,9 +1,9 @@
 #include "lexer.h"
-#include "read_file.h"
 
 #include <string.h>
 
 #include "../utils/extra/malloc_err.h"
+#include "read_file.h"
 
 static struct lextoken *create_lextoken(enum token tok, char *value)
 {
