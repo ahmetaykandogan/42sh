@@ -1,7 +1,8 @@
 # define the subdirectories
 SUBDIRS = ast \
       parser \
-      lexer
+      lexer \
+      utils
 
 bin_PROGRAMS = 42sh
 
@@ -14,4 +15,5 @@ bin_PROGRAMS = 42sh
 42sh_LDADD =  \
        ast/libast.a \
        parser/libparser.a \
-       lexer/liblexer.a 
+       lexer/liblexer.a \
+       utils/libextra.a
