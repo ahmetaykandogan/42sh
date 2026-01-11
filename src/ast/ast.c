@@ -51,8 +51,30 @@ void ast_list_add_ast(struct ast_list *in, struct ast *ast)
     in->child_count += 1;
 }
 
-//-----------------LOOKUP TABLE FOR DESTROY FUNCTIONS-----------------
+//-----------------LOOKUP TABLE FOR RUN FUNCTIONS-----------------
+static void ast_run_cmd(struct ast *ast)
+{
+    struct ast_cmd *ast_cmd = (struct ast_cmd *)ast;
+    run_command(ast_cmd->words);
+}
 
+static void ast_run_if(struct ast *ast)
+{
+    struct ast_if *ast_if = (struct ast_if *)ast;
+    run_ast(ast_if->condition);
+    run_ast(ast_if->then_body);
+    if (ast_if->else_body)
+        run_ast(ast_if->else_body);
+}
+
+static void ast_run_list(struct ast *ast)
+{
+    struct ast_list *ast_list = (struct ast_list *)ast;
+    for (size_t i = 0; i < ast_list->child_count; i++)
+    {
+        run_ast(ast_list->children[i]);
+    }
+}
 const char *ast_repr(enum ast_type type)
 {
     static const char *const names[] = {
@@ -82,29 +104,7 @@ void run_command(char **words)
     //may need to be expanded
 }
 
-static void ast_run_cmd(struct ast *ast)
-{
-    struct ast_cmd *ast_cmd = (struct ast_cmd *)ast;
-    run_command(ast_cmd->words);
-}
 
-static void ast_run_if(struct ast *ast)
-{
-    struct ast_if *ast_if = (struct ast_if *)ast;
-    run_ast(ast_if->condition);
-    run_ast(ast_if->then_body);
-    if (ast_if->else_body)
-        run_ast(ast_if->else_body);
-}
-
-static void ast_run_list(struct ast *ast)
-{
-    struct ast_list *ast_list = (struct ast_list *)ast;
-    for (size_t i = 0; i < ast_list->child_count; i++)
-    {
-        run_ast(ast_list->children[i]);
-    }
-}
 
 //----------------------------------DESTROY AST TYPES------------------------------
 

@@ -1,8 +1,10 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include "lexer/lexer.h"
-#include "ast/ast.h"
+#include <stdio.h>
+
+#include "../lexer/lexer.h"
+#include "../ast/ast.h"
 
 enum parser_status
 {
@@ -10,6 +12,6 @@ enum parser_status
     PARSER_ERROR,
 };
 
-struct ast *parse_input(enum parser_status *status, struct lextoken *lexer);
+struct ast *parse_input(enum parser_status *status, struct fifo *lexer);
 
 #endif /* ! PARSER_H */

@@ -1,5 +1,16 @@
 #include "parser.h"
 
+static struct ast *parse_list(enum parser_status *status, struct fifo *lexer);
+static struct ast *parse_and_or(enum parser_status *status, struct fifo *lexer);
+static struct ast *parse_pipeline(enum parser_status *status, struct fifo *lexer);
+static struct ast *parse_command(enum parser_status *status, struct fifo *lexer);
+static struct ast *parse_simple_command(enum parser_status *status, struct fifo *lexer);
+static void        parse_element(enum parser_status *status, struct fifo *lexer, struct ast *in);
+static struct ast *parse_shell_command(enum parser_status *status, struct fifo *lexer);
+static struct ast *parse_rule_if(enum parser_status *status, struct fifo *lexer);
+static struct ast *parse_else_clause(enum parser_status *status, struct fifo *lexer);
+static struct ast *parse_compound_list(enum parser_status *status, struct fifo *lexer);
+
 // input =
 // list '\n'
 // | list EOF
@@ -13,14 +24,14 @@ struct ast *parse_input(enum parser_status *status, struct fifo *lexer)
     struct lextoken *token = fifo_head(lexer);
 
     // EOF
-    if (!token || token->type == TOKEN_EOF)
+    if (!token)
     {
         *status = PARSER_OK;
         return NULL;
     }
 
     // '\n'
-    if (token->type == TOKEN_NEWLINE)
+    if (token->tok == NEWLINE)
     {
         fifo_pop(lexer);
         *status = PARSER_OK;
@@ -33,7 +44,7 @@ struct ast *parse_input(enum parser_status *status, struct fifo *lexer)
     if (*status != PARSER_OK)
         return NULL;
 
-    if (token && (token->type == TOKEN_NEWLINE || token->type == TOKEN_EOF))
+    if (token && (token->tok == NEWLINE))
     {
         fifo_pop(lexer);
         *status = PARSER_OK;
@@ -65,7 +76,7 @@ static struct ast *parse_list(enum parser_status *status, struct fifo *lexer)
     {
         //TODO Fix grammar rule tied to first ;
         struct lextoken *token = fifo_head(lexer);
-        if (!token || token->type != TOKEN_SEMICOLON)
+        if (!token || token->tok != COLUMN)
             break;
         fifo_pop(lexer);
         child = parse_and_or(status, lexer); //return a cmd
@@ -78,7 +89,7 @@ static struct ast *parse_list(enum parser_status *status, struct fifo *lexer)
     }
 
     struct lextoken *token = fifo_head(lexer);
-    if (token && token->type == TOKEN_SEMICOLON)
+    if (token && token->tok == COLUMN)
         fifo_pop(lexer);
 
     return &list->base;
@@ -116,11 +127,11 @@ static struct ast *parse_command(enum parser_status *status, struct fifo *lexer)
         return NULL;
     }
 
-    if (token->type == TOKEN_WORDS)
+    if (token->tok == WORDS)
         return parse_simple_command(status, lexer);
 
     // shell commands
-    if (token->type == TOKEN_IF)
+    if (token->tok == IF)
         return parse_shell_command(status, lexer);
 
     *status = PARSER_ERROR;
@@ -134,7 +145,7 @@ static struct ast *parse_simple_command(enum parser_status *status, struct fifo 
     struct lextoken *token = fifo_head(lexer);
     struct ast_cmd *command = ast_cmd_init(); //initialize command ast node
 
-    if (!token || token->type != TOKEN_WORDS)
+    if (!token || token->tok != WORDS)
     {
         *status = PARSER_ERROR;
         struct_ast_destroy(&command->base);
@@ -163,7 +174,7 @@ static void parse_element(enum parser_status *status, struct fifo *lexer, struct
 {
     struct ast_cmd *out = (struct ast_cmd *)in; //its always a command
     struct lextoken *token = fifo_head(lexer);
-    if (token && token->type == TOKEN_WORDS)
+    if (token && token->tok == WORDS)
     {
         ast_cmd_add_word(out, token->value);
         fifo_pop(lexer);
@@ -193,7 +204,7 @@ static struct ast *parse_rule_if(enum parser_status *status, struct fifo *lexer)
     struct ast_if *out_if = ast_if_init();
     //'if'
     struct lextoken *token = fifo_head(lexer); //check for 'if'
-    if (!token || token->type != TOKEN_IF)
+    if (!token || token->tok != IF)
     {
         struct_ast_destroy(&out_if->base);
         *status = PARSER_ERROR;
@@ -210,7 +221,7 @@ static struct ast *parse_rule_if(enum parser_status *status, struct fifo *lexer)
     out_if->condition = condition;
     //'then'
     token = fifo_head(lexer); //check for 'then'
-    if (!token || token->type != TOKEN_THEN)
+    if (!token || token->tok != THEN)
     {
         struct_ast_destroy(&out_if->base);
         *status = PARSER_ERROR;
@@ -233,7 +244,7 @@ static struct ast *parse_rule_if(enum parser_status *status, struct fifo *lexer)
         out_if->else_body = else_body;
     //'fi'
     token = fifo_head(lexer); //check for 'fi'
-    if (!token || token->type != TOKEN_FI)
+    if (!token || token->tok != FI)
     {
         struct_ast_destroy(&out_if->base);
         *status = PARSER_ERROR;
@@ -251,7 +262,7 @@ static struct ast *parse_else_clause(enum parser_status *status, struct fifo *le
    //FIRST PART
    //'else'
     struct lextoken *token = fifo_head(lexer); //check for 'else'
-    if (token && token->type == TOKEN_ELSE)
+    if (token && token->tok == ELSE)
     {
         fifo_pop(lexer);
         //compound_list
@@ -262,7 +273,7 @@ static struct ast *parse_else_clause(enum parser_status *status, struct fifo *le
     }
     //SECOND PART
     //'elif'
-    else if (token && token->type == TOKEN_ELIF)
+    else if (token && token->tok == ELIF)
     {   //similar to rule_if parsing
         fifo_pop(lexer);
         //compound_list
@@ -276,7 +287,7 @@ static struct ast *parse_else_clause(enum parser_status *status, struct fifo *le
         out_if->condition = condition;
         //'then'
         token = fifo_head(lexer); //check for 'then'
-        if (!token || token->type != TOKEN_THEN)
+        if (!token || token->tok != THEN)
         {
             struct_ast_destroy(&out_if->base);
             *status = PARSER_ERROR;
@@ -319,13 +330,13 @@ static struct ast *parse_compound_list(enum parser_status *status, struct fifo *
         return NULL; //error
     struct lextoken *token = fifo_head(lexer);
     // [';']
-    if (token && token->type == TOKEN_SEMICOLON)
+    if (token && token->tok == COLUMN)
         fifo_pop(lexer);
     // {'\n'}
     while (1)
     {
         token = fifo_head(lexer);
-        if (!token || token->type != TOKEN_NEWLINE)
+        if (!token || token->tok != NEWLINE)
             break;
         fifo_pop(lexer);
     }

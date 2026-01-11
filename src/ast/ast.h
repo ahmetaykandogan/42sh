@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 enum ast_type //All the pseudo types of AST nodes
 {
