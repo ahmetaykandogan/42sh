@@ -21,5 +21,9 @@ int main(int argc, char **argv)
     {
         struct fifo *lex_queue = lexing_from_file(argv[1]);
     }
-
+    struct ast *ast = parse(lex_queue);
+    run_ast(ast);
+    fifo_destroy(lex_queue);
+    struct_ast_destroy(ast);
+    return 0;
 }
