@@ -65,6 +65,8 @@ const char *ast_repr(enum ast_type type)
 
 void run_ast(struct ast *ast)
 {
+    if (!ast)
+        return;
     static run_type run_functions[] = {
         [AST_CMD] = &ast_run_cmd,
         [AST_IF] = &ast_run_if,
@@ -72,17 +74,22 @@ void run_ast(struct ast *ast)
     };
     (*run_functions[ast->type])(ast);
 }
+void run_command(char **words)
+{
+    if (!words || !words[0])
+        return;
+    execvp(words[0], words);
+    //may need to be expanded
+}
 
 static void ast_run_cmd(struct ast *ast)
 {
-    assert(ast->type == AST_CMD);
     struct ast_cmd *ast_cmd = (struct ast_cmd *)ast;
     run_command(ast_cmd->words);
 }
 
 static void ast_run_if(struct ast *ast)
 {
-    assert(ast->type == AST_IF);
     struct ast_if *ast_if = (struct ast_if *)ast;
     run_ast(ast_if->condition);
     run_ast(ast_if->then_body);
@@ -92,7 +99,6 @@ static void ast_run_if(struct ast *ast)
 
 static void ast_run_list(struct ast *ast)
 {
-    assert(ast->type == AST_LIST);
     struct ast_list *ast_list = (struct ast_list *)ast;
     for (size_t i = 0; i < ast_list->child_count; i++)
     {
@@ -101,3 +107,50 @@ static void ast_run_list(struct ast *ast)
 }
 
 //----------------------------------DESTROY AST TYPES------------------------------
+
+
+void struct_ast_destroy(struct ast *node) //the generic destroy. Same as lookup table
+{
+    if (!node)
+        return;
+    static run_type destroy_functions[] = {
+        [AST_CMD] = (run_type)&ast_cmd_destroy,
+        [AST_IF] = (run_type)&ast_if_destroy,
+        [AST_LIST] = (run_type)&ast_list_destroy,
+    };
+    (*destroy_functions[node->type])(node);
+}
+
+void ast_cmd_destroy(struct ast_cmd *node)
+{
+    if (!node)
+        return;
+    size_t i = 0;
+    while (node->words[i] != NULL)
+    {
+        free(node->words[i]);
+        i++;
+    }
+    free(node->words);
+    free(node);
+}
+void ast_if_destroy(struct ast_if *node)
+{
+    if (!node)
+        return;
+    struct_ast_destroy(node->condition);
+    struct_ast_destroy(node->then_body);
+    struct_ast_destroy(node->else_body);
+    free(node);
+}
+void ast_list_destroy(struct ast_list *node)
+{
+    if (!node)
+        return;
+    for (size_t i = 0; i < node->child_count; i++)
+    {
+        struct_ast_destroy(node->children[i]);
+    }
+    free(node->children);
+    free(node);
+}
