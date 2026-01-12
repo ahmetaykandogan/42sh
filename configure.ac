@@ -26,6 +26,7 @@ AC_CONFIG_FILES([
                     src/ast/Makefile
                     src/lexer/Makefile
                     src/parser/Makefile
+                    src/utils/Makefile
                     src/builtins/Makefile
                     src/pretty_printer/Makefile
                 ])

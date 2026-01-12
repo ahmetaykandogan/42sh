@@ -4,7 +4,7 @@ libextra_a_SOURCES =  \
   malloc_err.c \
   malloc_err.h \
   fifo_access.c \
-  fifo_destroy.c \
+  fifo_setup_destroy.c \
   fifo.h
 
 libextra_a_CPPFLAGS = -I$(top_srcdir)/src
