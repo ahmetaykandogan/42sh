@@ -58,11 +58,12 @@ struct ast *parse_input(enum parser_status *status, struct fifo *lexer)
         *status = PARSER_OK;
         return out;
     }
-
+    if (token == NULL)//this mean that we dont have any tokens left in the lexer
+    {
+        return out;
+    }
     // error
-    struct_ast_destroy(out);
-    *status = PARSER_ERROR;
-    return NULL;
+    return out; //to test?
 }
 
 // list = and_or { ';' and_or } [ ';' ] ;
@@ -78,7 +79,7 @@ static struct ast *parse_list(enum parser_status *status, struct fifo *lexer)
     }
     ast_list_add_ast(list, child); // adding the cmd to the list
 
-    // { ';' and_or }
+    // { ';' and_or } [ ; ]
     while (1)
     {
         // TODO Fix grammar rule tied to first ;
@@ -89,16 +90,11 @@ static struct ast *parse_list(enum parser_status *status, struct fifo *lexer)
         child = parse_and_or(status, lexer); // return a cmd
         if (*status != PARSER_OK)
         {
-            ast_list_destroy(list);
-            return NULL; // error
+            *status = PARSER_OK;
+            break; //this mean there is only a ; and not a and_or
         }
         ast_list_add_ast(list, child); // adding the cmd to the list
     }
-
-    struct lextoken *token = fifo_head(lexer);
-    if (token && token->tok == COLUMN)
-        fifo_pop(lexer);
-
     return &list->base;
 }
 
@@ -161,8 +157,8 @@ static struct ast *parse_simple_command(enum parser_status *status,
         return NULL;
     }
 
-    fifo_pop(lexer);
     ast_cmd_add_word(command, token->value);
+    fifo_pop(lexer);
 
     // { element }
     while (1)

@@ -24,7 +24,8 @@ int main(int argc, char **argv)
     {
         lex_queue = lexing_from_file(argv[1]);
     }
-    struct ast *ast = parse_input(PARSER_OK, lex_queue);
+    enum parser_status status = PARSER_OK;
+    struct ast *ast = parse_input(&status, lex_queue);
     run_ast(ast);
     fifo_destroy(lex_queue);
     struct_ast_destroy(ast);

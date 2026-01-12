@@ -1,5 +1,9 @@
 #include "ast.h"
-
+#include <assert.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <stdio.h>
 struct ast_cmd *ast_cmd_init()
 {
     struct ast_cmd *out = calloc(1, sizeof(struct ast_cmd));
@@ -99,8 +103,26 @@ void run_command(char **words)
 {
     if (!words || !words[0])
         return;
-    execvp(words[0], words);
-    // may need to be expanded
+
+    pid_t pid = fork();
+    if (pid < 0)
+    {
+        perror("fork");
+        return;
+    }
+
+    if (pid == 0)
+    {
+        execvp(words[0], words);
+        perror("execvp");
+        _exit(127);
+    }
+
+    int wstatus;
+    if (waitpid(pid, &wstatus, 0) == -1)
+    {
+        perror("waitpid");
+    }
 }
 
 //----------------------------------DESTROY AST

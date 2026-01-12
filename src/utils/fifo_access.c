@@ -30,6 +30,10 @@ void fifo_push(struct fifo *fifo, struct lextoken *elt)
 
 struct lextoken *fifo_head(struct fifo *fifo)
 {
+    if (!fifo->head)
+    {
+        return NULL;
+    }
     return fifo->head->data;
 }
 
