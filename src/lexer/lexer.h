@@ -3,6 +3,8 @@
 
 #include "../utils/fifo/fifo.h"
 
+#include <stdio.h>
+
 enum token
 {
     IF,

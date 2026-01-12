@@ -49,13 +49,61 @@ static struct lextoken *lexing_case(char *token)
     /* DEFAULT CASE : WORDS */
     return create_lextoken(WORDS, token);
 }
+// Should add the following characters for the next steps: | & < >
+int check_char(char c)
+{
+    if (c == ';' || c == '\n' || c == '\'' || c == ' ' || c == '\0')
+        return 0;
+    return 1;
+}
 
+//TODO: case for echo 'hello;hello'
+struct fifo *tokenize(char *input)
+{
+    struct fifo *queue = fifo_init();
+
+    if (!input)
+    {
+        return NULL;
+    }
+    int i = 0;
+    while (i < strlen(input))
+    {
+        if (isspace(input[i]))
+        {
+            i++;
+        }
+        if (check_char(input[i]))
+        {
+            char *tok = malloc_err();
+
+            int tok_pos = 0;
+            while (check_char(input[i]))
+            {
+                tok = realloc_err(tok, tok_pos + 1);
+                tok[tok_pos++] = input[i++];
+            }
+            tok = realloc_err(tok, tok_pos + 1);
+            tok[tok_pos] = '\0';
+            fifo_push(queue, lexing_case(tok));
+        }
+        else
+        {
+            char *tok = malloc_err(2 * sizeof(char));
+            tok[0] = input[i++];
+            tok[1] = '\0';
+            fifo_push(queue, lexing_case(tok));
+        }
+    }
+    return queue;
+}
+//Old version of the lexer
+/*
 struct fifo *lexer(char *input)
 {
     struct fifo *queue = fifo_init();
 
-    char *saveptr = NULL;
-    char *token = strtok_r(input, " ", &saveptr);
+    
     while (token)
     {
         fifo_push(queue, lexing_case(token));
@@ -64,7 +112,7 @@ struct fifo *lexer(char *input)
 
     return queue;
 }
-
+*/
 struct fifo *lexing_from_file(char *path)
 {
     char *script = read_file(open_file(path));
