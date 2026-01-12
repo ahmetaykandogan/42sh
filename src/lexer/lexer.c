@@ -1,6 +1,7 @@
 #include "lexer.h"
 
 #include <string.h>
+#include <ctype.h>
 
 #include "../utils/extra/malloc_err.h"
 #include "read_file.h"
@@ -66,7 +67,7 @@ struct fifo *tokenize(char *input)
     {
         return NULL;
     }
-    int i = 0;
+    size_t i = 0;
     while (i < strlen(input))
     {
         if (isspace(input[i]))
@@ -75,7 +76,7 @@ struct fifo *tokenize(char *input)
         }
         if (check_char(input[i]))
         {
-            char *tok = malloc_err();
+            char *tok = malloc_err(1 * sizeof(char));
 
             int tok_pos = 0;
             while (check_char(input[i]))
