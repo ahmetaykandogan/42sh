@@ -1,11 +1,11 @@
 lib_LIBRARIES = libextra.a
 
 libextra_a_SOURCES =  \
-  malloc_err.c \
-  malloc_err.h \
-  fifo_access.c \
-  fifo_destroy.c \
-  fifo.h
+  extra/malloc_err.c \
+  extra/malloc_err.h \
+  fifo/fifo_access.c \
+  fifo/fifo_destroy.c \
+  fifo/fifo.h
 
 libextra_a_CPPFLAGS = -I$(top_srcdir)/src
 

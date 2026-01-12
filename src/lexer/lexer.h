@@ -1,9 +1,9 @@
 #ifndef LEXER_H
 #define LEXER_H
 
-#include "../utils/fifo/fifo.h"
-
 #include <stdio.h>
+
+#include "../utils/fifo/fifo.h"
 
 struct fifo *lexer(char *input);
 

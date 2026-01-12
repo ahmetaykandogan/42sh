@@ -1,11 +1,10 @@
 #include "ast.h"
 
-
 struct ast_cmd *ast_cmd_init()
 {
     struct ast_cmd *out = calloc(1, sizeof(struct ast_cmd));
     out->base.type = AST_CMD;
-    out->words = calloc(1,sizeof(char *));
+    out->words = calloc(1, sizeof(char *));
     return out;
 }
 
@@ -28,7 +27,6 @@ struct ast_list *ast_list_init()
     return out;
 }
 
-
 //--------------------------------ADDINGS------------------------------------
 
 void ast_cmd_add_word(struct ast_cmd *in, char *word)
@@ -45,7 +43,8 @@ void ast_cmd_add_word(struct ast_cmd *in, char *word)
 void ast_list_add_ast(struct ast_list *in, struct ast *ast)
 {
     size_t count = in->child_count;
-    struct ast **out = realloc(in->children, sizeof(struct ast *) * (count + 1));
+    struct ast **out =
+        realloc(in->children, sizeof(struct ast *) * (count + 1));
     out[count] = ast;
     in->children = out;
     in->child_count += 1;
@@ -82,7 +81,7 @@ const char *ast_repr(enum ast_type type)
         [AST_IF] = "IF",
         [AST_LIST] = "LIST",
     };
-    return names[type];  
+    return names[type];
 }
 
 void run_ast(struct ast *ast)
@@ -101,15 +100,14 @@ void run_command(char **words)
     if (!words || !words[0])
         return;
     execvp(words[0], words);
-    //may need to be expanded
+    // may need to be expanded
 }
 
+//----------------------------------DESTROY AST
+//TYPES------------------------------
 
-
-//----------------------------------DESTROY AST TYPES------------------------------
-
-
-void struct_ast_destroy(struct ast *node) //the generic destroy. Same as lookup table
+void struct_ast_destroy(
+    struct ast *node) // the generic destroy. Same as lookup table
 {
     if (!node)
         return;

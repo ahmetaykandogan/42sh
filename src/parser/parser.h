@@ -3,8 +3,8 @@
 
 #include <stdio.h>
 
-#include "../lexer/lexer.h"
 #include "../ast/ast.h"
+#include "../lexer/lexer.h"
 
 enum parser_status
 {

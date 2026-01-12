@@ -1,33 +1,30 @@
 #include "pretty_printer.h"
 
-void pretty_print_ast (struct ast *node)
+void pretty_print_ast(struct ast *node)
 {
     if (!node)
         return;
     switch (node->type)
     {
-        case AST_CMD:
-        {
-            pretty_print_ast_cmd((struct ast_cmd *)node);
-            break;
-        }
-        case AST_IF:
-        {
-            pretty_print_ast_if((struct ast_if *)node);
-            break;
-        }
-        case AST_LIST:
-        {
-            pretty_print_ast_list((struct ast_list *)node);
-            break;
-        }
-        default:
-            printf("Unknown AST node type\n");
-            break;
+    case AST_CMD: {
+        pretty_print_ast_cmd((struct ast_cmd *)node);
+        break;
+    }
+    case AST_IF: {
+        pretty_print_ast_if((struct ast_if *)node);
+        break;
+    }
+    case AST_LIST: {
+        pretty_print_ast_list((struct ast_list *)node);
+        break;
+    }
+    default:
+        printf("Unknown AST node type\n");
+        break;
     }
 }
 
-void pretty_print_ast_cmd (struct ast_cmd *node)
+void pretty_print_ast_cmd(struct ast_cmd *node)
 {
     if (!node)
         return;
@@ -39,7 +36,7 @@ void pretty_print_ast_cmd (struct ast_cmd *node)
     printf("\n");
 }
 
-void pretty_print_ast_if (struct ast_if *node)
+void pretty_print_ast_if(struct ast_if *node)
 {
     if (!node)
         return;
@@ -54,7 +51,7 @@ void pretty_print_ast_if (struct ast_if *node)
     }
 }
 
-void pretty_print_ast_list (struct ast_list *node)
+void pretty_print_ast_list(struct ast_list *node)
 {
     if (!node)
         return;

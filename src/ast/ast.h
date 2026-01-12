@@ -5,26 +5,26 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-enum ast_type //All the pseudo types of AST nodes
+enum ast_type // All the pseudo types of AST nodes
 {
     AST_CMD,
     AST_IF,
     AST_LIST,
 };
 
-//To understand how this works, see the 42SH Design AST documentation
-//But basically this allows that we can cast every struct ast to their specific type during execution
-//We can for example do:
-// struct ast *node = ...;
-// if (node->type == AST_CMD) {
-//     struct ast_cmd *cmd_node = (struct ast_cmd *)node;
+// To understand how this works, see the 42SH Design AST documentation
+// But basically this allows that we can cast every struct ast to their specific
+// type during execution We can for example do:
+//  struct ast *node = ...;
+//  if (node->type == AST_CMD) {
+//      struct ast_cmd *cmd_node = (struct ast_cmd *)node;
 struct ast
 {
     enum ast_type type;
 };
 
-
-//--------------------------------------THE TYPES OF AST NODES--------------------------------------//
+//--------------------------------------THE TYPES OF AST
+//NODES--------------------------------------//
 
 struct ast_cmd
 {
@@ -48,18 +48,16 @@ struct ast_list
 
 //-------------------------------------INITIALIZE AST TYPES-----------------//
 
-
 struct ast_cmd *ast_cmd_init();
 struct ast_if *ast_if_init();
 struct ast_list *ast_list_init();
 
 //--------------------------------ADDINGS------------------------------------
 
-
 void ast_cmd_add_word(struct ast_cmd *in, char *word);
-//TODO realloc words array inside ast_cmd toincreaze size by 1
+// TODO realloc words array inside ast_cmd toincreaze size by 1
 void ast_list_add_ast(struct ast_list *in, struct ast *ast);
-//TODO same for this
+// TODO same for this
 
 //---------------------LOOKUP TABLE FOR DESTROY FUNCTIONS-----------------
 
@@ -67,10 +65,13 @@ const char *ast_repr(enum ast_type type);
 typedef void (*run_type)(struct ast *ast);
 void run_ast(struct ast *ast);
 void run_command(char **words);
-//----------------------------------DESTROY AST TYPES------------------------------
+//----------------------------------DESTROY AST
+//TYPES------------------------------
 
-void struct_ast_destroy(struct ast *node); // generic destroy function for all ast types
-//either a lookup table or a switch case inside to call the specific destroy function
+void struct_ast_destroy(
+    struct ast *node); // generic destroy function for all ast types
+// either a lookup table or a switch case inside to call the specific destroy
+// function
 
 void ast_cmd_destroy(struct ast_cmd *node);
 void ast_if_destroy(struct ast_if *node);

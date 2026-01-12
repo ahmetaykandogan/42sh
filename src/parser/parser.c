@@ -2,14 +2,22 @@
 
 static struct ast *parse_list(enum parser_status *status, struct fifo *lexer);
 static struct ast *parse_and_or(enum parser_status *status, struct fifo *lexer);
-static struct ast *parse_pipeline(enum parser_status *status, struct fifo *lexer);
-static struct ast *parse_command(enum parser_status *status, struct fifo *lexer);
-static struct ast *parse_simple_command(enum parser_status *status, struct fifo *lexer);
-static void        parse_element(enum parser_status *status, struct fifo *lexer, struct ast *in);
-static struct ast *parse_shell_command(enum parser_status *status, struct fifo *lexer);
-static struct ast *parse_rule_if(enum parser_status *status, struct fifo *lexer);
-static struct ast *parse_else_clause(enum parser_status *status, struct fifo *lexer);
-static struct ast *parse_compound_list(enum parser_status *status, struct fifo *lexer);
+static struct ast *parse_pipeline(enum parser_status *status,
+                                  struct fifo *lexer);
+static struct ast *parse_command(enum parser_status *status,
+                                 struct fifo *lexer);
+static struct ast *parse_simple_command(enum parser_status *status,
+                                        struct fifo *lexer);
+static void parse_element(enum parser_status *status, struct fifo *lexer,
+                          struct ast *in);
+static struct ast *parse_shell_command(enum parser_status *status,
+                                       struct fifo *lexer);
+static struct ast *parse_rule_if(enum parser_status *status,
+                                 struct fifo *lexer);
+static struct ast *parse_else_clause(enum parser_status *status,
+                                     struct fifo *lexer);
+static struct ast *parse_compound_list(enum parser_status *status,
+                                       struct fifo *lexer);
 
 // input =
 // list '\n'
@@ -18,7 +26,7 @@ static struct ast *parse_compound_list(enum parser_status *status, struct fifo *
 // | EOF
 // ;
 
-//La fonction au dessus va recuperer l'ast 
+// La fonction au dessus va recuperer l'ast
 struct ast *parse_input(enum parser_status *status, struct fifo *lexer)
 {
     struct lextoken *token = fifo_head(lexer);
@@ -57,35 +65,34 @@ struct ast *parse_input(enum parser_status *status, struct fifo *lexer)
     return NULL;
 }
 
-
-//list = and_or { ';' and_or } [ ';' ] ;
-//struct ast_list start
+// list = and_or { ';' and_or } [ ';' ] ;
+// struct ast_list start
 static struct ast *parse_list(enum parser_status *status, struct fifo *lexer)
 {
     struct ast_list *list = ast_list_init();
-    struct ast *child = parse_and_or(status, lexer); //return a cmd
+    struct ast *child = parse_and_or(status, lexer); // return a cmd
     if (*status != PARSER_OK)
     {
         ast_list_destroy(list);
-        return NULL; //error
+        return NULL; // error
     }
-    ast_list_add_ast(list, child); //adding the cmd to the list
+    ast_list_add_ast(list, child); // adding the cmd to the list
 
     // { ';' and_or }
     while (1)
     {
-        //TODO Fix grammar rule tied to first ;
+        // TODO Fix grammar rule tied to first ;
         struct lextoken *token = fifo_head(lexer);
         if (!token || token->tok != COLUMN)
             break;
         fifo_pop(lexer);
-        child = parse_and_or(status, lexer); //return a cmd
+        child = parse_and_or(status, lexer); // return a cmd
         if (*status != PARSER_OK)
         {
             ast_list_destroy(list);
-            return NULL; //error
+            return NULL; // error
         }
-        ast_list_add_ast(list, child); //adding the cmd to the list
+        ast_list_add_ast(list, child); // adding the cmd to the list
     }
 
     struct lextoken *token = fifo_head(lexer);
@@ -95,26 +102,27 @@ static struct ast *parse_list(enum parser_status *status, struct fifo *lexer)
     return &list->base;
 }
 
-//and_or = pipeline ;
+// and_or = pipeline ;
 static struct ast *parse_and_or(enum parser_status *status, struct fifo *lexer)
 {
     struct ast *child = parse_pipeline(status, lexer);
     if (*status != PARSER_OK)
-        return NULL; //error
+        return NULL; // error
     return child;
 }
 
-//pipeline = command ;
-static struct ast *parse_pipeline(enum parser_status *status, struct fifo *lexer)
+// pipeline = command ;
+static struct ast *parse_pipeline(enum parser_status *status,
+                                  struct fifo *lexer)
 {
     struct ast *child = parse_command(status, lexer);
     if (*status != PARSER_OK)
-        return NULL; //error
+        return NULL; // error
     return child;
 }
 
-//command =
-//simple_command
+// command =
+// simple_command
 //| shell_command
 
 static struct ast *parse_command(enum parser_status *status, struct fifo *lexer)
@@ -138,12 +146,13 @@ static struct ast *parse_command(enum parser_status *status, struct fifo *lexer)
     return NULL;
 }
 
-//simple_command = WORD { element } ;
-static struct ast *parse_simple_command(enum parser_status *status, struct fifo *lexer)
+// simple_command = WORD { element } ;
+static struct ast *parse_simple_command(enum parser_status *status,
+                                        struct fifo *lexer)
 {
-    //WORD
+    // WORD
     struct lextoken *token = fifo_head(lexer);
-    struct ast_cmd *command = ast_cmd_init(); //initialize command ast node
+    struct ast_cmd *command = ast_cmd_init(); // initialize command ast node
 
     if (!token || token->tok != WORDS)
     {
@@ -161,7 +170,7 @@ static struct ast *parse_simple_command(enum parser_status *status, struct fifo 
         parse_element(status, lexer, &command->base);
         if (*status != PARSER_OK)
         {
-            *status = PARSER_OK; //No more elements to parse
+            *status = PARSER_OK; // No more elements to parse
             break;
         }
     }
@@ -169,10 +178,11 @@ static struct ast *parse_simple_command(enum parser_status *status, struct fifo 
     return &command->base;
 }
 
-//element = WORD ;
-static void parse_element(enum parser_status *status, struct fifo *lexer, struct ast *in)
+// element = WORD ;
+static void parse_element(enum parser_status *status, struct fifo *lexer,
+                          struct ast *in)
 {
-    struct ast_cmd *out = (struct ast_cmd *)in; //its always a command
+    struct ast_cmd *out = (struct ast_cmd *)in; // its always a command
     struct lextoken *token = fifo_head(lexer);
     if (token && token->tok == WORDS)
     {
@@ -186,24 +196,24 @@ static void parse_element(enum parser_status *status, struct fifo *lexer, struct
     }
 }
 
-
 //----------------------------------------------------------------------------------
-//shell_command = rule_if ;
-static struct ast *parse_shell_command(enum parser_status *status, struct fifo *lexer)
+// shell_command = rule_if ;
+static struct ast *parse_shell_command(enum parser_status *status,
+                                       struct fifo *lexer)
 {
     struct ast *child = parse_rule_if(status, lexer);
     if (*status != PARSER_OK)
-        return NULL; //error
+        return NULL; // error
     return child;
 }
 
-//rule_if = 'if' compound_list 'then' compound_list [else_clause] 'fi' ;
+// rule_if = 'if' compound_list 'then' compound_list [else_clause] 'fi' ;
 static struct ast *parse_rule_if(enum parser_status *status, struct fifo *lexer)
 {
-    //initialize if ast node
+    // initialize if ast node
     struct ast_if *out_if = ast_if_init();
     //'if'
-    struct lextoken *token = fifo_head(lexer); //check for 'if'
+    struct lextoken *token = fifo_head(lexer); // check for 'if'
     if (!token || token->tok != IF)
     {
         struct_ast_destroy(&out_if->base);
@@ -211,16 +221,16 @@ static struct ast *parse_rule_if(enum parser_status *status, struct fifo *lexer)
         return NULL;
     }
     fifo_pop(lexer);
-    //compound_list
+    // compound_list
     struct ast *condition = parse_compound_list(status, lexer);
     if (*status != PARSER_OK)
     {
         struct_ast_destroy(&out_if->base);
-        return NULL; //error
+        return NULL; // error
     }
     out_if->condition = condition;
     //'then'
-    token = fifo_head(lexer); //check for 'then'
+    token = fifo_head(lexer); // check for 'then'
     if (!token || token->tok != THEN)
     {
         struct_ast_destroy(&out_if->base);
@@ -228,22 +238,22 @@ static struct ast *parse_rule_if(enum parser_status *status, struct fifo *lexer)
         return NULL;
     }
     fifo_pop(lexer);
-    //compound_list
+    // compound_list
     struct ast *then_body = parse_compound_list(status, lexer);
     if (*status != PARSER_OK)
     {
         struct_ast_destroy(&out_if->base);
-        return NULL; //error
+        return NULL; // error
     }
     out_if->then_body = then_body;
     //[else_clause]
     struct ast *else_body = parse_else_clause(status, lexer);
     if (*status != PARSER_OK)
-        *status = PARSER_OK; //no else clause is ok
+        *status = PARSER_OK; // no else clause is ok
     else
         out_if->else_body = else_body;
     //'fi'
-    token = fifo_head(lexer); //check for 'fi'
+    token = fifo_head(lexer); // check for 'fi'
     if (!token || token->tok != FI)
     {
         struct_ast_destroy(&out_if->base);
@@ -254,39 +264,40 @@ static struct ast *parse_rule_if(enum parser_status *status, struct fifo *lexer)
     return &out_if->base;
 }
 
-//else_clause =
+// else_clause =
 //'else' compound_list
 //| 'elif' compound_list 'then' compound_list [else_clause]
-static struct ast *parse_else_clause(enum parser_status *status, struct fifo *lexer)
+static struct ast *parse_else_clause(enum parser_status *status,
+                                     struct fifo *lexer)
 {
-   //FIRST PART
-   //'else'
-    struct lextoken *token = fifo_head(lexer); //check for 'else'
+    // FIRST PART
+    //'else'
+    struct lextoken *token = fifo_head(lexer); // check for 'else'
     if (token && token->tok == ELSE)
     {
         fifo_pop(lexer);
-        //compound_list
+        // compound_list
         struct ast *else_body = parse_compound_list(status, lexer);
         if (*status != PARSER_OK)
-            return NULL; //error
+            return NULL; // error
         return else_body;
     }
-    //SECOND PART
+    // SECOND PART
     //'elif'
     else if (token && token->tok == ELIF)
-    {   //similar to rule_if parsing
+    { // similar to rule_if parsing
         fifo_pop(lexer);
-        //compound_list
+        // compound_list
         struct ast_if *out_if = ast_if_init();
         struct ast *condition = parse_compound_list(status, lexer);
         if (*status != PARSER_OK)
         {
             struct_ast_destroy(&out_if->base);
-            return NULL; //error
+            return NULL; // error
         }
         out_if->condition = condition;
         //'then'
-        token = fifo_head(lexer); //check for 'then'
+        token = fifo_head(lexer); // check for 'then'
         if (!token || token->tok != THEN)
         {
             struct_ast_destroy(&out_if->base);
@@ -294,18 +305,18 @@ static struct ast *parse_else_clause(enum parser_status *status, struct fifo *le
             return NULL;
         }
         fifo_pop(lexer);
-        //compound_list
+        // compound_list
         struct ast *then_body = parse_compound_list(status, lexer);
         if (*status != PARSER_OK)
         {
             struct_ast_destroy(&out_if->base);
-            return NULL; //error
+            return NULL; // error
         }
         out_if->then_body = then_body;
         //[else_clause]
         struct ast *else_body = parse_else_clause(status, lexer);
         if (*status != PARSER_OK)
-            *status = PARSER_OK; //no else clause is ok
+            *status = PARSER_OK; // no else clause is ok
         else
             out_if->else_body = else_body;
         return &out_if->base;
@@ -317,17 +328,18 @@ static struct ast *parse_else_clause(enum parser_status *status, struct fifo *le
     }
 }
 
-//compound_list = and_or [';'] {'\n'} ; //easy version
+// compound_list = and_or [';'] {'\n'} ; //easy version
 
-//compound_list =
+// compound_list =
 //{'\n'} and_or { ( ';' | '\n' ) {'\n'} and_or } [';'] {'\n'} ;
 
-static struct ast *parse_compound_list(enum parser_status *status, struct fifo *lexer)
+static struct ast *parse_compound_list(enum parser_status *status,
+                                       struct fifo *lexer)
 {
-    //and_or
+    // and_or
     struct ast *child = parse_and_or(status, lexer);
     if (*status != PARSER_OK)
-        return NULL; //error
+        return NULL; // error
     struct lextoken *token = fifo_head(lexer);
     // [';']
     if (token && token->tok == COLUMN)

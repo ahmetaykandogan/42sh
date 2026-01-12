@@ -1,11 +1,10 @@
-#include "struct_lexer.h"
-
-#include <string.h>
 #include <ctype.h>
+#include <string.h>
 
 #include "../utils/extra/malloc_err.h"
 #include "../utils/fifo/fifo.h"
 #include "read_file.h"
+#include "struct_lexer.h"
 
 static struct lextoken *create_lextoken(enum token tok, char *value)
 {
@@ -59,7 +58,7 @@ int check_char(char c)
     return 1;
 }
 
-//TODO: case for echo 'hello;hello'
+// TODO: case for echo 'hello;hello'
 struct fifo *lexer(char *input)
 {
     struct fifo *queue = fifo_init();
@@ -99,13 +98,13 @@ struct fifo *lexer(char *input)
     }
     return queue;
 }
-//Old version of the lexer
+// Old version of the lexer
 /*
 struct fifo *lexer(char *input)
 {
     struct fifo *queue = fifo_init();
 
-    
+
     while (token)
     {
         fifo_push(queue, lexing_case(token));

@@ -20,16 +20,18 @@ int builtins_echo(int argc, char *argv[])
     int newline = 1;
 
     // -n option
-    if (i < argc && strcmp(argv[i], "-n") == 0) {
+    if (i < argc && strcmp(argv[i], "-n") == 0)
+    {
         newline = 0;
         i++;
     }
-    
+
     // -e enable the interpretation of \n, \t and \\ escapes.
     // -E disable the interpretation of \n, \t and \\ escapes.
 
     /* Print arguments */
-    for (; i < argc; i++) {
+    for (; i < argc; i++)
+    {
         printf("%s", argv[i]);
         if (i + 1 < argc)
             printf(" ");
