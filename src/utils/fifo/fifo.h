@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 
-#include "../lexer/struct_lexer.h"
+#include "../../lexer/struct_lexer.h"
 
 struct list
 {
