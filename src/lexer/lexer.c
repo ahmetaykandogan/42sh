@@ -1,8 +1,8 @@
 #include <ctype.h>
 #include <string.h>
 
-#include "../utils/extra/malloc_err.h"
-#include "../utils/fifo/fifo.h"
+#include "../utils/malloc_err.h"
+#include "../utils/fifo.h"
 #include "read_file.h"
 #include "struct_lexer.h"
 

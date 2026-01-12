@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../utils/extra/malloc_err.c"
+#include "../utils/malloc_err.c"
 
 FILE *open_file(char *file)
 {

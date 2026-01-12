@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-#include "../utils/fifo/fifo.h"
+#include "../utils/fifo.h"
 
 struct fifo *lexer(char *input);
 
