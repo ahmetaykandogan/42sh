@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <err.h>
 #include <string.h>
 
 #include "../utils/malloc_err.h"
@@ -55,7 +56,9 @@ int check_char(char c)
 {
     if (c == ';' || c == '\n' || c == '\'' || c == ' ' || c == '\0')
         return 0;
-    return 1;
+    if (c == '\'')
+        return 1;
+    return 2;
 }
 
 // TODO: case for echo 'hello;hello'
@@ -74,13 +77,31 @@ struct fifo *lexer(char *input)
         {
             i++;
         }
-        if (check_char(input[i]))
+        if (check_char(input[i]) != 0)
         {
             char *tok = malloc_err(1 * sizeof(char));
 
             int tok_pos = 0;
             while (check_char(input[i]))
             {
+                tok = realloc_err(tok, tok_pos + 1);
+                tok[tok_pos++] = input[i++];
+            }
+            tok = realloc_err(tok, tok_pos + 1);
+            tok[tok_pos] = '\0';
+            fifo_push(queue, lexing_case(tok));
+        }
+        else if (check_char(input[i]) == 1)
+        {
+            char *tok = malloc_err(1 * sizeof(char));
+
+            int tok_pos = 0;
+            while (check_char(input[i]) != 1)
+            {
+                if (i >= strlen(input))
+                {
+                    err(1, "quote not ended");
+                }
                 tok = realloc_err(tok, tok_pos + 1);
                 tok[tok_pos++] = input[i++];
             }
@@ -98,6 +119,7 @@ struct fifo *lexer(char *input)
     }
     return queue;
 }
+
 // Old version of the lexer
 /*
 struct fifo *lexer(char *input)
@@ -114,6 +136,7 @@ struct fifo *lexer(char *input)
     return queue;
 }
 */
+
 struct fifo *lexing_from_file(char *path)
 {
     char *script = read_file(open_file(path));
