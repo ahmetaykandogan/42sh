@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 
+
 enum token
 {
     IF,
@@ -25,8 +26,6 @@ struct lextoken
     enum token tok;
     char *value;
 };
-
-char *read_file(char *file, char *script);
 
 struct fifo *lexer(char *input);
 
