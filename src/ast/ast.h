@@ -76,8 +76,4 @@ void ast_cmd_destroy(struct ast_cmd *node);
 void ast_if_destroy(struct ast_if *node);
 void ast_list_destroy(struct ast_list *node);
 
-
-//TODO PRETTY PRINT FUNCTIONS FOR DEBUGGING
-
-
 #endif /* ! AST_H */
