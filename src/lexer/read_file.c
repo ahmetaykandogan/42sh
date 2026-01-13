@@ -35,7 +35,7 @@ char *read_file(FILE *f)
     ssize_t line_size;
     while ((line_size = getline(&line, &n, f)) != -1)
     {
-        if (buff_len >= capacity)
+        while (buff_len + line_size >= capacity)
         {
             capacity *= 2;
             char *tmp = realloc(buff, capacity * sizeof(char));
@@ -56,11 +56,14 @@ char *read_file(FILE *f)
         err(2, "Could not close file");
     }
 
-    buff = realloc_err(buff, buff_len + 1);
-    buff[buff_len] = '\0';
     if (buff_len == 0)
     {
-        errx(2, "Empty file");
+        free(buff);
+        return NULL;
     }
+
+    buff = realloc_err(buff, buff_len + 1);
+    buff[buff_len] = '\0';
+    
     return buff;
 }

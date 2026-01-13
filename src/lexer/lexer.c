@@ -63,48 +63,76 @@ struct fifo *lexer(char *input)
 {
     struct fifo *queue = fifo_init();
 
-    if (!input)
+    if (!input || input[0] == '\0')
     {
-        return NULL;
+        return queue;
     }
+
+    size_t input_len = strlen(input);
     size_t i = 0;
-    while (i < strlen(input))
+
+    while (i < input_len)
     {
         if (isspace(input[i]))
         {
             i++;
+            continue;
         }
-        if (check_char(input[i]) != 0)
+
+        /* CASE WORDS */
+        if (check_char(input[i]) == 2)
         {
-            char *tok = malloc_err(1 * sizeof(char));
+            size_t capacity = 8;
+            char *tok = malloc_err(capacity);
 
             int tok_pos = 0;
-            while (check_char(input[i]))
+            while (i < input_len && check_char(input[i]) == 2)
             {
-                tok = realloc_err(tok, tok_pos + 1);
+                if (tok_pos >= capacity)
+                {
+                    capacity *= 2;
+                    tok = realloc_err(tok, capacity);
+                }
                 tok[tok_pos++] = input[i++];
             }
-            tok = realloc_err(tok, tok_pos + 1);
+            if (tok_pos >= capacity)
+            {
+                capacity *= 2;
+                tok = realloc_err(tok, capacity);
+            }
             tok[tok_pos] = '\0';
+            tok = realloc_err(tok, tok_pos + 1);
+
             fifo_push(queue, lexing_case(tok));
         }
 
+        /* CASE APOSTROPHE QUOTE */
         else if (check_char(input[i]) == 1)
         {
-            char *tok = malloc_err(1 * sizeof(char));
-
+            size_t capacity = 8;
+            char *tok = malloc_err(capacity);
+            
             int tok_pos = 0;
-            while (check_char(input[i]) != 1)
+            while (check_char(input[i]) == 2)
             {
-                if (i >= strlen(input))
+                if (i >= input_len)
                 {
                     err(1, "quote not ended");
                 }
-                tok = realloc_err(tok, tok_pos + 1);
-                tok[tok_pos++] = input[i++];
+                if (tok_pos >= capacity)
+                {
+                    capacity *= 2;
+                    tok = realloc_err(tok, capacity);
+                }
             }
-            tok = realloc_err(tok, tok_pos + 1);
+            if (tok_pos >= capacity)
+            {
+                capacity *= 2;
+                tok = realloc_err(tok, capacity);
+            }
             tok[tok_pos] = '\0';
+            tok = realloc_err(tok, tok_pos + 1);
+
             fifo_push(queue, create_lextoken(APSTRPH, tok));
         }
 
@@ -114,6 +142,7 @@ struct fifo *lexer(char *input)
             tok[0] = input[i++];
             tok[1] = '\0';
             fifo_push(queue, lexing_case(tok));
+
             free(tok);
         }
     }
@@ -140,7 +169,14 @@ struct fifo *lexer(char *input)
 struct fifo *lexing_from_file(char *path)
 {
     char *script = read_file(open_file(path));
+
+    if (!script)
+    {
+        return fifo_init();
+    }
+
     struct fifo *lex_queue = lexer(script);
+    free(script);
 
     return lex_queue;
 }
@@ -148,7 +184,14 @@ struct fifo *lexing_from_file(char *path)
 struct fifo *lexing_from_stdin(FILE *f)
 {
     char *script = read_file(f);
+
+    if (!script)
+    {
+        return fifo_init();
+    }
+
     struct fifo *lex_queue = lexer(script);
+    free(script);
 
     return lex_queue;
 }
