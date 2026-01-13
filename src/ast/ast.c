@@ -110,6 +110,8 @@ const char *ast_repr(enum ast_type type)
         [AST_CMD] = "CMD",
         [AST_IF] = "IF",
         [AST_LIST] = "LIST",
+        [AST_WHILE] = "WHILE",
+        [AST_UNTIL] = "UNTIL",
     };
     return names[type];
 }
