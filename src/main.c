@@ -15,11 +15,17 @@ int main(int argc, char **argv)
     {
         lex_queue = lexing_from_stdin(stdin);
     }
+//pretty print mode pour debug et la testsuite, pas sûr si le parse input est correctement utilisé, à verifier
+    if (strcmp(argv[1], "-p") == 0)
+    {
+        pretty_print_ast(parse_input(argv[2], lex_queue));
+    }
 
-    if (strcmp(argv[1], "-c") == 0)
+    else if (strcmp(argv[1], "-c") == 0)
     {
         lex_queue = lexer(argv[2]);
     }
+
     else if (argv[1])
     {
         lex_queue = lexing_from_file(argv[1]);
