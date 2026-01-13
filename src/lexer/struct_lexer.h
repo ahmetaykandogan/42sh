@@ -3,17 +3,45 @@
 
 enum token
 {
-    IF,
-    THEN,
-    ELIF,
-    ELSE,
-    FI,
+    IF, // 'if'
+    THEN, // 'then'
+    ELIF, // 'elif'
+    ELSE, // 'else'
+    FI, // 'fi'
 
-    COLUMN,
-    NEWLINE,
+    COLUMN, // ';'
+    NEWLINE, // '\n'
 
-    APSTRPH,
-    WORDS
+    RED_IN, // '<'
+    RED_OUT, // '>'
+    APPEND_OUT, // '>>'
+    DUP_IN, // '<&'
+    DUP_OUT, // '>&'
+    RED_FORCE, // '>|'
+    FD_RW, // '<>'
+
+    PIPE, // '|'
+    NEGA, // '!'
+
+    WHILE, // 'while'
+    UNTIL, // 'until'
+    FOR, // 'for'
+    IN, // 'in'
+    DO, // 'do'
+    DONE, // 'done'
+
+    AND, // '&&'
+    OR, // '||'
+
+    GUILLMT, // ' "" '
+    ESCAPE, // ' \ '
+    APSTRPH, // ' '' '
+
+    CHAR_VAR, // 'name=value'
+    VAR, // '$name'
+    BRAKE_VAR, // '{$name}'
+
+    WORDS // 'words'
 };
 
 struct lextoken
