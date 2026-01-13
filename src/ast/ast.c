@@ -35,10 +35,19 @@ struct ast_list *ast_list_init()
     return out;
 }
 
-struct ast_while_until *ast_while_until_init(void)
+struct ast_while *ast_while_init(void)
 {
-    struct ast_while_until *out= calloc(1, sizeof(struct ast_while_until));
-    out->base.type = AST_WHILE_UNTIL;
+    struct ast_while *out= calloc(1, sizeof(struct ast_while));
+    out->base.type = AST_WHILE;
+    out->condition = NULL;
+    out->body = NULL;
+    return out;
+}
+
+struct ast_until *ast_until_init(void)
+{
+    struct ast_until *out= calloc(1, sizeof(struct ast_until));
+    out->base.type = AST_UNTIL;
     out->condition = NULL;
     out->body = NULL;
     return out;
