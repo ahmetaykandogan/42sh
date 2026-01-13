@@ -8,11 +8,12 @@
 
 int if_value = 0;
 
-struct ast_cmd *ast_cmd_init()
+struct ast_cmd *ast_cmd_init(int neg)
 {
     struct ast_cmd *out = calloc(1, sizeof(struct ast_cmd));
     out->base.type = AST_CMD;
     out->words = calloc(1, sizeof(char *));
+    out->negated = neg;
     return out;
 }
 
@@ -80,7 +81,7 @@ void ast_list_add_ast(struct ast_list *in, struct ast *ast)
 static void ast_run_cmd(struct ast *ast)
 {
     struct ast_cmd *ast_cmd = (struct ast_cmd *)ast;
-    run_command(ast_cmd->words);
+    run_command(ast_cmd);
 }
 
 static void ast_run_if(struct ast *ast)
@@ -162,8 +163,9 @@ int recognize_function(char *word)
     }
 }
 */
-void run_command(char **words)
+void run_command(struct ast_cmd *cmd)
 {
+    char **words = cmd->words;
     if (!words || !words[0])
         return;
     /*
@@ -188,6 +190,8 @@ void run_command(char **words)
         if_value = WEXITSTATUS(wstatus);
     else
         if_value = 1;
+    if (cmd->negated)
+        if_value = !if_value;
 }
 
 //----------------------------------DESTROY AST

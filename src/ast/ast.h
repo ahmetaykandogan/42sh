@@ -31,6 +31,7 @@ struct ast
 struct ast_cmd
 {
     struct ast base;
+    int negated; // 1 if the command is negated with '!'
     char **words; // NULL terminated char* list */
 };
 
@@ -84,7 +85,7 @@ void ast_list_add_ast(struct ast_list *in, struct ast *ast);
 const char *ast_repr(enum ast_type type);
 typedef void (*run_type)(struct ast *ast);
 void run_ast(struct ast *ast);
-void run_command(char **words);
+void run_command(struct ast_cmd *cmd);
 
 //----------------------------------DESTROY AST
 //TYPES------------------------------

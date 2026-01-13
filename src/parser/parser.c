@@ -148,7 +148,7 @@ static struct ast *parse_simple_command(enum parser_status *status,
 {
     // WORD
     struct lextoken *token = fifo_head(lexer);
-    struct ast_cmd *command = ast_cmd_init(); // initialize command ast node
+    struct ast_cmd *command = ast_cmd_init(0); // initialize command ast node
 
     if (!token || token->tok != WORDS)
     {
