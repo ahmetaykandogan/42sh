@@ -112,7 +112,7 @@ struct fifo *lexer(char *input)
             size_t capacity = 8;
             char *tok = malloc_err(capacity);
             
-            int tok_pos = 0;
+            size_t tok_pos = 0;
             while (check_char(input[i]) == 2)
             {
                 if (i >= input_len)
