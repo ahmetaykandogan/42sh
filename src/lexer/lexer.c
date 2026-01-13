@@ -35,33 +35,59 @@ static struct lextoken *create_lextoken_words(enum token tok, char *value)
 static struct lextoken *lexing_case(char *token)
 {
     /* IF THEN ELIF ELSE FI */
-    if (strcmp(token, "if") == 0)
+    if (strcmp(token, "if") == 0) // IF
     {
         return create_lextoken(IF, token);
     }
-    else if (strcmp(token, "then") == 0)
+    else if (strcmp(token, "then") == 0) // THEN
     {
         return create_lextoken(THEN, token);
     }
-    else if (strcmp(token, "elif") == 0)
+    else if (strcmp(token, "elif") == 0) // ELIF
     {
         return create_lextoken(ELIF, token);
     }
-    else if (strcmp(token, "else") == 0)
+    else if (strcmp(token, "else") == 0) // ELSE
     {
         return create_lextoken(ELSE, token);
     }
-    else if (strcmp(token, "fi") == 0)
+    else if (strcmp(token, "fi") == 0) // FI
     {
         return create_lextoken(FI, token);
     }
 
+    /* WHILE UNTIL FOR IN DO DONE */
+    else if (strcmp(token, "while") == 0) // WHILE
+    {
+        return create_lextoken(WHILE, token);
+    }
+    else if (strcmp(token, "until") == 0) // UNTIL
+    {
+        return create_lextoken(UNTIL, token);
+    }
+    else if (strcmp(token, "for") == 0) // FOR
+    {
+        return create_lextoken(FOR, token);
+    }
+    else if (strcmp(token, "in") == 0) // IN
+    {
+        return create_lextoken(IN, token);
+    }
+    else if (strcmp(token, "do") == 0) // DO
+    {
+        return create_lextoken(DO, token);
+    }
+    else if (strcmp(token, "done") == 0) // DONE
+    {
+        return create_lextoken(DONE, token);
+    }
+
     /* COLUMN NEWLINE */
-    else if (strcmp(token, ";") == 0)
+    else if (strcmp(token, ";") == 0) // COLUMN
     {
         return create_lextoken(COLUMN, token);
     }
-    else if (strcmp(token, "\n") == 0)
+    else if (strcmp(token, "\n") == 0) // NEWLINE
     {
         return create_lextoken(NEWLINE, token);
     }
@@ -73,7 +99,7 @@ static struct lextoken *lexing_case(char *token)
 // Should add the following characters for the next steps: | & < >
 static int check_char(char c)
 {
-    if (c == ';' || c == '\n' || c == '\'' || c == ' ' || c == '\0')
+    if (c == ';' || c == '\n' || c == '\'' || c == ' ' || c == '\0' || c == '!' || c == '&' || c == '|' || c == '<' || c == '>')
         return 0;
     if (c == '\'')
         return 1;
