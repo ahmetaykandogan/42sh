@@ -4,6 +4,10 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <stdio.h>
+#include <err.h>
+
+int if_value = 0;
+
 struct ast_cmd *ast_cmd_init()
 {
     struct ast_cmd *out = calloc(1, sizeof(struct ast_cmd));
@@ -64,11 +68,15 @@ static void ast_run_cmd(struct ast *ast)
 static void ast_run_if(struct ast *ast)
 {
     struct ast_if *ast_if = (struct ast_if *)ast;
+
     run_ast(ast_if->condition);
-    run_ast(ast_if->then_body);
-    if (ast_if->else_body)
+
+    if (if_value == 0) //This is just to check if the return the value of the condition is true or false
+        run_ast(ast_if->then_body);
+    else if (ast_if->else_body)
         run_ast(ast_if->else_body);
 }
+
 
 static void ast_run_list(struct ast *ast)
 {
@@ -99,30 +107,41 @@ void run_ast(struct ast *ast)
     };
     (*run_functions[ast->type])(ast);
 }
+/*
+int recognize_function(char *word)
+{
+    if (strcmp(*word,"echo"))
+    {
+        //on appelle la builtin
+    }
+}
+*/
 void run_command(char **words)
 {
     if (!words || !words[0])
         return;
-
-    pid_t pid = fork();
-    if (pid < 0)
+    /*
+    if (recognize_function(words[0]))
     {
-        perror("fork");
-        return;
+        return; //the builtin executed the function
     }
-
+    */
+    int pid = fork();
     if (pid == 0)
     {
         execvp(words[0], words);
-        perror("execvp");
-        _exit(127);
+        err(2, "exec dont recognize it"); //this only reached if execvp fails
     }
-
     int wstatus;
-    if (waitpid(pid, &wstatus, 0) == -1)
+    int child_pid = waitpid(pid, &wstatus, 0);
+    if (child_pid == -1)
     {
-        perror("waitpid");
+        err(2, "failed to open"); //return value may change
     }
+    if (WIFEXITED(wstatus))
+        if_value = WEXITSTATUS(wstatus);
+    else
+        if_value = 1;
 }
 
 //----------------------------------DESTROY AST

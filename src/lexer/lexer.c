@@ -1,6 +1,7 @@
 #include <ctype.h>
 #include <err.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "../utils/malloc_err.h"
 #include "../utils/fifo.h"
