@@ -80,7 +80,7 @@ static int check_char(char c)
     return 2;
 }
 
-static char *lexing_words(char *input, int pos)
+static char *lexing_words(char *input, size_t pos)
 {
     size_t capacity = 8;
     char *tok = malloc_err(capacity);
@@ -106,7 +106,7 @@ static char *lexing_words(char *input, int pos)
     return tok;
 }
 
-static char *lexing_quotes(char *input, int pos)
+static char *lexing_quotes(char *input, size_t pos)
 {
     size_t input_len = strlen(input);
     size_t capacity = 8;
