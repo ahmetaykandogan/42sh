@@ -116,6 +116,7 @@ struct fifo *lexer(char *input)
             tok[0] = input[i++];
             tok[1] = '\0';
             fifo_push(queue, lexing_case(tok));
+            free(tok);
         }
     }
     return queue;
