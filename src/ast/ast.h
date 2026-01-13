@@ -10,8 +10,7 @@ enum ast_type // All the pseudo types of AST nodes
     AST_CMD,
     AST_IF,
     AST_LIST,
-    AST_WHILE,
-    AST_UNTIL
+    AST_WHILE_UNTIL
 };
 
 // To understand how this works, see the 42SH Design AST documentation
@@ -49,27 +48,20 @@ struct ast_list
     size_t child_count;
 };
 
-struct ast_while
+struct ast_while_until
 {
     struct ast base;
     struct ast *condition;
     struct ast *body;
 };
 
-struct ast_until
-{
-    struct ast base;
-    struct ast *condition;
-    struct ast *body;
-};
 
 //-------------------------------------INITIALIZE AST TYPES-----------------//
 
 struct ast_cmd *ast_cmd_init();
 struct ast_if *ast_if_init();
 struct ast_list *ast_list_init();
-struct ast_while *ast_while_init();
-struct ast_until *ast_until_init();
+struct ast_while_until *ast_while_until_init();
 
 //--------------------------------ADDINGS------------------------------------
 
@@ -84,6 +76,7 @@ const char *ast_repr(enum ast_type type);
 typedef void (*run_type)(struct ast *ast);
 void run_ast(struct ast *ast);
 void run_command(char **words);
+
 //----------------------------------DESTROY AST
 //TYPES------------------------------
 
@@ -95,7 +88,6 @@ void struct_ast_destroy(
 void ast_cmd_destroy(struct ast_cmd *node);
 void ast_if_destroy(struct ast_if *node);
 void ast_list_destroy(struct ast_list *node);
-void ast_while_destroy(struct ast_while *node);
-void ast_until_destroy(struct ast_until *node);
+void ast_while_until_destroy(struct ast_while_until *node);
 
 #endif /* ! AST_H */

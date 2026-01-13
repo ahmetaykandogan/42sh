@@ -35,6 +35,15 @@ struct ast_list *ast_list_init()
     return out;
 }
 
+struct ast_while_until *ast_while_until_init(void)
+{
+    struct ast_while_until *out= calloc(1, sizeof(struct ast_while_until));
+    out->base.type = AST_WHILE_UNTIL;
+    out->condition = NULL;
+    out->body = NULL;
+    return out;
+}
+
 //--------------------------------ADDINGS------------------------------------
 
 void ast_cmd_add_word(struct ast_cmd *in, char *word)
@@ -96,6 +105,18 @@ const char *ast_repr(enum ast_type type)
     return names[type];
 }
 
+static void ast_run_while_until(struct ast *ast)
+{
+    struct ast_while_until *ast_wu = (struct ast_while_until *)ast;
+    while (1)
+    {
+        run_ast(ast_wu->condition);
+        if (if_value != 0)
+            break;
+        run_ast(ast_wu->body);
+    }
+}
+
 void run_ast(struct ast *ast)
 {
     if (!ast)
@@ -104,6 +125,7 @@ void run_ast(struct ast *ast)
         [AST_CMD] = &ast_run_cmd,
         [AST_IF] = &ast_run_if,
         [AST_LIST] = &ast_run_list,
+        [AST_WHILE_UNTIL] = &ast_run_while_until,
     };
     (*run_functions[ast->type])(ast);
 }
@@ -191,5 +213,14 @@ void ast_list_destroy(struct ast_list *node)
         struct_ast_destroy(node->children[i]);
     }
     free(node->children);
+    free(node);
+}
+
+void ast_while_until_destroy(struct ast_while_until *node)
+{
+    if (!node)
+        return;
+    struct_ast_destroy(node->condition);
+    struct_ast_destroy(node->body);
     free(node);
 }
