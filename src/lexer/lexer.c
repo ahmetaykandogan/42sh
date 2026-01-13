@@ -25,27 +25,41 @@ static struct lextoken *lexing_case(char *token)
 {
     /* IF THEN ELIF ELSE FI */
     if (strcmp(token, "if") == 0)
+    {
+        free(token);
         return create_lextoken(IF, NULL);
-
+    }
     else if (strcmp(token, "then") == 0)
+    {
+        free(token);
         return create_lextoken(THEN, NULL);
-
+    }
     else if (strcmp(token, "elif") == 0)
+    {
+        free(token);
         return create_lextoken(ELIF, NULL);
-
+    }
     else if (strcmp(token, "else") == 0)
+    {
+        free(token);
         return create_lextoken(ELSE, NULL);
-
+    }
     else if (strcmp(token, "fi") == 0)
+    {
+        free(token);
         return create_lextoken(FI, NULL);
-
+    }
     /* COLUMN NEWLINE */
     else if (strcmp(token, ";") == 0)
+    {
+        free(token);
         return create_lextoken(COLUMN, NULL);
-
+    }
     else if (strcmp(token, "\n") == 0)
+    {
+        free(token);
         return create_lextoken(NEWLINE, NULL);
-
+    }
     /* DEFAULT CASE : WORDS */
     return create_lextoken(WORDS, token);
 }
@@ -142,8 +156,6 @@ struct fifo *lexer(char *input)
             tok[0] = input[i++];
             tok[1] = '\0';
             fifo_push(queue, lexing_case(tok));
-
-            free(tok);
         }
     }
     return queue;
