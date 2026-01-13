@@ -8,17 +8,28 @@
 #include "read_file.h"
 #include "struct_lexer.h"
 
-static struct lextoken *create_lextoken(enum token tok, char *value)
+static struct lextoken *create_lextoken(enum token tok, char *token)
 {
-    struct lextoken *token = malloc_err(sizeof(struct lextoken));
-    token->tok = tok;
+    free(token);
+
+    struct lextoken *l_token = malloc_err(sizeof(struct lextoken));
+    l_token->tok = tok;
+    l_token->value = NULL;
+
+    return l_token;
+}
+
+static struct lextoken *create_lextoken_words(enum token tok, char *value)
+{
+    struct lextoken *l_token = malloc_err(sizeof(struct lextoken));
+    l_token->tok = tok;
     if (!value)
-        token->value = NULL;
+        l_token->value = NULL;
 
     else
-        token->value = value;
+        l_token->value = value;
 
-    return token;
+    return l_token;
 }
 
 static struct lextoken *lexing_case(char *token)
@@ -26,51 +37,105 @@ static struct lextoken *lexing_case(char *token)
     /* IF THEN ELIF ELSE FI */
     if (strcmp(token, "if") == 0)
     {
-        free(token);
-        return create_lextoken(IF, NULL);
+        return create_lextoken(IF, token);
     }
     else if (strcmp(token, "then") == 0)
     {
-        free(token);
-        return create_lextoken(THEN, NULL);
+        return create_lextoken(THEN, token);
     }
     else if (strcmp(token, "elif") == 0)
     {
-        free(token);
-        return create_lextoken(ELIF, NULL);
+        return create_lextoken(ELIF, token);
     }
     else if (strcmp(token, "else") == 0)
     {
-        free(token);
-        return create_lextoken(ELSE, NULL);
+        return create_lextoken(ELSE, token);
     }
     else if (strcmp(token, "fi") == 0)
     {
-        free(token);
-        return create_lextoken(FI, NULL);
+        return create_lextoken(FI, token);
     }
+
     /* COLUMN NEWLINE */
     else if (strcmp(token, ";") == 0)
     {
-        free(token);
-        return create_lextoken(COLUMN, NULL);
+        return create_lextoken(COLUMN, token);
     }
     else if (strcmp(token, "\n") == 0)
     {
-        free(token);
-        return create_lextoken(NEWLINE, NULL);
+        return create_lextoken(NEWLINE, token);
     }
+
     /* DEFAULT CASE : WORDS */
-    return create_lextoken(WORDS, token);
+    return create_lextoken_words(WORDS, token);
 }
+
 // Should add the following characters for the next steps: | & < >
-int check_char(char c)
+static int check_char(char c)
 {
     if (c == ';' || c == '\n' || c == '\'' || c == ' ' || c == '\0')
         return 0;
     if (c == '\'')
         return 1;
     return 2;
+}
+
+static char *lexing_words(char *input, int pos)
+{
+    size_t capacity = 8;
+    char *tok = malloc_err(capacity);
+
+    size_t tok_pos = 0;
+    while (pos < strlen(input) && check_char(input[pos]) == 2)
+    {
+        if (tok_pos >= capacity - 1)
+        {
+            capacity *= 2;
+            tok = realloc_err(tok, capacity);
+        }
+        tok[tok_pos++] = input[pos++];
+    }
+    if (tok_pos >= capacity)
+    {
+        capacity *= 2;
+        tok = realloc_err(tok, capacity);
+    }
+    tok[tok_pos] = '\0';
+    tok = realloc_err(tok, tok_pos + 1);
+
+    return tok;
+}
+
+static char *lexing_quotes(char *input, int pos)
+{
+    size_t input_len = strlen(input);
+    size_t capacity = 8;
+    char *tok = malloc_err(capacity);
+
+    size_t tok_pos = 0;
+    while (pos < input_len && input[pos] != '\'')
+    {
+        if (tok_pos >= capacity - 1)
+        {
+            capacity *= 2;
+            tok = realloc_err(tok, capacity);
+        }
+        tok[tok_pos++] = input[pos++];
+    }
+    if (pos >= input_len)
+    {
+        free(tok);
+        err(2, "Quote not closed");
+    }
+    if (tok_pos >= capacity)
+    {
+        capacity *= 2;
+        tok = realloc_err(tok, capacity);
+    }
+    tok[tok_pos] = '\0';
+    tok = realloc_err(tok, tok_pos + 1);
+
+    return tok;
 }
 
 struct fifo *lexer(char *input)
@@ -96,26 +161,8 @@ struct fifo *lexer(char *input)
         /* CASE WORDS */
         if (check_char(input[i]) == 2)
         {
-            size_t capacity = 8;
-            char *tok = malloc_err(capacity);
-
-            size_t tok_pos = 0;
-            while (i < input_len && check_char(input[i]) == 2)
-            {
-                if (tok_pos >= capacity)
-                {
-                    capacity *= 2;
-                    tok = realloc_err(tok, capacity);
-                }
-                tok[tok_pos++] = input[i++];
-            }
-            if (tok_pos >= capacity)
-            {
-                capacity *= 2;
-                tok = realloc_err(tok, capacity);
-            }
-            tok[tok_pos] = '\0';
-            tok = realloc_err(tok, tok_pos + 1);
+            char *tok = lexing_words(input, i);
+            i += strlen(tok);
 
             fifo_push(queue, lexing_case(tok));
         }
@@ -123,31 +170,14 @@ struct fifo *lexer(char *input)
         /* CASE APOSTROPHE QUOTE */
         else if (check_char(input[i]) == 1)
         {
-            size_t capacity = 8;
-            char *tok = malloc_err(capacity);
-            
-            size_t tok_pos = 0;
-            while (check_char(input[i]) == 2)
-            {
-                if (i >= input_len)
-                {
-                    err(1, "quote not ended");
-                }
-                if (tok_pos >= capacity)
-                {
-                    capacity *= 2;
-                    tok = realloc_err(tok, capacity);
-                }
-            }
-            if (tok_pos >= capacity)
-            {
-                capacity *= 2;
-                tok = realloc_err(tok, capacity);
-            }
-            tok[tok_pos] = '\0';
-            tok = realloc_err(tok, tok_pos + 1);
+            i++; // on skip la premiere quote
 
-            fifo_push(queue, create_lextoken(APSTRPH, tok));
+            char *tok = lexing_quotes(input, i);
+            i += strlen(tok);
+
+            i++; // on skip la seconde quote
+
+            fifo_push(queue, create_lextoken_words(APSTRPH, tok));
         }
 
         else
