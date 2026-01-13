@@ -39,15 +39,12 @@ static struct lextoken *lexing_case(char *token)
     else if (strcmp(token, "fi") == 0)
         return create_lextoken(FI, NULL);
 
-    /* COLUMN NEWLINE APSTRPH */
+    /* COLUMN NEWLINE */
     else if (strcmp(token, ";") == 0)
         return create_lextoken(COLUMN, NULL);
 
     else if (strcmp(token, "\n") == 0)
         return create_lextoken(NEWLINE, NULL);
-
-    else if (strcmp(token, "\'") == 0)
-        return create_lextoken(APSTRPH, NULL);
 
     /* DEFAULT CASE : WORDS */
     return create_lextoken(WORDS, token);
@@ -62,7 +59,6 @@ int check_char(char c)
     return 2;
 }
 
-// TODO: case for echo 'hello;hello'
 struct fifo *lexer(char *input)
 {
     struct fifo *queue = fifo_init();
@@ -92,6 +88,7 @@ struct fifo *lexer(char *input)
             tok[tok_pos] = '\0';
             fifo_push(queue, lexing_case(tok));
         }
+
         else if (check_char(input[i]) == 1)
         {
             char *tok = malloc_err(1 * sizeof(char));
@@ -108,8 +105,9 @@ struct fifo *lexer(char *input)
             }
             tok = realloc_err(tok, tok_pos + 1);
             tok[tok_pos] = '\0';
-            fifo_push(queue, lexing_case(tok));
+            fifo_push(queue, create_lextoken(APSTRPH, tok));
         }
+
         else
         {
             char *tok = malloc_err(2 * sizeof(char));
