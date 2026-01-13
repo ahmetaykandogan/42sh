@@ -178,6 +178,7 @@ void struct_ast_destroy(
         [AST_CMD] = (run_type)&ast_cmd_destroy,
         [AST_IF] = (run_type)&ast_if_destroy,
         [AST_LIST] = (run_type)&ast_list_destroy,
+        [AST_WHILE_UNTIL] = (run_type)&ast_while_until_destroy,
     };
     (*destroy_functions[node->type])(node);
 }
