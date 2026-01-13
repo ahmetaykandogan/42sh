@@ -105,15 +105,27 @@ const char *ast_repr(enum ast_type type)
     return names[type];
 }
 
-static void ast_run_while_until(struct ast *ast)
+static void ast_run_while(struct ast *ast)
 {
-    struct ast_while_until *ast_wu = (struct ast_while_until *)ast;
+    struct ast_while *ast_w = (struct ast_while *)ast;
     while (1)
     {
-        run_ast(ast_wu->condition);
+        run_ast(ast_w->condition);
         if (if_value != 0)
             break;
-        run_ast(ast_wu->body);
+        run_ast(ast_w->body);
+    }
+}
+
+static void ast_run_until(struct ast *ast)
+{
+    struct ast_until *ast_u = (struct ast_until *)ast;
+    while (1)
+    {
+        run_ast(ast_u->condition);
+        if (if_value == 0)
+            break;
+        run_ast(ast_u->body);
     }
 }
 
@@ -125,7 +137,8 @@ void run_ast(struct ast *ast)
         [AST_CMD] = &ast_run_cmd,
         [AST_IF] = &ast_run_if,
         [AST_LIST] = &ast_run_list,
-        [AST_WHILE_UNTIL] = &ast_run_while_until,
+        [AST_WHILE] = &ast_run_while,
+        [AST_UNTIL] = &ast_run_until,
     };
     (*run_functions[ast->type])(ast);
 }
@@ -178,7 +191,8 @@ void struct_ast_destroy(
         [AST_CMD] = (run_type)&ast_cmd_destroy,
         [AST_IF] = (run_type)&ast_if_destroy,
         [AST_LIST] = (run_type)&ast_list_destroy,
-        [AST_WHILE_UNTIL] = (run_type)&ast_while_until_destroy,
+        [AST_WHILE] = (run_type)&ast_while_destroy,
+        [AST_UNTIL] = (run_type)&ast_until_destroy,
     };
     (*destroy_functions[node->type])(node);
 }
@@ -217,7 +231,16 @@ void ast_list_destroy(struct ast_list *node)
     free(node);
 }
 
-void ast_while_until_destroy(struct ast_while_until *node)
+void ast_while_destroy(struct ast_while *node)
+{
+    if (!node)
+        return;
+    struct_ast_destroy(node->condition);
+    struct_ast_destroy(node->body);
+    free(node);
+}
+
+void ast_until_destroy(struct ast_until *node)
 {
     if (!node)
         return;

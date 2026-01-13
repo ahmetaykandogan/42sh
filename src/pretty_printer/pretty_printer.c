@@ -62,11 +62,22 @@ void pretty_print_ast_list(struct ast_list *node)
     }
 }
 
-void pretty_print_ast_while_until(struct ast_while_until *node)
+void pretty_print_ast_while(struct ast_while *node)
 {
     if (!node)
         return;
-    printf("WHILE/UNTIL:\n");
+    printf("WHILE:\n");
+    printf("Condition:\n");
+    pretty_print_ast(node->condition);
+    printf("Body:\n");
+    pretty_print_ast(node->body);
+}
+
+void pretty_print_ast_until(struct ast_until *node)
+{
+    if (!node)
+        return;
+    printf("UNTIL:\n");
     printf("Condition:\n");
     pretty_print_ast(node->condition);
     printf("Body:\n");
