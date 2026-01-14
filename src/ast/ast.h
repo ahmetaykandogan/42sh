@@ -67,7 +67,7 @@ struct ast_until
 
 //-------------------------------------INITIALIZE AST TYPES-----------------//
 
-struct ast_cmd *ast_cmd_init();
+struct ast_cmd *ast_cmd_init(int neg);
 struct ast_if *ast_if_init();
 struct ast_list *ast_list_init();
 struct ast_while *ast_while_init();

@@ -137,8 +137,9 @@ static struct ast *parse_command(enum parser_status *status, struct fifo *lexer)
         return parse_simple_command(status, lexer);
 
     // shell commands
-    if (token->tok == IF)
+    if (token->tok == IF || token->tok == WHILE || token->tok == UNTIL)
         return parse_shell_command(status, lexer);
+
 
     *status = PARSER_ERROR;
     return NULL;
@@ -357,12 +358,49 @@ static struct ast *parse_else_clause(enum parser_status *status,
 static struct ast *parse_compound_list(enum parser_status *status,
                                        struct fifo *lexer)
 {
+    // {'\n'}
+    while (1)
+    {
+        struct lextoken *token = fifo_head(lexer);
+        if (!token || token->tok != NEWLINE)
+            break;
+        fifo_pop(lexer);
+    }
     // and_or
-    struct ast *child = parse_and_or(status, lexer);
+    struct ast *child = parse_and_or(status, lexer); //cmd ou list
     if (*status != PARSER_OK)
         return NULL; // error
     struct lextoken *token = fifo_head(lexer);
+    // { ( ';' | '\n' ) {'\n'} and_or }
+    while (1)
+    {
+        // ( ';' | '\n' )
+        if (!token || (token->tok != COLUMN && token->tok != NEWLINE))
+            break;
+        fifo_pop(lexer);
+        // {'\n'}
+        while (1)
+        {
+            token = fifo_head(lexer);
+            if (!token || token->tok != NEWLINE)
+                break;
+            fifo_pop(lexer);
+        }
+        // and_or
+        struct ast *next_child = parse_and_or(status, lexer);
+        if (*status != PARSER_OK)
+        {
+            *status = PARSER_OK;
+            break; // error
+        }
+        // create a list to hold child and next_child
+        struct ast_list *new_list = ast_list_init();
+        ast_list_add_ast(new_list, child);
+        ast_list_add_ast(new_list, next_child);
+        child = &new_list->base;
+    }
     // [';']
+    token = fifo_head(lexer);
     if (token && token->tok == COLUMN)
         fifo_pop(lexer);
     // {'\n'}
