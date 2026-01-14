@@ -350,3 +350,103 @@ static struct ast *parse_compound_list(enum parser_status *status,
     }
     return child;
 }
+
+
+//-----------------------------------Rule while--------------------------------------//
+//rule_while = 'while' compound_list 'do' compound_list 'done' ;
+
+static struct ast *parse_rule_while(enum parser_status *status, struct fifo *lexer)
+{  
+    //'while'
+    struct lextoken *token = fifo_head(lexer);
+    if (token->tok != WHILE)
+    {
+        *status = PARSER_ERROR;
+        return;
+    }
+    fifo_pop(lexer);
+    //compound_list->condition
+    struct ast_while *out_while = ast_while_init();
+    struct ast *condition = parse_compound_list(status, lexer);
+    if (*status != PARSER_OK)
+    {
+        return NULL; //Error
+    }
+    out_while->condition = condition;
+    //'do'
+    struct lextoken *token = fifo_head(lexer);
+    if (token->tok != DO)
+    {
+        *status = PARSER_ERROR;
+        struct_ast_destroy(out_while);
+        return;
+    }
+    fifo_pop(lexer);
+    //compound_list->body
+    struct ast *body = parse_compound_list(status, lexer);
+    if (*status != PARSER_OK)
+    {
+        struct_ast_destroy(out_while)
+        return NULL;
+    }    
+    out_while->body = body;
+    //'done'
+    token = fifo_head(lexer);
+    if (token->tok != DONE)
+    {
+        *status = PARSER_ERROR;
+        struct_ast_destroy(out_while);
+        return;
+    }
+    fifo_pop(lexer);
+    return &out_while->base;
+}
+
+//rule_until = 'until' compound_list 'do' compound_list 'done' ;
+
+static struct ast *parse_rule_until(enum parser_status *status, struct fifo *lexer)
+{  
+    //'until'
+    struct lextoken *token = fifo_head(lexer);
+    if (token->tok != UNTIL)
+    {
+        *status = PARSER_ERROR;
+        return;
+    }
+    fifo_pop(lexer);
+    //compound_list->condition
+    struct ast_while *out_until = ast_until_init();
+    struct ast *condition = parse_compound_list(status, lexer);
+    if (*status != PARSER_OK)
+    {
+        return NULL; //Error
+    }
+    out_until->condition = condition;
+    //'do'
+    struct lextoken *token = fifo_head(lexer);
+    if (token->tok != DO)
+    {
+        *status = PARSER_ERROR;
+        struct_ast_destroy(out_until);
+        return NULL;
+    }
+    fifo_pop(lexer);
+    //compound_list->body
+    struct ast *body = parse_compound_list(status, lexer);
+    if (*status != PARSER_OK)
+    {
+        struct_ast_destroy(out_until)
+        return NULL;
+    }    
+    out_until->body = body;
+    //'done'
+    token = fifo_head(lexer);
+    if (token->tok != DONE)
+    {
+        *status = PARSER_ERROR;
+        struct_ast_destroy(out_while);
+        return;
+    }
+    fifo_pop(lexer);
+    return &out_until->base;
+}
