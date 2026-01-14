@@ -64,6 +64,6 @@ char *read_file(FILE *f)
 
     buff = realloc_err(buff, buff_len + 1);
     buff[buff_len] = '\0';
-    
+
     return buff;
 }
