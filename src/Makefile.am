@@ -20,5 +20,4 @@ bin_PROGRAMS = 42sh
        lexer/liblexer.a \
        builtins/libbuiltins.a \
        pretty_printer/libpretty.a \
-       utils/libextra.a 
-
+       utils/libutils.a 

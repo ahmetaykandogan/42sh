@@ -1,16 +1,16 @@
-lib_LIBRARIES = libextra.a
+SUBDIRS = \
+  check_char \
+  fifo \
+  malloc_err
 
-libextra_a_SOURCES =  \
-  malloc_err.c \
-  malloc_err.h \
-  fifo_access.c \
-  fifo_setup_destroy.c \
-  fifo.h \
-  check_char.c \
-  check_char.h
+lib_LIBRARIES = libutils.a
 
-libextra_a_CPPFLAGS = -I$(top_srcdir)/src
+libutils_a_CPPFLAGS = \
+-I$(top_srcdir)/src \
+-I$(srcdir)/check_char \
+-I$(srcdir)/fifo \
+-I$(srcdir)/malloc_err
 
-libextra_a_CFLAGS = -std=c99 -pedantic -Werror -Wall -Wextra -Wvla
+libutils_a_CFLAGS = -std=c99 -pedantic -Werror -Wall -Wextra -Wvla
 
-noinst_LIBRARIES = libextra.a
+noinst_LIBRARIES = libutils.a

@@ -28,6 +28,6 @@ int is_ionumber(char *token)
             return 0;
         }
     }
-    
+
     return 1;
 }
