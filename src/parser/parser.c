@@ -18,6 +18,8 @@ static struct ast *parse_else_clause(enum parser_status *status,
                                      struct fifo *lexer);
 static struct ast *parse_compound_list(enum parser_status *status,
                                        struct fifo *lexer);
+static struct ast *parse_rule_while(enum parser_status *status, struct fifo *lexer);
+static struct ast *parse_rule_until(enum parser_status *status, struct fifo *lexer);
 
 // input =
 // list '\n'
@@ -194,12 +196,35 @@ static void parse_element(enum parser_status *status, struct fifo *lexer,
 
 //----------------------------------------------------------------------------------
 // shell_command = rule_if ;
+//| rule_while ;
+//| rule_until ;
 static struct ast *parse_shell_command(enum parser_status *status,
                                        struct fifo *lexer)
 {
+    // rule_if
     struct ast *child = parse_rule_if(status, lexer);
     if (*status != PARSER_OK)
-        return NULL; // error
+    {
+        // rule_while
+        child = parse_rule_while(status, lexer);
+        if (*status != PARSER_OK)
+        {
+            // rule_until
+            child = parse_rule_until(status, lexer);
+            if (*status != PARSER_OK)
+            {
+                return NULL; // error
+            }
+            else
+            {
+                *status = PARSER_OK;
+            }
+        }
+        else
+        {
+            *status = PARSER_OK;
+        }
+    }
     return child;
 }
 
@@ -362,7 +387,7 @@ static struct ast *parse_rule_while(enum parser_status *status, struct fifo *lex
     if (token->tok != WHILE)
     {
         *status = PARSER_ERROR;
-        return;
+        return NULL;
     }
     fifo_pop(lexer);
     //compound_list->condition
@@ -374,19 +399,19 @@ static struct ast *parse_rule_while(enum parser_status *status, struct fifo *lex
     }
     out_while->condition = condition;
     //'do'
-    struct lextoken *token = fifo_head(lexer);
+    token = fifo_head(lexer);
     if (token->tok != DO)
     {
         *status = PARSER_ERROR;
-        struct_ast_destroy(out_while);
-        return;
+        struct_ast_destroy(&out_while->base);
+        return NULL;
     }
     fifo_pop(lexer);
     //compound_list->body
     struct ast *body = parse_compound_list(status, lexer);
     if (*status != PARSER_OK)
     {
-        struct_ast_destroy(out_while)
+        struct_ast_destroy(&out_while->base);
         return NULL;
     }    
     out_while->body = body;
@@ -395,8 +420,8 @@ static struct ast *parse_rule_while(enum parser_status *status, struct fifo *lex
     if (token->tok != DONE)
     {
         *status = PARSER_ERROR;
-        struct_ast_destroy(out_while);
-        return;
+        struct_ast_destroy(&out_while->base);
+        return NULL;
     }
     fifo_pop(lexer);
     return &out_while->base;
@@ -411,11 +436,11 @@ static struct ast *parse_rule_until(enum parser_status *status, struct fifo *lex
     if (token->tok != UNTIL)
     {
         *status = PARSER_ERROR;
-        return;
+        return NULL;
     }
     fifo_pop(lexer);
     //compound_list->condition
-    struct ast_while *out_until = ast_until_init();
+    struct ast_until *out_until = ast_until_init();
     struct ast *condition = parse_compound_list(status, lexer);
     if (*status != PARSER_OK)
     {
@@ -423,11 +448,11 @@ static struct ast *parse_rule_until(enum parser_status *status, struct fifo *lex
     }
     out_until->condition = condition;
     //'do'
-    struct lextoken *token = fifo_head(lexer);
+    token = fifo_head(lexer);
     if (token->tok != DO)
     {
         *status = PARSER_ERROR;
-        struct_ast_destroy(out_until);
+        struct_ast_destroy(&out_until->base);
         return NULL;
     }
     fifo_pop(lexer);
@@ -435,7 +460,7 @@ static struct ast *parse_rule_until(enum parser_status *status, struct fifo *lex
     struct ast *body = parse_compound_list(status, lexer);
     if (*status != PARSER_OK)
     {
-        struct_ast_destroy(out_until)
+        struct_ast_destroy(&out_until->base);
         return NULL;
     }    
     out_until->body = body;
@@ -444,8 +469,8 @@ static struct ast *parse_rule_until(enum parser_status *status, struct fifo *lex
     if (token->tok != DONE)
     {
         *status = PARSER_ERROR;
-        struct_ast_destroy(out_while);
-        return;
+        struct_ast_destroy(&out_until->base);
+        return NULL;
     }
     fifo_pop(lexer);
     return &out_until->base;

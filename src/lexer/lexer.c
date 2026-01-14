@@ -170,7 +170,7 @@ static struct lextoken *create_lextoken_operators(char *token)
 // Should add the following characters for the next steps: | & < >
 static int check_char(char c)
 {
-    if (c == ';' || c == '\n' || c == '\\' || c == '\0' || c == '!' || c == '&' || c == '|' || c == '<' || c == '>')
+    if (c == ';' || c == '\n' || c == '\\' || c == '\0' || c == '!' || c == '&' || c == '|' || c == '<' || c == '>' || isspace(c))
         return 0;
     if (c == '\'')
         return 1;
