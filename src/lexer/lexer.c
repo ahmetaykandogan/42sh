@@ -1,10 +1,10 @@
 #include <ctype.h>
 #include <err.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
-#include "../utils/malloc_err.h"
 #include "../utils/fifo.h"
+#include "../utils/malloc_err.h"
 #include "read_file.h"
 #include "struct_lexer.h"
 
@@ -33,7 +33,7 @@ static struct lextoken *create_lextoken_words(enum token tok, char *value)
 }
 
 // this shit is so long it cause my cancer to have more phase than Dreglord
-// TODO, function auxiliaire pour separer les groupes de cas 
+// TODO, function auxiliaire pour separer les groupes de cas
 static struct lextoken *lexing_case(char *token)
 {
     /* IF THEN ELIF ELSE FI */
@@ -170,10 +170,13 @@ static struct lextoken *create_lextoken_operators(char *token)
 // Should add the following characters for the next steps: | & < >
 static int check_char(char c)
 {
-    if (c == ';' || c == '\n' || c == '\\' || c == '\0' || c == '!' || c == '&' || c == '|' || c == '<' || c == '>' || isspace(c))
+    if (c == ';' || c == '\n' || c == '\\' || c == '\0' || c == '!' || c == '&'
+        || c == '|' || c == '<' || c == '>' || isspace(c))
         return 0;
     if (c == '\'')
         return 1;
+    if (c == '\"')
+        return 3;
     return 2;
 }
 
@@ -235,6 +238,38 @@ static char *lexing_quotes(char *input, size_t pos)
     return tok;
 }
 
+static char *lexing_double_quotes(char *input, size_t pos)
+{
+    size_t input_len = strlen(input);
+    size_t capacity = 8;
+    char *tok = malloc_err(capacity);
+
+    size_t tok_pos = 0;
+    while (pos < input_len && input[pos] != '\"')
+    {
+        if (tok_pos >= capacity - 1)
+        {
+            capacity *= 2;
+            tok = realloc_err(tok, capacity);
+        }
+        tok[tok_pos++] = input[pos++];
+    }
+    if (pos >= input_len)
+    {
+        free(tok);
+        err(2, "Quote not closed");
+    }
+    if (tok_pos >= capacity)
+    {
+        capacity *= 2;
+        tok = realloc_err(tok, capacity);
+    }
+    tok[tok_pos] = '\0';
+    tok = realloc_err(tok, tok_pos + 1);
+
+    return tok;
+}
+
 static char *lexing_redirection(char *input, size_t pos)
 {
     char *tok = malloc_err(3);
@@ -249,10 +284,11 @@ static char *lexing_redirection(char *input, size_t pos)
             tok[tok_len++] = input[pos];
         }
     }
-    
+
     else if (input[pos - 1] == '>')
     {
-        if (input[pos] && (input[pos] == '&' || input[pos] == '|' || input[pos] == '>'))
+        if (input[pos]
+            && (input[pos] == '&' || input[pos] == '|' || input[pos] == '>'))
         {
             tok[tok_len++] = input[pos];
         }
@@ -276,7 +312,7 @@ static char *lexing_operators(char *input, size_t pos)
             tok[tok_len++] = input[pos];
         }
     }
-    
+
     else if (input[pos - 1] == '|')
     {
         if (input[pos] && input[pos] == '|')
@@ -324,6 +360,17 @@ struct fifo *lexer(char *input)
             i++; // on skip la premiere quote
 
             char *tok = lexing_quotes(input, i);
+            i += strlen(tok) + 1; // on skip la seconde quote
+
+            fifo_push(queue, create_lextoken_words(APSTRPH, tok));
+        }
+
+        /* CASE GUILLMT + DOUBLE QUOTE */
+        else if (check_char(input[i]) == 1)
+        {
+            i++; // on skip la premiere quote
+
+            char *tok = lexing_double_quotes(input, i);
             i += strlen(tok) + 1; // on skip la seconde quote
 
             fifo_push(queue, create_lextoken_words(APSTRPH, tok));
