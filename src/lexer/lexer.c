@@ -8,6 +8,9 @@
 #include "read_file.h"
 #include "struct_lexer.h"
 
+/* --------------------------- */
+/* -- CREATING THE LEXTOKEN -- */
+/* --------------------------- */
 static struct lextoken *create_lextoken(enum token tok, char *token)
 {
     free(token);
@@ -32,9 +35,7 @@ static struct lextoken *create_lextoken_words(enum token tok, char *value)
     return l_token;
 }
 
-// this shit is so long it cause my cancer to have more phase than Dreglord
-// TODO, function auxiliaire pour separer les groupes de cas
-static struct lextoken *lexing_case(char *token)
+static struct lextoken *create_lextoken_commands(char *token)
 {
     /* IF THEN ELIF ELSE FI */
     if (strcmp(token, "if") == 0) // IF
@@ -84,11 +85,19 @@ static struct lextoken *lexing_case(char *token)
         return create_lextoken(DONE, token);
     }
 
-    /* COLUMN NEWLINE */
-    else if (strcmp(token, ";") == 0) // COLUMN
+    /* DEFAULT CASE : WORDS */
+    return create_lextoken_words(WORDS, token);
+}
+
+static struct lextoken *create_lextoken_single_char(char *token)
+{
+    /* COLUMN */
+    if (strcmp(token, ";") == 0) // COLUMN
     {
         return create_lextoken(COLUMN, token);
     }
+    
+    /* NEWLINE */
     else if (strcmp(token, "\n") == 0) // NEWLINE
     {
         return create_lextoken(NEWLINE, token);
@@ -106,8 +115,8 @@ static struct lextoken *lexing_case(char *token)
         return create_lextoken(ESCAPE, token);
     }
 
-    /* DEFAULT CASE : WORDS */
-    return create_lextoken_words(WORDS, token);
+    free(token);
+    err(2, "invalid token");
 }
 
 static struct lextoken *create_lextoken_redirection(char *token)
@@ -176,17 +185,20 @@ static int check_char(char c)
     if (c == '\'')
         return 1;
     if (c == '\"')
-        return 3;
-    return 2;
+        return 2;
+    return 42;
 }
 
+/* ------------------------------ */
+/* -- LEXING THE VARIOUS CASES -- */
+/* ------------------------------ */
 static char *lexing_words(char *input, size_t pos)
 {
     size_t capacity = 8;
     char *tok = malloc_err(capacity);
 
     size_t tok_pos = 0;
-    while (pos < strlen(input) && check_char(input[pos]) == 2)
+    while (pos < strlen(input) && check_char(input[pos]) == 42)
     {
         if (tok_pos >= capacity - 1)
         {
@@ -325,6 +337,10 @@ static char *lexing_operators(char *input, size_t pos)
     return tok;
 }
 
+/* --------------------------- */
+/* -- MAIN LEXING FUNCTIONS -- */
+/* --------------------------- */
+
 struct fifo *lexer(char *input)
 {
     struct fifo *queue = fifo_init();
@@ -346,12 +362,12 @@ struct fifo *lexer(char *input)
         }
 
         /* CASE WORDS */
-        if (check_char(input[i]) == 2)
+        if (check_char(input[i]) == 42)
         {
             char *tok = lexing_words(input, i);
             i += strlen(tok);
 
-            fifo_push(queue, lexing_case(tok));
+            fifo_push(queue, create_lextoken_commands(tok));
         }
 
         /* CASE APOSTROPHE + QUOTE */
@@ -366,7 +382,7 @@ struct fifo *lexer(char *input)
         }
 
         /* CASE GUILLMT + DOUBLE QUOTE */
-        else if (check_char(input[i]) == 1)
+        else if (check_char(input[i]) == 2)
         {
             i++; // on skip la premiere quote
 
@@ -400,7 +416,7 @@ struct fifo *lexer(char *input)
             char *tok = malloc_err(2 * sizeof(char));
             tok[0] = input[i++];
             tok[1] = '\0';
-            fifo_push(queue, lexing_case(tok));
+            fifo_push(queue, create_lextoken_single_char(tok));
         }
     }
     return queue;
