@@ -1,7 +1,7 @@
 #include "ast/ast.h"
 #include "lexer/lexer.h"
 #include "parser/parser.h"
-
+#include "pretty_printer/pretty_printer.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -26,7 +26,6 @@ int main(int argc, char **argv)
         fifo_destroy(lex_queue);
         struct_ast_destroy(ast);
         return 0;
-    }
     }
     
     else if (strcmp(argv[1], "-c") == 0)
