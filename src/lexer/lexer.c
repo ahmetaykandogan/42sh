@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../utils/check_char.h"
 #include "../utils/fifo.h"
 #include "../utils/malloc_err.h"
 #include "read_file.h"
@@ -83,6 +84,12 @@ static struct lextoken *create_lextoken_commands(char *token)
     else if (strcmp(token, "done") == 0) // DONE
     {
         return create_lextoken(DONE, token);
+    }
+
+    /* CASE IONUMBER */
+    else if (is_ionumber(token))
+    {
+        return create_lextoken_words(IONUMBER, token);
     }
 
     /* DEFAULT CASE : WORDS */
@@ -174,19 +181,6 @@ static struct lextoken *create_lextoken_operators(char *token)
 
     free(token);
     err(2, "invalid operators token");
-}
-
-// Should add the following characters for the next steps: | & < >
-static int check_char(char c)
-{
-    if (c == ';' || c == '\n' || c == '\\' || c == '\0' || c == '!' || c == '&'
-        || c == '|' || c == '<' || c == '>' || isspace(c))
-        return 0;
-    if (c == '\'')
-        return 1;
-    if (c == '\"')
-        return 2;
-    return 42;
 }
 
 /* ------------------------------ */

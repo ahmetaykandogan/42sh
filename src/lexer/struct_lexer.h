@@ -12,6 +12,8 @@ enum token
     COLUMN, // ';'
     NEWLINE, // '\n'
 
+    IONUMBER, // '[0-9]'
+
     RED_IN, // '<'
     RED_OUT, // '>'
     APPEND_OUT, // '>>'
