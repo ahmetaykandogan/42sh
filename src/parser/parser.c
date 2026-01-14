@@ -370,10 +370,11 @@ static struct ast *parse_compound_list(enum parser_status *status,
     struct ast *child = parse_and_or(status, lexer); //cmd ou list
     if (*status != PARSER_OK)
         return NULL; // error
-    struct lextoken *token = fifo_head(lexer);
+    struct lextoken *token;
     // { ( ';' | '\n' ) {'\n'} and_or }
     while (1)
     {
+        token = fifo_head(lexer);
         // ( ';' | '\n' )
         if (!token || (token->tok != COLUMN && token->tok != NEWLINE))
             break;
