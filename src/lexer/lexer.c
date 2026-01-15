@@ -1,6 +1,7 @@
 #include <err.h>
 #include <string.h>
 
+#include "create_lextoken/create_lextoken.h"
 #include "lexer/read_file/read_file.h"
 #include "lexer/struct_lexer.h"
 #include "utils/check_char/check_char.h"
@@ -79,6 +80,17 @@ struct fifo *lexer(char *input)
 
             fifo_push(queue, create_lextoken_operators(tok));
         }
+
+        /* CASE VARIABLE */
+        else if (input[i] == '$')
+        {
+            i++;
+
+            char *tok = lexing_variable(input, i);
+            i += strlen(tok);
+
+            fifo_push(queue, create_lextoken_commands(tok));
+        }   
 
         /* CASE A 1 CARACTERE (Exemple : \n) */
         else

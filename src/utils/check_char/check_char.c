@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <stddef.h>
+#include <string.h>
 
 // Should add the following characters for the next steps: | & < >
 int check_char(char c)
