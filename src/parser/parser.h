@@ -5,6 +5,7 @@
 
 #include "../ast/ast.h"
 #include "../lexer/lexer.h"
+#include "../utils/fifo/fifo.h"
 
 enum parser_status
 {

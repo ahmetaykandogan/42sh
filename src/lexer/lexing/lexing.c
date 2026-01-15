@@ -1,9 +1,11 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
+#include <stdlib.h>
+#include <err.h>
 
 #include "utils/malloc_err/malloc_err.h"
-
+#include "utils/check_char/check_char.h"
 /* ------------------------------ */
 /* -- LEXING THE VARIOUS CASES -- */
 /* ------------------------------ */
