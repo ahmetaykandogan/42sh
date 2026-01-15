@@ -1,23 +1,11 @@
 SUBDIRS = \
+  read_file \
   create_lextoken \
-  lexing \
-  read_file
+  lexing
 
 noinst_LIBRARIES = liblexer.a
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 liblexer_a_LIBADD = \
-=======
-libutils_a_LIBADD = \
->>>>>>> 734714c ("Fix : Makefile.am")
-=======
-liblexer_a_LIBADD = \
->>>>>>> 1b2817c (Fix : ptn de Makefile.am)
-=======
-liblexer_a_LIBADD = \
->>>>>>> bf627d00b9e5ea8a7efcc0a61d5eca5d52e468f9
   $(top_builddir)/src/lexer/create_lextoken/liblextoken.a \
   $(top_builddir)/src/lexer/lexing/liblexing.a \
   $(top_builddir)/src/lexer/read_file/libread.a

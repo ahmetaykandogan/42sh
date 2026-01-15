@@ -1,17 +1,5 @@
 # define the subdirectories
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 SUBDIRS = \
-=======
-SUBDIRS = \ 
->>>>>>> 734714c ("Fix : Makefile.am")
-=======
-SUBDIRS = \
->>>>>>> 2ef5243 (Fix : WHITESPACE ????)
-=======
-SUBDIRS = \
->>>>>>> bf627d00b9e5ea8a7efcc0a61d5eca5d52e468f9
       utils \
       lexer \
       ast \
