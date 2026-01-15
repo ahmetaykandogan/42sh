@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <string.h>
 
 enum ast_type // All the pseudo types of AST nodes
 {
@@ -25,6 +26,14 @@ struct ast
     enum ast_type type;
 };
 
+struct redirection
+{
+    char *fd;//if there is an IONUMBER (IF not NULL)
+    //int flags;//O_RDONLY, O_WRONLY, etc may be needed for future steps?
+    char *filename;//the file to redirect to/from
+    char *operator;//the redirection operator (>, <, >>, etc)
+};
+
 //--------------------------------------THE TYPES OF AST
 //NODES--------------------------------------//
 
@@ -33,6 +42,9 @@ struct ast_cmd
     struct ast base;
     int negated; // 1 if the command is negated with '!'
     char **words; // NULL terminated char* list */
+
+    struct redirection **redirections; // NULL terminated redirection list 
+    //if there are none, this is NULL
 };
 
 struct ast_if
@@ -41,6 +53,9 @@ struct ast_if
     struct ast *condition; // the condition
     struct ast *then_body; // the body of the then clause
     struct ast *else_body; // the body of the else, may be NULL
+    
+    struct redirection **redirections;
+    //NULL if none
 };
 
 struct ast_list
@@ -55,6 +70,8 @@ struct ast_while
     struct ast base;
     struct ast *condition;
     struct ast *body;
+
+    struct redirection **redirections;
 };
 
 struct ast_until
@@ -62,6 +79,8 @@ struct ast_until
     struct ast base;
     struct ast *condition;
     struct ast *body;
+
+    struct redirection **redirections;
 };
 
 
@@ -73,27 +92,28 @@ struct ast_list *ast_list_init();
 struct ast_while *ast_while_init();
 struct ast_until *ast_until_init();
 
-//--------------------------------ADDINGS------------------------------------
+//--------------------------------ADDINGS------------------------------------//
 
 void ast_cmd_add_word(struct ast_cmd *in, char *word);
 // TODO realloc words array inside ast_cmd toincreaze size by 1
 void ast_list_add_ast(struct ast_list *in, struct ast *ast);
 // TODO same for this
 
-//---------------------LOOKUP TABLE FOR DESTROY FUNCTIONS-----------------
+//---------------------LOOKUP TABLE FOR DESTROY FUNCTIONS-----------------//
 
 const char *ast_repr(enum ast_type type);
+
 typedef void (*run_type)(struct ast *ast);
+/* FIX: separate function pointer type for redirections */
+typedef void (*redir_type)(struct ast *ast, struct redirection *redir);
+
 void run_ast(struct ast *ast);
 void run_command(struct ast_cmd *cmd);
 
 //----------------------------------DESTROY AST
-//TYPES------------------------------
+//TYPES------------------------------//
 
-void struct_ast_destroy(
-    struct ast *node); // generic destroy function for all ast types
-// either a lookup table or a switch case inside to call the specific destroy
-// function
+void struct_ast_destroy(struct ast *node); // generic destroy function for all ast types
 
 void ast_cmd_destroy(struct ast_cmd *node);
 void ast_if_destroy(struct ast_if *node);
@@ -101,4 +121,22 @@ void ast_list_destroy(struct ast_list *node);
 void ast_while_destroy(struct ast_while *node);
 void ast_until_destroy(struct ast_until *node);
 
+//--------------------------------------redirections-----------------------------
+
+
+struct redirection *redirection_init(char *fd, char *filename, char *operator);
+void redirection_destroy(struct redirection *redir);
+void ast_add_redirection(struct ast *node, struct redirection *redir);
+
+
+void ast_cmd_add_redirection(struct ast *ast_node, struct redirection *redir);
+void ast_if_add_redirection(struct ast *ast_node, struct redirection *redir);
+void ast_while_add_redirection(struct ast *ast_node, struct redirection *redir);
+void ast_until_add_redirection(struct ast *ast_node, struct redirection *redir);
+
+/* FIX: pointer level corrected */
+void add_redirection(struct redirection ***ast_redir,
+                     struct redirection *new_redir);
+
+    
 #endif /* ! AST_H */
