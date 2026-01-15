@@ -8,6 +8,7 @@ noinst_LIBRARIES = libutils.a
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 libutils_a_SOURCES =
 
 =======
@@ -19,6 +20,10 @@ libutils_a_SOURCES =
 >>>>>>> 0027a75 (a)
 
 >>>>>>> f07a302 (Fix : Makefile.am)
+=======
+libutils_a_SOURCES =
+
+>>>>>>> bf627d00b9e5ea8a7efcc0a61d5eca5d52e468f9
 libutils_a_LIBADD = \
   $(top_builddir)/src/utils/check_char/libcchar.a \
   $(top_builddir)/src/utils/fifo/libfifo.a \
