@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
@@ -154,6 +155,26 @@ char *lexing_operators(char *input, size_t pos)
     return tok;
 }
 
+static char *lexing_special_variables(char *input, size_t pos)
+{
+    if (!input[pos])
+    {
+        char *tok = malloc_err(2);
+        tok[0] = '$';
+        tok[1] = '\0';
+        return tok;
+    }
+    if (input[pos] == '@' || input[pos] == '*' || input[pos] == '?' || input[pos] == '$' || input[pos] == '#' || isdigit(input[pos]))
+    {
+        char *tok = malloc_err(2);
+        tok[0] = '$';
+        tok[1] = input[pos];
+        tok[2] = '\0';
+        return tok; 
+    }
+    return NULL;
+}
+
 char *lexing_variables(char *input, size_t pos)
 {
     size_t input_len = strlen(input);
@@ -162,7 +183,33 @@ char *lexing_variables(char *input, size_t pos)
 
     size_t tok_pos = 0;
 
-    while (pos < input_len && input[pos] != '\'')
+    if (input[pos] && input[pos] != '{')
+    {
+        if (tok = lexing_special_variables(char *input, size_t pos))
+        {
+            return tok;
+        }
+        while (pos < strlen(input) && (isalnum(input[pos]) || input[pos] == '_'))
+        {
+            if (tok_pos >= capacity - 1)
+            {
+                capacity *= 2;
+                tok = realloc_err(tok, capacity);
+            }
+            tok[tok_pos++] = input[pos++];
+        }
+        if (tok_pos >= capacity)
+        {
+            capacity *= 2;
+            tok = realloc_err(tok, capacity);
+        }
+        tok[tok_pos] = '\0';
+        tok = realloc_err(tok, tok_pos + 1);
+
+        return tok;
+    }
+
+    while (pos < input_len && input[pos] != '}')
     {
         if (tok_pos >= capacity - 1)
         {
@@ -174,7 +221,7 @@ char *lexing_variables(char *input, size_t pos)
     if (pos >= input_len)
     {
         free(tok);
-        err(2, "Quote not closed");
+        err(2, "Brace not closed");
     }
     if (tok_pos >= capacity)
     {

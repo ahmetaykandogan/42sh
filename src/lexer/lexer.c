@@ -91,13 +91,13 @@ struct fifo *lexer(char *input)
             char *tok = lexing_variables(input, i);
             i += strlen(tok);
 
-            fifo_push(queue, create_lextoken_commands(tok));
+            fifo_push(queue, create_lextoken_words(VAR, tok));
         }   
 
         /* CASE A 1 CARACTERE (Exemple : \n) */
         else
         {
-            char *tok = malloc_err(2 * sizeof(char));
+            char *tok = malloc_err(2);
             tok[0] = input[i++];
             tok[1] = '\0';
             fifo_push(queue, create_lextoken_single_char(tok));
