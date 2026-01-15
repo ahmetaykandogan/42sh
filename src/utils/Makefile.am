@@ -5,6 +5,8 @@ SUBDIRS = \
 
 noinst_LIBRARIES = libutils.a
 
+libutils_a_SOURCES = \
+
 libutils_a_LIBADD = \
   $(top_builddir)/src/utils/check_char/libcchar.a \
   $(top_builddir)/src/utils/fifo/libfifo.a \
