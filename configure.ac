@@ -25,8 +25,14 @@ AC_CONFIG_FILES([
                     src/Makefile
                     src/ast/Makefile
                     src/lexer/Makefile
+                    src/lexer/create_lextoken/Makefile
+                    src/lexer/lexing/Makefile
+                    src/lexer/read_file/Makefile
                     src/parser/Makefile
                     src/utils/Makefile
+                    src/utils/check_char/Makefile
+                    src/utils/fifo/Makefile
+                    src/utils/malloc_err/Makefile
                     src/builtins/Makefile
                     src/pretty_printer/Makefile
                 ])

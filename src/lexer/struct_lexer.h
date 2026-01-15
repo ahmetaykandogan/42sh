@@ -39,8 +39,7 @@ enum token
     ESCAPE, // ' \ '
     APSTRPH, // ' '' '
 
-    VAR, // '$name'
-    BRK_VAR, // '{$name}'
+    VAR, // '$name ${name}'
 
     WORDS // 'words'
 };
