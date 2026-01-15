@@ -1,5 +1,5 @@
 # define the subdirectories
-SUBDIRS = \ 
+SUBDIRS = \
       utils \
       lexer \
       ast \
