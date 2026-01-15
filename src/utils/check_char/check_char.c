@@ -14,21 +14,3 @@ int check_char(char c)
         return 2;
     return 42;
 }
-
-int is_ionumber(char *token)
-{
-    if (!token || !token[0])
-    {
-        return 0;
-    }
-
-    for (size_t i = 0; i < strlen(token); i++)
-    {
-        if (!isdigit(token[i]))
-        {
-            return 0;
-        }
-    }
-
-    return 1;
-}

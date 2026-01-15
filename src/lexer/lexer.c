@@ -34,6 +34,22 @@ struct fifo *lexer(char *input)
             continue;
         }
 
+        /* CASE NUMBER + IONUMBER */
+        else if (isdigit(input[i]))
+        {
+            char *tok = lexing_words(input, i);
+            i += strlen(tok);
+
+            if (input[i + 1] && (input[i + 1] == '<' || input[i + 1] == '>'))
+            {
+                fifo_push(queue, create_lextoken_words(IONUMBER, tok));
+            }
+            else
+            {
+                fifo_push(queue, create_lextoken_words(WORDS, tok));
+            }
+        }
+
         /* CASE WORDS */
         if (check_char(input[i]) == 42)
         {
@@ -62,15 +78,7 @@ struct fifo *lexer(char *input)
             char *tok = lexing_double_quotes(input, i);
             i += strlen(tok) + 1; // on skip la seconde quote
 
-            fifo_push(queue, create_lextoken_words(APSTRPH, tok));
-        }
-
-        else if (isdigit(input[i]))
-        {
-            char *tok = lexing_ionumber(input, i);
-            i += strlen(tok);
-
-            fifo_push(queue, create_lextoken_words(IONUMBER, tok)); 
+            fifo_push(queue, create_lextoken_words(GUILLMT, tok));
         }
 
         /* CASE REDIRECTION */

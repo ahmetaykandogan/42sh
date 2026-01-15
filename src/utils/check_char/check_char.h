@@ -3,6 +3,4 @@
 
 int check_char(char c);
 
-int is_ionumber(char *token);
-
 #endif /* ! CHECK_CHAR_H */

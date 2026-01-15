@@ -100,29 +100,32 @@ char *lexing_double_quotes(char *input, size_t pos)
     return tok;
 }
 
-char *lexing_ionumber(char *input, size_t pos)
+char *lexing_number(char *input, size_t pos)
 {
-    char *tok = malloc_err(3);
-    size_t tok_len = 0;
+    size_t capacity = 4;
+    char *tok = malloc_err(capacity);
 
-    tok[tok_len++] = input[pos++];
-
-    if (input[pos - 1] == '<')
+    size_t tok_pos = 0;
+    while (pos < strlen(input) && is_ionumber(input[pos]))
     {
-        if (input[pos] && (input[pos] == '&' || input[pos] == '>'))
+        if (tok_pos >= capacity - 1)
         {
-            tok[tok_len++] = input[pos];
+            capacity *= 2;
+            tok = realloc_err(tok, capacity);
         }
+        tok[tok_pos++] = input[pos++];
     }
-
-    else if (input[pos - 1] == '>')
+    if (tok_pos >= capacity)
     {
-        if (input[pos]
-            && (input[pos] == '&' || input[pos] == '|' || input[pos] == '>'))
-        {
-            tok[tok_len++] = input[pos];
-        }
+        capacity *= 2;
+        tok = realloc_err(tok, capacity);
     }
+    tok[tok_pos] = '\0';
+    tok = realloc_err(tok, tok_pos + 1);
+
+    return tok;
+    }
+    
     tok[tok_len] = '\0';
 
     return tok;
