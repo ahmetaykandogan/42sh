@@ -40,7 +40,7 @@ struct fifo *lexer(char *input)
             char *tok = lexing_words(input, i);
             i += strlen(tok);
 
-            if (input[i + 1] && (input[i + 1] == '<' || input[i + 1] == '>'))
+            if (input[i] && (input[i] == '<' || input[i] == '>'))
             {
                 fifo_push(queue, create_lextoken_words(IONUMBER, tok));
             }
