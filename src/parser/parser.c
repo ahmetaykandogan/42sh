@@ -1,5 +1,5 @@
 #include "parser.h"
-
+#include <stdlib.h>
 static struct ast *parse_list(enum parser_status *status, struct fifo *lexer);
 static struct ast *parse_and_or(enum parser_status *status, struct fifo *lexer);
 static struct ast *parse_pipeline(enum parser_status *status,
@@ -20,7 +20,8 @@ static struct ast *parse_compound_list(enum parser_status *status,
                                        struct fifo *lexer);
 static struct ast *parse_rule_while(enum parser_status *status, struct fifo *lexer);
 static struct ast *parse_rule_until(enum parser_status *status, struct fifo *lexer);
-
+static struct redirection *parse_redirections(enum parser_status *status, struct fifo *lexer);
+static struct redirection *parse_prefix(enum parser_status *status, struct fifo *lexer);
 // input =
 // list '\n'
 // | list EOF
@@ -121,7 +122,7 @@ static struct ast *parse_pipeline(enum parser_status *status,
 
 // command =
 // simple_command
-//| shell_command
+//| shell_command { redirection } ;
 
 static struct ast *parse_command(enum parser_status *status, struct fifo *lexer)
 {
@@ -132,23 +133,51 @@ static struct ast *parse_command(enum parser_status *status, struct fifo *lexer)
         *status = PARSER_ERROR;
         return NULL;
     }
-
+    struct ast *out;
     if (token->tok == WORDS)
-        return parse_simple_command(status, lexer);
+        out = parse_simple_command(status, lexer);
 
     // shell commands
-    if (token->tok == IF || token->tok == WHILE || token->tok == UNTIL)
-        return parse_shell_command(status, lexer);
-
-
-    *status = PARSER_ERROR;
-    return NULL;
+    else if (token->tok == IF || token->tok == WHILE || token->tok == UNTIL)
+        out = parse_shell_command(status, lexer);
+    else
+    {
+        *status = PARSER_ERROR;
+        return NULL;
+    }
+    while (1)
+    {
+        struct redirection *redir = parse_redirections(status, lexer); //created the struct to add 
+        if (*status != PARSER_OK)
+        {
+            *status = PARSER_OK; // no redirections is ok
+            break;
+        }
+        else
+            ast_add_redirection(out, redir);
+    }
+    return out;
 }
 
-// simple_command = WORD { element } ;
+// simple_command = { prefix } WORD { element } 
+// prefix { prefix };
 static struct ast *parse_simple_command(enum parser_status *status,
                                         struct fifo *lexer)
 {
+    // { prefix }
+    struct redirection **redir_to_add = NULL; //list of redirections to add to the command
+    while (1)
+    {
+
+        struct redirection *prefix_redir = parse_prefix(status, lexer);
+        if (*status != PARSER_OK)
+        {
+            *status = PARSER_OK; // No more prefixes to parse
+            break;
+        }
+        //add to list
+        add_redirection(&redir_to_add, prefix_redir);
+    }
     // WORD
     struct lextoken *token = fifo_head(lexer);
     struct ast_cmd *command = ast_cmd_init(0); // initialize command ast node
@@ -173,26 +202,105 @@ static struct ast *parse_simple_command(enum parser_status *status,
             break;
         }
     }
-
+    //add redirections to command
+    if (redir_to_add)
+    {
+        command->redirections = redir_to_add;
+    }
     return &command->base;
 }
+//prefix = redirection ;
 
-// element = WORD ;
+static struct redirection *parse_prefix(enum parser_status *status,
+                              struct fifo *lexer)
+{
+    struct redirection *out = parse_redirections(status, lexer);
+    if (*status != PARSER_OK)
+    {
+        return NULL; // error
+    }
+    return out;
+}
+
+//redirection = [IONUMBER] ( '>' | '<' | '>>' | '>&' | '<&' | '>|' | '<>' ) WORD ;
+
+static struct redirection *parse_redirections(enum parser_status *status,
+                                              struct fifo *lexer)
+{
+    struct lextoken *token = fifo_head(lexer);
+    char *fd = NULL;
+    //int flags = 0; //May be used in future steps
+    // [IONUMBER]
+    
+    if (token && token->tok == IONUMBER)
+    {
+        fd = token->value; //May be destroyed by the pop
+        fifo_pop(lexer);
+        token = fifo_head(lexer);
+    }
+    // ( '>' | '<' | '>>' | '>&' | '<&' | '>|' | '<>' )
+    char *operator;
+    if (!token ||
+        (token->tok != RED_OUT &&
+         token->tok != RED_IN &&
+         token->tok != APPEND_OUT &&
+         token->tok != DUP_IN &&
+         token->tok != DUP_OUT &&
+         token->tok != RED_FORCE &&
+         token->tok != FD_RW))
+    {
+        *status = PARSER_ERROR;
+        return NULL;
+    }
+    else
+    {
+        operator = token->value;
+    }
+    // May need to stock the redirection type
+    fifo_pop(lexer); //MUST NOT FREE TOKEN VALUE IF REDIRECTION 
+    //CHECK THIS PART IF MEMORY ERROR (Use after free)
+    // WORD
+    token = fifo_head(lexer);
+    if (!token || token->tok != WORDS)
+    {
+        *status = PARSER_ERROR;
+        return NULL;
+    }
+    struct redirection *redir = redirection_init(fd, token->value, operator);
+    fifo_pop(lexer);
+    *status = PARSER_OK;
+    return redir;
+}
+
+// element = WORD | redirection;
 static void parse_element(enum parser_status *status, struct fifo *lexer,
                           struct ast *in)
 {
     struct ast_cmd *out = (struct ast_cmd *)in; // its always a command
     struct lextoken *token = fifo_head(lexer);
+    // WORD
     if (token && token->tok == WORDS)
     {
         ast_cmd_add_word(out, token->value);
         fifo_pop(lexer);
         *status = PARSER_OK;
     }
+    else if (token)
+    {
+        // redirection
+        struct redirection *redir = parse_redirections(status, lexer);
+        if (*status != PARSER_OK)
+        {
+            return; // error
+        }
+        ast_add_redirection(&out->base, redir);
+        *status = PARSER_OK;
+    }
     else
     {
         *status = PARSER_ERROR;
     }
+
 }
 
 //----------------------------------------------------------------------------------
