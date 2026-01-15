@@ -127,31 +127,31 @@ struct lextoken *create_lextoken_redirection(char *token)
     /* REDIRECTION */
     if (strcmp(token, "<") == 0) // RED_IN
     {
-        return create_lextoken(RED_IN, token);
+        return create_lextoken_words(RED_IN, token);
     }
     else if (strcmp(token, ">") == 0) // RED_OUT
     {
-        return create_lextoken(RED_OUT, token);
+        return create_lextoken_words(RED_OUT, token);
     }
     else if (strcmp(token, ">>") == 0) // APPEND_OUT
     {
-        return create_lextoken(APPEND_OUT, token);
+        return create_lextoken_words(APPEND_OUT, token);
     }
     else if (strcmp(token, "<&") == 0) // DUP_IN
     {
-        return create_lextoken(DUP_IN, token);
+        return create_lextoken_words(DUP_IN, token);
     }
     else if (strcmp(token, ">&") == 0) // DUP_OUT
     {
-        return create_lextoken(DUP_OUT, token);
+        return create_lextoken_words(DUP_OUT, token);
     }
     else if (strcmp(token, ">|") == 0) // RED_FORCE
     {
-        return create_lextoken(RED_FORCE, token);
+        return create_lextoken_words(RED_FORCE, token);
     }
     else if (strcmp(token, "<>") == 0) // FD_RW
     {
-        return create_lextoken(FD_RW, token);
+        return create_lextoken_words(FD_RW, token);
     }
 
     free(token);
