@@ -3,7 +3,20 @@ SUBDIRS = \
   lexing \
   read_file
 
-lib_LIBRARIES = liblexer.a
+noinst_LIBRARIES = liblexer.a
+
+<<<<<<< HEAD
+<<<<<<< HEAD
+liblexer_a_LIBADD = \
+=======
+libutils_a_LIBADD = \
+>>>>>>> 734714c ("Fix : Makefile.am")
+=======
+liblexer_a_LIBADD = \
+>>>>>>> 1b2817c (Fix : ptn de Makefile.am)
+  $(top_builddir)/src/lexer/create_lextoken/liblextoken.a \
+  $(top_builddir)/src/lexer/lexing/liblexing.a \
+  $(top_builddir)/src/lexer/read_file/libread.a
 
 liblexer_a_SOURCES =  \
   lexer.c \
@@ -17,5 +30,3 @@ liblexer_a_CPPFLAGS = \
   -I$(srcdir)/read_file
 
 liblexer_a_CFLAGS = -std=c99 -pedantic -Werror -Wall -Wextra -Wvla
-
-noinst_LIBRARIES = liblexer.a

@@ -1,8 +1,17 @@
 # define the subdirectories
-SUBDIRS = ast \
-      parser \
-      lexer \
+<<<<<<< HEAD
+<<<<<<< HEAD
+SUBDIRS = \
+=======
+SUBDIRS = \ 
+>>>>>>> 734714c ("Fix : Makefile.am")
+=======
+SUBDIRS = \
+>>>>>>> 2ef5243 (Fix : WHITESPACE ????)
       utils \
+      lexer \
+      ast \
+      parser \
       builtins \
       pretty_printer
 
