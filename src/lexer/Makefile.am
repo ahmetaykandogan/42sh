@@ -5,7 +5,7 @@ SUBDIRS = \
 
 noinst_LIBRARIES = liblexer.a
 
-libutils_a_LIBADD = \
+liblexer_a_LIBADD = \
   $(top_builddir)/src/lexer/create_lextoken/liblextoken.a \
   $(top_builddir)/src/lexer/lexing/liblexing.a \
   $(top_builddir)/src/lexer/read_file/libread.a
