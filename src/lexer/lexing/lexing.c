@@ -100,6 +100,34 @@ char *lexing_double_quotes(char *input, size_t pos)
     return tok;
 }
 
+char *lexing_ionumber(char *input, size_t pos)
+{
+    char *tok = malloc_err(3);
+    size_t tok_len = 0;
+
+    tok[tok_len++] = input[pos++];
+
+    if (input[pos - 1] == '<')
+    {
+        if (input[pos] && (input[pos] == '&' || input[pos] == '>'))
+        {
+            tok[tok_len++] = input[pos];
+        }
+    }
+
+    else if (input[pos - 1] == '>')
+    {
+        if (input[pos]
+            && (input[pos] == '&' || input[pos] == '|' || input[pos] == '>'))
+        {
+            tok[tok_len++] = input[pos];
+        }
+    }
+    tok[tok_len] = '\0';
+
+    return tok;
+}
+
 char *lexing_redirection(char *input, size_t pos)
 {
     char *tok = malloc_err(3);
@@ -185,7 +213,7 @@ char *lexing_variables(char *input, size_t pos)
 
     if (input[pos] && input[pos] != '{')
     {
-        if (tok = lexing_special_variables(char *input, size_t pos))
+        if (tok = lexing_special_variables(input, pos))
         {
             return tok;
         }

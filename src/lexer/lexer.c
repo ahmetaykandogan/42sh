@@ -65,6 +65,14 @@ struct fifo *lexer(char *input)
             fifo_push(queue, create_lextoken_words(APSTRPH, tok));
         }
 
+        else if (isdigit(input[i]))
+        {
+            char *tok = lexing_ionumber(input, i);
+            i += strlen(tok);
+
+            fifo_push(queue, create_lextoken_words(IONUMBER, tok)); 
+        }
+
         /* CASE REDIRECTION */
         else if (input[i] == '<' || input[i] == '>')
         {

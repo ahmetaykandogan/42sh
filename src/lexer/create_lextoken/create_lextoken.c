@@ -83,12 +83,6 @@ struct lextoken *create_lextoken_commands(char *token)
         return create_lextoken(DONE, token);
     }
 
-    /* CASE IONUMBER */
-    else if (is_ionumber(token))
-    {
-        return create_lextoken_words(IONUMBER, token);
-    }
-
     /* DEFAULT CASE : WORDS */
     return create_lextoken_words(WORDS, token);
 }
