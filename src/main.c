@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "utils/fifo.h"
+#include "utils/fifo/fifo.h"
 
 int main(int argc, char **argv)
 {
