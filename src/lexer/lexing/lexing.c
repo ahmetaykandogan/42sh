@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
 
@@ -147,6 +148,39 @@ char *lexing_operators(char *input, size_t pos)
         }
     }
     tok[tok_len] = '\0';
+
+    return tok;
+}
+
+char *lexing_variables(char *input, size_t pos)
+{
+    size_t input_len = strlen(input);
+    size_t capacity = 8;
+    char *tok = malloc_err(capacity);
+
+    size_t tok_pos = 0;
+
+    while (pos < input_len && input[pos] != '\'')
+    {
+        if (tok_pos >= capacity - 1)
+        {
+            capacity *= 2;
+            tok = realloc_err(tok, capacity);
+        }
+        tok[tok_pos++] = input[pos++];
+    }
+    if (pos >= input_len)
+    {
+        free(tok);
+        err(2, "Quote not closed");
+    }
+    if (tok_pos >= capacity)
+    {
+        capacity *= 2;
+        tok = realloc_err(tok, capacity);
+    }
+    tok[tok_pos] = '\0';
+    tok = realloc_err(tok, tok_pos + 1);
 
     return tok;
 }

@@ -1,8 +1,9 @@
 # define the subdirectories
-SUBDIRS = ast \
-      parser \
-      lexer \
+SUBDIRS = \
       utils \
+      lexer \
+      ast \
+      parser \
       builtins \
       pretty_printer
 
