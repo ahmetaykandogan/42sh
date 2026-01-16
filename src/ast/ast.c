@@ -101,6 +101,14 @@ void ast_list_add_ast(struct ast_list *in, struct ast *ast)
     in->child_count += 1;
 }
 
+void ast_and_or_add_ast(struct ast_and_or *in, struct ast *ast, int type)
+{
+    ast_list_add_ast(in->children, ast);
+    in->child_count++;
+    in->op = realloc(in->op, sizeof(int) * (in->child_count - 1));
+    in->op[in->child_count - 2] = type;
+    return;
+}
 //-----------------LOOKUP TABLE FOR RUN FUNCTIONS-----------------
 
 static void ast_run_cmd(struct ast *ast)
@@ -425,7 +433,7 @@ void ast_pipe_destroy(struct ast_pipe *node)
     free(node);
 }
 
-ast_and_or_destroy(struct ast_and_or *node)
+void ast_and_or_destroy(struct ast_and_or *node)
 {
     if (!node)
         return;
