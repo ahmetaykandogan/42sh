@@ -59,6 +59,16 @@ struct ast_until *ast_until_init(void)
     return out;
 }
 
+struct ast_pipe *ast_pipeline_init(int neg)
+{
+    struct ast_pipe *out = calloc(1, sizeof(struct ast_pipe));
+    out->base.type = AST_PIPE;
+    out->pipelines = ast_list_init();
+    out->negated = neg;
+    out->redirections = NULL;
+    return out;
+}
+
 //--------------------------------ADDINGS------------------------------------
 
 void ast_cmd_add_word(struct ast_cmd *in, char *word)
@@ -117,6 +127,7 @@ const char *ast_repr(enum ast_type type)
         [AST_LIST] = "LIST",
         [AST_WHILE] = "WHILE",
         [AST_UNTIL] = "UNTIL",
+        [AST_PIPE] = "PIPE",
     };
     return names[type];
 }
@@ -241,6 +252,7 @@ void struct_ast_destroy(struct ast *node)
         [AST_LIST] = (run_type)&ast_list_destroy,
         [AST_WHILE] = (run_type)&ast_while_destroy,
         [AST_UNTIL] = (run_type)&ast_until_destroy,
+        [AST_PIPE] = (run_type)&ast_pipe_destroy,
     };
     (*destroy_functions[node->type])(node);
 }
@@ -300,6 +312,13 @@ void ast_until_destroy(struct ast_until *node)
     free(node);
 }
 
+void ast_pipe_destroy(struct ast_pipe *node)
+{
+    if (!node)
+        return;
+    struct_ast_destroy((struct ast *)node->pipelines);
+    free(node);
+}
 //--------------------------------------redirections-----------------------------
 
 struct redirection *redirection_init(char *fd, char *filename, char *operator)

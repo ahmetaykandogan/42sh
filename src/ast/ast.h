@@ -130,6 +130,7 @@ void ast_if_destroy(struct ast_if *node);
 void ast_list_destroy(struct ast_list *node);
 void ast_while_destroy(struct ast_while *node);
 void ast_until_destroy(struct ast_until *node);
+void ast_pipe_destroy(struct ast_pipe *node);
 
 //--------------------------------------redirections-----------------------------
 

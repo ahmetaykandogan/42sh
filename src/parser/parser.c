@@ -118,7 +118,7 @@ static struct ast *parse_pipeline(enum parser_status *status,
 {
     // ['!']
     struct lextoken *token = fifo_head(lexer);
-    if (token && token->tok == NEGATION)
+    if (token && token->tok == NEGA)
     {
         activated_negation = 1;
         fifo_pop(lexer);
@@ -148,7 +148,7 @@ static struct ast *parse_pipeline(enum parser_status *status,
         if (*status != PARSER_OK)
             return NULL;
         // if we reach here, it means we at least have one pipeline
-        struct ast_pipeline *pipeline = ast_pipeline_init(activated_negation);
+        struct ast_pipe *pipeline = ast_pipeline_init(activated_negation);
         if (counter == 0) // first time creating pipeline so we add the first command
         {
             ast_list_add_ast(pipeline->pipelines, child);   
