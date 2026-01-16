@@ -210,10 +210,6 @@ static int try_execute_builtin(char **argv)
     if (!argv || !argv[0])
         return -1;
 
-    int argc = 0;
-    while (argv[argc] != NULL)
-        argc++;
-
     if (strcmp(argv[0], "true") == 0)
     {
         return builtins_true();
@@ -224,7 +220,7 @@ static int try_execute_builtin(char **argv)
     }
     else if (strcmp(argv[0], "echo") == 0)
     {
-        return builtins_echo(argc, argv);
+        return builtins_echo(argv);
     }
 
     return -1;
