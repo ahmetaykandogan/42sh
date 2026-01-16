@@ -75,6 +75,7 @@ struct ast_and_or *ast_and_or_init(void)
     out->base.type = AST_AND_OR;
     out->children = ast_list_init();
     out->op = NULL;
+    out->child_count = 1;
     return out;
 }
 
@@ -189,33 +190,19 @@ static void ast_run_and_or(struct ast *ast)
             if (if_value == 0)
                 run_ast(ast_ao->children->children[i + 1]);
             else
-                break;
+                continue;
         }
         else if (operator == 1) // ||
         {
             if (if_value != 0)
                 run_ast(ast_ao->children->children[i + 1]);
             else
-                break;
+                continue;
         }
     }
 }
 
-void run_ast(struct ast *ast)
-{
-    if (!ast)
-        return;
-    static run_type run_functions[] = {
-        [AST_CMD] = &ast_run_cmd,
-        [AST_IF] = &ast_run_if,
-        [AST_LIST] = &ast_run_list,
-        [AST_WHILE] = &ast_run_while,
-        [AST_UNTIL] = &ast_run_until,
-        [AST_PIPE] = &run_pipe,
-        [AST_AND_OR] = &ast_run_and_or,
-    };
-    (*run_functions[ast->type])(ast);
-}
+
 
 static pid_t fork_executor(char **argv, int in, int out)
 {
@@ -352,6 +339,21 @@ void run_command(struct ast_cmd *cmd)
         if_value = !if_value;
 }
 
+void run_ast(struct ast *ast)
+{
+    if (!ast)
+        return;
+    static run_type run_functions[] = {
+        [AST_CMD] = &ast_run_cmd,
+        [AST_IF] = &ast_run_if,
+        [AST_LIST] = &ast_run_list,
+        [AST_WHILE] = &ast_run_while,
+        [AST_UNTIL] = &ast_run_until,
+        [AST_PIPE] = &run_pipe,
+        [AST_AND_OR] = &ast_run_and_or,
+    };
+    (*run_functions[ast->type])(ast);
+}
 //----------------------------------DESTROY AST
 //TYPES------------------------------
 
@@ -366,6 +368,7 @@ void struct_ast_destroy(struct ast *node)
         [AST_WHILE] = (run_type)&ast_while_destroy,
         [AST_UNTIL] = (run_type)&ast_until_destroy,
         [AST_PIPE] = (run_type)&ast_pipe_destroy,
+        [AST_AND_OR] = (run_type)&ast_and_or_destroy,
     };
     (*destroy_functions[node->type])(node);
 }
