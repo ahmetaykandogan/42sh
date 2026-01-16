@@ -171,6 +171,72 @@ void run_ast(struct ast *ast)
     (*run_functions[ast->type])(ast);
 }
 
+static pid_t fork_executor(char **argv, int in, int out)
+{
+    pid_t pid = fork();
+    if (pid != 0)
+        return pid;
+
+    if (in != STDIN_FILENO)
+        dup2(in, STDIN_FILENO);
+    if (out != STDOUT_FILENO)
+        dup2(out, STDOUT_FILENO);
+
+    execvp(argv[0], argv);
+    errx(1, "Couldn't execvp");
+}
+
+void run_pipe(struct ast *enter_pipe)
+{
+    struct ast_pipe *pipe_node = (struct ast_pipe *)enter_pipe;
+    struct ast_list *pipelines = pipe_node->pipelines;
+
+    size_t nb_child = pipelines->child_count;
+    if (nb_child < 2)
+        return;
+
+    int (*filedes)[2] = calloc(nb_child - 1, sizeof(int[2]));
+
+    pid_t *pid_list = calloc(nb_child, sizeof(pid_t));
+
+    for (size_t i = 0; i < nb_child - 1; i++)
+        if (pipe(filedes[i]) != 0)
+            errx(1, "Couldn't pipe!");
+
+    for (size_t j = 0; j < nb_child; j++)
+    {
+        struct ast_cmd *cmd = (struct ast_cmd *)pipelines->children[j];
+        int in;
+        int out;
+
+        if (j == 0)
+            in = STDIN_FILENO;
+        else
+            in = filedes[j - 1][0];
+
+        if (j == nb_child - 1)
+            out = STDOUT_FILENO;
+        else
+            out = filedes[j][1];
+
+        pid_list[j] = fork_executor(cmd->words, in, out);
+    }
+
+    for (size_t k = 0; k < nb_child - 1; k++)
+    {
+        close(filedes[k][0]);
+        close(filedes[k][1]);
+    }
+
+    int wstatus;
+    for (size_t x = 0; x < nb_child; x++)
+        waitpid(pid_list[x], &wstatus, 0);
+
+    free(filedes);
+    free(pid_list);
+}
+
+
 void run_redirections(struct redirection **redir)
 {
     if (!redir)
@@ -211,32 +277,6 @@ void run_redirections(struct redirection **redir)
             err(2, "failed to duplicate file descriptor");
         }
         close(file_desc);
-    }
-}
-
-void run_pipe(struct ast_pipe *pipe)
-{
-    if (!pipe || !pipe->pipelines || pipe->pipelines->child_count == 0)
-        return;
-
-    struct ast_list *pipelines = pipe->pipelines;
-    struct ast *child = pipelines->children[0];
-    int counter = 0;
-
-    for (size_t i = 1; i < pipelines->child_count; i++)
-    {
-        struct ast *child2 = pipelines->children[i];
-        if (child2->type != AST_CMD)
-        {
-            errx(2, "pipeline can only contain commands");
-        }
-
-        if (counter == 0)
-        {
-            run_command((struct ast_cmd *)child);
-            counter++;
-            continue;
-        }
     }
 }
 

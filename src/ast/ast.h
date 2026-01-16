@@ -118,7 +118,7 @@ typedef void (*run_type)(struct ast *ast);
 typedef void (*redir_type)(struct ast *ast, struct redirection *redir);
 
 void run_ast(struct ast *ast);
-void run_pipe(struct ast_pipe *pipe);
+void run_pipe(struct ast *enter_pipe);
 void run_command(struct ast_cmd *cmd);
 
 //----------------------------------DESTROY AST

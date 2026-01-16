@@ -128,6 +128,7 @@ static struct ast *parse_pipeline(enum parser_status *status,
         return NULL; // error
     // { '|' {'\n'} command }
     int counter = 0;
+    struct ast_pipe *pipeline = NULL;
     while (1)
     {
         // '|'
@@ -148,9 +149,9 @@ static struct ast *parse_pipeline(enum parser_status *status,
         if (*status != PARSER_OK)
             return NULL;
         // if we reach here, it means we at least have one pipeline
-        struct ast_pipe *pipeline = ast_pipeline_init(activated_negation);
         if (counter == 0) // first time creating pipeline so we add the first command
         {
+            pipeline = ast_pipeline_init(activated_negation);
             ast_list_add_ast(pipeline->pipelines, child);   
         }
         ast_list_add_ast(pipeline->pipelines, child2);
