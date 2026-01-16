@@ -12,7 +12,8 @@ enum ast_type // All the pseudo types of AST nodes
     AST_IF,
     AST_LIST,
     AST_WHILE,
-    AST_UNTIL
+    AST_UNTIL,
+    AST_PIPE
 };
 
 // To understand how this works, see the 42SH Design AST documentation
@@ -83,6 +84,14 @@ struct ast_until
     struct redirection **redirections;
 };
 
+struct ast_pipe
+{
+    struct ast base;
+    struct ast_list *commands;
+    int negated;
+
+    struct redirection **redirections; // Can a pipe have redirections?
+};
 
 //-------------------------------------INITIALIZE AST TYPES-----------------//
 
