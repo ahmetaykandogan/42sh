@@ -8,6 +8,7 @@ BLUE="\e[0;34m"
 PURPLE="\e[0;35m"
 CYAN="\e[0;36m"
 WHITE="\e[0;37m"
+NC='\033[0m'
 
 
 # -------------------------- GLOBV -------------------------- #
@@ -22,16 +23,6 @@ else
     TESTS_TO_RUN=$MODULE
 fi
 
-for dir in $TESTS_TO_RUN; do
-    for test_file in $(find $TEST_DIR/$dir -name *.sh); do
-        ./42sh $test_file > /tmp/out
-        bash --posix $test_file > /tmp/ref_out
-
-        # FIXME: Compare the results here.
-    done
-done
-
-
 # -------------------------- RECAP -------------------------- #
 RECAP=/tmp/recap
 
@@ -40,28 +31,44 @@ echo ============ RECAP ============ > $RECAP
 for dir in $TESTS_TO_RUN; do
     cat_total=0
     cat_passed=0
-    for test_file in $TEST_FILES; do
-        # FIXME: Run the actual test here.
+    for test_file in $(find "$TEST_DIR/$dir" -name "*.sh"); do
+        ./src/42sh "$test_file" > /tmp/out
+        bash --posix "$test_file" > /tmp/ref_out
+
+        ref_out=/tmp/ref_out
+        out=/tmp/out
+
+        if diff -u "$out" "$ref_out" > /dev/null; then
+            test_passed=true
+        else
+            test_passed=false
+        fi
 
         cat_total=$((cat_total + 1))
         if $test_passed; then
             cat_passed=$((cat_passed + 1))
         else
-            echo -e "${RED}FAILED${RESET}: $test_file"
+            echo -e "${RED}FAILED${NC}: $test_file"
             echo
             echo -e "=== Diff:"
             echo -e "Content of stdout differs:"
-            echo -e "Expected ${GREEN}\"${out_ref}\"${RESET}"
-            echo -e "Got ${RED}\"${out}\"${RESET}"
+            echo -e "Expected: ${GREEN}"
+            cat "$ref_out"
+            echo -n ${NC}
+            echo -e "Got: ${RED}"
+            cat "$out"
+            echo -n ${NC}
             echo
         fi
     done
-    if [ $cat_passed = $cat_total ]; then
+    if [ $cat_passed -eq 0 ] && [ $cat_total -eq 0 ]; then
+        continue;
+    elif [ $cat_passed = $cat_total ]; then
         color=$GREEN
     else
         color=$RED
     fi
-    printf "%-15s ${color}%+15s${RESET}\n" $dir "($cat_passed/$cat_total passed)" >> $RECAP
+    printf "%-15s ${color}%+15s${NC}\n" $dir "($cat_passed/$cat_total passed)" >> $RECAP
 done
 
 cat $RECAP

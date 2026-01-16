@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# Multiple option e and E finishing by e
+
+echo -E -E -E -e -E -E -e -e -e -e HI '\t' '\n' Goodbye
