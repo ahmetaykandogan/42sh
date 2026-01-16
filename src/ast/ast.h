@@ -13,7 +13,8 @@ enum ast_type // All the pseudo types of AST nodes
     AST_LIST,
     AST_WHILE,
     AST_UNTIL,
-    AST_PIPE
+    AST_PIPE,
+    AST_AND_OR
 };
 
 // To understand how this works, see the 42SH Design AST documentation
@@ -103,8 +104,6 @@ struct ast_and_or //
     //for example, if we have a || b && c, then op[0] = 1, op[1] = 0
     //This implementation dont work for case with parantheses, there is no and or priority
     size_t child_count;
-
-    struct redirection **redirections;
 };
 
 //-------------------------------------INITIALIZE AST TYPES-----------------//
@@ -123,7 +122,7 @@ void ast_cmd_add_word(struct ast_cmd *in, char *word);
 // TODO realloc words array inside ast_cmd toincreaze size by 1
 void ast_list_add_ast(struct ast_list *in, struct ast *ast);
 // TODO same for this
-void ast_and_or_add_ast(struct ast_and_or *in, struct ast *ast, int operator); // add the operator to op and ast to the list
+
 //---------------------LOOKUP TABLE FOR DESTROY FUNCTIONS-----------------//
 
 const char *ast_repr(enum ast_type type);
