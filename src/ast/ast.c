@@ -166,6 +166,7 @@ void run_ast(struct ast *ast)
         [AST_LIST] = &ast_run_list,
         [AST_WHILE] = &ast_run_while,
         [AST_UNTIL] = &ast_run_until,
+        [AST_PIPE] = &run_pipe,
     };
     (*run_functions[ast->type])(ast);
 }
@@ -210,6 +211,32 @@ void run_redirections(struct redirection **redir)
             err(2, "failed to duplicate file descriptor");
         }
         close(file_desc);
+    }
+}
+
+void run_pipe(struct ast_pipe *pipe)
+{
+    if (!pipe || !pipe->pipelines || pipe->pipelines->child_count == 0)
+        return;
+
+    struct ast_list *pipelines = pipe->pipelines;
+    struct ast *child = pipelines->children[0];
+    int counter = 0;
+
+    for (size_t i = 1; i < pipelines->child_count; i++)
+    {
+        struct ast *child2 = pipelines->children[i];
+        if (child2->type != AST_CMD)
+        {
+            errx(2, "pipeline can only contain commands");
+        }
+
+        if (counter == 0)
+        {
+            run_command((struct ast_cmd *)child);
+            counter++;
+            continue;
+        }
     }
 }
 
