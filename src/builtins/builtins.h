@@ -5,8 +5,6 @@
 int builtins_true(void);
 int builtins_false(void);
 
-// How do we call it ?
-// For now with argc argv
-int builtins_echo(int argc, char *argv[]);
+int builtins_echo(char **words);
 
 #endif // BUILTINS_H

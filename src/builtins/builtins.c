@@ -13,32 +13,77 @@ int builtins_false(void)
     return 1;
 }
 
-// TODO verif arg, then do the two other option depending on it
-int builtins_echo(int argc, char *argv[])
+/* Print depending on interpret whether it is a -e or a -E */
+static void print_word(const char *s, int interpret)
+{
+    int i = 0;
+
+    while (s[i])
+    {
+        if (interpret && s[i] == '\\')
+        {
+            i++;
+            if (s[i] == 'n')
+                putchar('\n');
+            else if (s[i] == 't')
+                putchar('\t');
+            else if (s[i] == '\\')
+                putchar('\\');
+            else
+            {
+                putchar('\\');
+                if (s[i])
+                    putchar(s[i]);
+            }
+        }
+        else
+            putchar(s[i]);
+        if (s[i])
+            i++;
+    }
+}
+
+int builtins_echo(char **words)
 {
     int i = 1;
     int newline = 1;
+    int interpret = 0;
 
-    // -n option
-    if (i < argc && strcmp(argv[i], "-n") == 0)
+    /* Parse options */
+    while (words[i] && words[i][0] == '-' && words[i][1])
     {
-        newline = 0;
+        if (strcmp(words[i], "-n") == 0)
+            newline = 0;
+        else if (strcmp(words[i], "-e") == 0)
+            interpret = 1;
+        else if (strcmp(words[i], "-E") == 0)
+            interpret = 0;
+        else if (strcmp(words[i], "-ne") == 0)
+        {
+            newline = 0;
+            interpret = 1;
+        }
+        else if (strcmp(words[i], "-nE") == 0)
+        {
+            newline = 0;
+            interpret = 0;
+        }
+        else
+            break;
         i++;
     }
 
-    // -e enable the interpretation of \n, \t and \\ escapes.
-    // -E disable the interpretation of \n, \t and \\ escapes.
-
     /* Print arguments */
-    for (; i < argc; i++)
+    while (words[i])
     {
-        printf("%s", argv[i]);
-        if (i + 1 < argc)
-            printf(" ");
+        print_word(words[i], interpret);
+        if (words[i + 1])
+            putchar(' ');
+        i++;
     }
 
     if (newline)
-        printf("\n");
+        putchar('\n');
 
     return 0;
 }
