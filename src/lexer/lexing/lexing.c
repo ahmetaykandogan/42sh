@@ -193,7 +193,7 @@ static char *lexing_special_variables(char *input, size_t pos)
     }
     if (input[pos] == '@' || input[pos] == '*' || input[pos] == '?' || input[pos] == '$' || input[pos] == '#' || isdigit(input[pos]))
     {
-        char *tok = malloc_err(2);
+        char *tok = malloc_err(3);
         tok[0] = '$';
         tok[1] = input[pos];
         tok[2] = '\0';
@@ -202,42 +202,63 @@ static char *lexing_special_variables(char *input, size_t pos)
     return NULL;
 }
 
+static char *lexing_variables_no_braces(char *input, size_t pos)
+{
+    char *special_var = lexing_special_variables(input, pos);
+    if (special_var)
+    {
+        return special_var;
+    }
+    size_t capacity = 8;
+    char *tok = malloc_err(capacity);
+
+    size_t tok_pos = 0;
+    while (pos < strlen(input) && (isalnum(input[pos]) || input[pos] == '_'))
+    {
+        if (tok_pos >= capacity - 1)
+        {
+            capacity *= 2;
+            tok = realloc_err(tok, capacity);
+        }
+        tok[tok_pos++] = input[pos++];
+    }
+    if (tok_pos >= capacity)
+    {
+        capacity *= 2;
+        tok = realloc_err(tok, capacity);
+    }
+    tok[tok_pos] = '\0';
+    tok = realloc_err(tok, tok_pos + 1);
+    
+    return tok;
+}
+
 char *lexing_variables(char *input, size_t pos)
 {
+    if (input[pos] && input[pos] != '{')
+    {
+        return lexing_variables_no_braces(input, pos);
+    }
+    pos++;
+
     size_t input_len = strlen(input);
     size_t capacity = 8;
     char *tok = malloc_err(capacity);
 
     size_t tok_pos = 0;
 
-    if (input[pos] && input[pos] != '{')
+    bool quoted = 0;
+    bool escaped = 0;
+    while (pos < input_len && input[pos] != '}' && !quoted && !escaped)
     {
-        if (tok = lexing_special_variables(input, pos))
+        if (input[pos] == '\"' && input[pos - 1] != '\\')
         {
-            return tok;
+            quoted = !quoted;
         }
-        while (pos < strlen(input) && (isalnum(input[pos]) || input[pos] == '_'))
+        else if (input[pos] == '\\')
         {
-            if (tok_pos >= capacity - 1)
-            {
-                capacity *= 2;
-                tok = realloc_err(tok, capacity);
-            }
-            tok[tok_pos++] = input[pos++];
+            escaped = !escaped;
         }
-        if (tok_pos >= capacity)
-        {
-            capacity *= 2;
-            tok = realloc_err(tok, capacity);
-        }
-        tok[tok_pos] = '\0';
-        tok = realloc_err(tok, tok_pos + 1);
-
-        return tok;
-    }
-
-    while (pos < input_len && input[pos] != '}')
-    {
         if (tok_pos >= capacity - 1)
         {
             capacity *= 2;
