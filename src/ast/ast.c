@@ -69,6 +69,15 @@ struct ast_pipe *ast_pipeline_init(int neg)
     return out;
 }
 
+struct ast_and_or *ast_and_or_init(void)
+{
+    struct ast_and_or *out = calloc(1, sizeof(struct ast_and_or));
+    out->base.type = AST_AND_OR;
+    out->children = ast_list_init();
+    out->op = NULL;
+    return out;
+}
+
 //--------------------------------ADDINGS------------------------------------
 
 void ast_cmd_add_word(struct ast_cmd *in, char *word)
@@ -128,6 +137,7 @@ const char *ast_repr(enum ast_type type)
         [AST_WHILE] = "WHILE",
         [AST_UNTIL] = "UNTIL",
         [AST_PIPE] = "PIPE",
+        [AST_AND_OR] = "AND_OR",
     };
     return names[type];
 }
@@ -156,6 +166,33 @@ static void ast_run_until(struct ast *ast)
     }
 }
 
+static void ast_run_and_or(struct ast *ast)
+{
+    struct ast_and_or *ast_ao = (struct ast_and_or *)ast;
+    if (ast_ao->child_count == 0)
+        return;
+
+    run_ast(ast_ao->children->children[0]);
+    for (size_t i = 0; i < ast_ao->child_count - 1; i++)
+    {
+        int operator = ast_ao->op[i];
+        if (operator == 0) // &&
+        {
+            if (if_value == 0)
+                run_ast(ast_ao->children->children[i + 1]);
+            else
+                break;
+        }
+        else if (operator == 1) // ||
+        {
+            if (if_value != 0)
+                run_ast(ast_ao->children->children[i + 1]);
+            else
+                break;
+        }
+    }
+}
+
 void run_ast(struct ast *ast)
 {
     if (!ast)
@@ -167,6 +204,7 @@ void run_ast(struct ast *ast)
         [AST_WHILE] = &ast_run_while,
         [AST_UNTIL] = &ast_run_until,
         [AST_PIPE] = &run_pipe,
+        [AST_AND_OR] = &ast_run_and_or,
     };
     (*run_functions[ast->type])(ast);
 }
@@ -386,6 +424,16 @@ void ast_pipe_destroy(struct ast_pipe *node)
     struct_ast_destroy((struct ast *)node->pipelines);
     free(node);
 }
+
+ast_and_or_destroy(struct ast_and_or *node)
+{
+    if (!node)
+        return;
+    struct_ast_destroy((struct ast *)node->children);
+    free(node->op);
+    free(node);
+}
+
 //--------------------------------------redirections-----------------------------
 
 struct redirection *redirection_init(char *fd, char *filename, char *operator)
