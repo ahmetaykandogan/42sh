@@ -103,6 +103,8 @@ struct ast_and_or //
     //for example, if we have a || b && c, then op[0] = 1, op[1] = 0
     //This implementation dont work for case with parantheses, there is no and or priority
     size_t child_count;
+
+    struct redirection **redirections;
 };
 
 //-------------------------------------INITIALIZE AST TYPES-----------------//
@@ -113,6 +115,7 @@ struct ast_list *ast_list_init();
 struct ast_while *ast_while_init();
 struct ast_until *ast_until_init();
 struct ast_pipe *ast_pipeline_init(int neg);
+struct ast_and_or *ast_and_or_init();
 
 //--------------------------------ADDINGS------------------------------------//
 
@@ -120,7 +123,7 @@ void ast_cmd_add_word(struct ast_cmd *in, char *word);
 // TODO realloc words array inside ast_cmd toincreaze size by 1
 void ast_list_add_ast(struct ast_list *in, struct ast *ast);
 // TODO same for this
-
+void ast_and_or_add_ast(struct ast_and_or *in, struct ast *ast, int operator); // add the operator to op and ast to the list
 //---------------------LOOKUP TABLE FOR DESTROY FUNCTIONS-----------------//
 
 const char *ast_repr(enum ast_type type);
@@ -144,6 +147,7 @@ void ast_list_destroy(struct ast_list *node);
 void ast_while_destroy(struct ast_while *node);
 void ast_until_destroy(struct ast_until *node);
 void ast_pipe_destroy(struct ast_pipe *node);
+void ast_and_or_destroy(struct ast_and_or *node);
 
 //--------------------------------------redirections-----------------------------
 
