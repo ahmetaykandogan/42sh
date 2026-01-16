@@ -6,6 +6,9 @@
 #include <sys/wait.h>
 #include <stdio.h>
 #include <err.h>
+#include <string.h>
+
+#include "../builtins/builtins.h"
 
 int if_value = 0;
 
@@ -171,6 +174,31 @@ void run_ast(struct ast *ast)
     (*run_functions[ast->type])(ast);
 }
 
+static int try_execute_builtin(char **argv)
+{
+    if (!argv || !argv[0])
+        return -1;
+
+    int argc = 0;
+    while (argv[argc] != NULL)
+        argc++;
+
+    if (strcmp(argv[0], "true") == 0)
+    {
+        return builtins_true();
+    }
+    else if (strcmp(argv[0], "false") == 0)
+    {
+        return builtins_false();
+    }
+    else if (strcmp(argv[0], "echo") == 0)
+    {
+        return builtins_echo(argc, argv);
+    }
+
+    return -1;
+}
+
 static pid_t fork_executor(char **argv, int in, int out)
 {
     pid_t pid = fork();
@@ -181,6 +209,13 @@ static pid_t fork_executor(char **argv, int in, int out)
         dup2(in, STDIN_FILENO);
     if (out != STDOUT_FILENO)
         dup2(out, STDOUT_FILENO);
+
+    int builtin_executed = try_execute_builtin(argv);
+    if (builtin_executed != -1)
+    {
+        fflush(stdout);
+        exit(builtin_executed);
+    }
 
     execvp(argv[0], argv);
     errx(1, "Couldn't execvp");
@@ -285,6 +320,22 @@ void run_command(struct ast_cmd *cmd)
     char **words = cmd->words;
     if (!words || !words[0])
         return;
+
+    int argc = 0;
+    while (words[argc] != NULL)
+        argc++;
+
+    int builtin_result = try_execute_builtin(words);
+    if (builtin_result != -1)
+    {
+        run_redirections(cmd->redirections);
+        if_value = builtin_result;
+        fflush(stdout);
+        
+        if (cmd->negated)
+            if_value = !if_value;
+        return;
+    }
 
     int pid = fork();
     if (pid == 0)
