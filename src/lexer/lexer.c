@@ -35,6 +35,16 @@ struct fifo *lexer(char *input)
             continue;
         }
 
+        /* CASE COMMENTS */
+        else if (input[i] == '#')
+        {
+            while (input[i] && (input[i] != '\0' || input[i] != '\n'))
+            {
+                i++;
+                continue;
+            }
+        }
+
         /* CASE NUMBER + IONUMBER */
         else if (isdigit(input[i]))
         {
