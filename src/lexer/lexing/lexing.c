@@ -106,7 +106,7 @@ char *lexing_number(char *input, size_t pos)
     char *tok = malloc_err(capacity);
 
     size_t tok_pos = 0;
-    while (pos < strlen(input) && is_ionumber(input[pos]))
+    while (pos < strlen(input) && isdigit(input[pos]))
     {
         if (tok_pos >= capacity - 1)
         {
@@ -124,12 +124,8 @@ char *lexing_number(char *input, size_t pos)
     tok = realloc_err(tok, tok_pos + 1);
 
     return tok;
-    }
-    
-    tok[tok_len] = '\0';
-
-    return tok;
 }
+
 
 char *lexing_redirection(char *input, size_t pos)
 {

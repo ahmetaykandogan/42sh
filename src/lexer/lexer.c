@@ -1,6 +1,7 @@
 #include <err.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #include "lexer/create_lextoken/create_lextoken.h"
 #include "lexer/lexing/lexing.h"
