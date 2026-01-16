@@ -87,7 +87,7 @@ struct ast_until
 struct ast_pipe
 {
     struct ast base;
-    struct ast_list *commands;
+    struct ast_list *pipelines;
     int negated;
 
     struct redirection **redirections; // Can a pipe have redirections?
@@ -100,6 +100,7 @@ struct ast_if *ast_if_init();
 struct ast_list *ast_list_init();
 struct ast_while *ast_while_init();
 struct ast_until *ast_until_init();
+struct ast_pipe *ast_pipeline_init(int neg);
 
 //--------------------------------ADDINGS------------------------------------//
 

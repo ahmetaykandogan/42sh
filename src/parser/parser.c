@@ -28,6 +28,7 @@ static struct redirection *parse_prefix(enum parser_status *status, struct fifo 
 // | '\n'
 // | EOF
 // ;
+int activated_negation = 0;// will check if negation is activated
 
 // La fonction au dessus va recuperer l'ast
 struct ast *parse_input(enum parser_status *status, struct fifo *lexer)
@@ -110,13 +111,52 @@ static struct ast *parse_and_or(enum parser_status *status, struct fifo *lexer)
     return child;
 }
 
-// pipeline = command ;
+//pipeline = ['!'] command { '|' {'\n'} command } ;
+
 static struct ast *parse_pipeline(enum parser_status *status,
                                   struct fifo *lexer)
 {
-    struct ast *child = parse_command(status, lexer);
+    // ['!']
+    struct lextoken *token = fifo_head(lexer);
+    if (token && token->tok == NEGATION)
+    {
+        activated_negation = 1;
+        fifo_pop(lexer);
+    }
+    struct ast *child = parse_command(status, lexer); // this is either cmd or a if/until/while
     if (*status != PARSER_OK)
         return NULL; // error
+    // { '|' {'\n'} command }
+    int counter = 0;
+    while (1)
+    {
+        // '|'
+        token = fifo_head(lexer);
+        if (!token || token->tok != PIPE)
+            break;
+        fifo_pop(lexer);
+        // {'\n'}
+        while (1)
+        {
+            token = fifo_head(lexer);
+            if (!token || token->tok != NEWLINE)
+                break;
+            fifo_pop(lexer);
+        }
+        // command
+        struct ast *child2 = parse_command(status, lexer);
+        if (*status != PARSER_OK)
+            return NULL;
+        // if we reach here, it means we at least have one pipeline
+        struct ast_pipeline *pipeline = ast_pipeline_init(activated_negation);
+        if (counter == 0) // first time creating pipeline so we add the first command
+        {
+            ast_list_add_ast(pipeline->pipelines, child);   
+        }
+        ast_list_add_ast(pipeline->pipelines, child2);
+        child = &pipeline->base;
+        counter = 1 ;
+    }
     return child;
 }
 
