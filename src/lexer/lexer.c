@@ -38,10 +38,9 @@ struct fifo *lexer(char *input)
         /* CASE COMMENTS */
         else if (input[i] == '#')
         {
-            while (input[i] && (input[i] != '\0' || input[i] != '\n'))
+            while (input[i] && input[i] != '\n')
             {
                 i++;
-                continue;
             }
         }
 
@@ -62,7 +61,7 @@ struct fifo *lexer(char *input)
         }
 
         /* CASE WORDS */
-        if (check_char(input[i]) == 42)
+        else if (check_char(input[i]) == 42)
         {
             char *tok = lexing_words(input, i);
             i += strlen(tok);
@@ -118,7 +117,14 @@ struct fifo *lexer(char *input)
             char *tok = lexing_variables(input, i);
             i += strlen(tok);
 
-            fifo_push(queue, create_lextoken_words(VAR, tok));
+            if (strcmp(tok, "$") == 0)
+            {
+                fifo_push(queue, create_lextoken_words(WORDS, tok));
+            }
+            else
+            {
+                fifo_push(queue, create_lextoken_words(VAR, tok));
+            }
         }   
 
         /* CASE A 1 CARACTERE (Exemple : \n) */

@@ -193,7 +193,7 @@ static char *lexing_special_variables(char *input, size_t pos)
     }
     if (input[pos] == '@' || input[pos] == '*' || input[pos] == '?' || input[pos] == '$' || input[pos] == '#' || isdigit(input[pos]))
     {
-        char *tok = malloc_err(2);
+        char *tok = malloc_err(3);
         tok[0] = '$';
         tok[1] = input[pos];
         tok[2] = '\0';
@@ -204,14 +204,15 @@ static char *lexing_special_variables(char *input, size_t pos)
 
 static char *lexing_variables_no_braces(char *input, size_t pos)
 {
+    char *special_var = lexing_special_variables(input, pos);
+    if (special_var)
+    {
+        return special_var;
+    }
     size_t capacity = 8;
     char *tok = malloc_err(capacity);
 
     size_t tok_pos = 0;
-    if (tok = lexing_special_variables(input, pos))
-    {
-        return tok;
-    }
     while (pos < strlen(input) && (isalnum(input[pos]) || input[pos] == '_'))
     {
         if (tok_pos >= capacity - 1)
@@ -238,6 +239,8 @@ char *lexing_variables(char *input, size_t pos)
     {
         return lexing_variables_no_braces(input, pos);
     }
+    pos++;
+
     size_t input_len = strlen(input);
     size_t capacity = 8;
     char *tok = malloc_err(capacity);
