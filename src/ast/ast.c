@@ -462,6 +462,9 @@ void redirection_destroy(struct redirection *redir)
 {
     if (!redir)
         return;
+    free(redir->fd);
+    free(redir->filename);
+    free(redir->operator);
     free(redir);
 }
 
