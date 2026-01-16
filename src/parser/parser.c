@@ -102,12 +102,52 @@ static struct ast *parse_list(enum parser_status *status, struct fifo *lexer)
     return &list->base;
 }
 
-// and_or = pipeline ;
+//and_or = pipeline { ( '&&' | '||' ) {'\n'} pipeline } ;
 static struct ast *parse_and_or(enum parser_status *status, struct fifo *lexer)
 {
+    // pipeline
     struct ast *child = parse_pipeline(status, lexer);
     if (*status != PARSER_OK)
         return NULL; // error
+    // { ( '&&' | '||' ) {'\n'} pipeline }
+    struct lextoken *token;
+    struct ast_and_or *out = NULL;
+    int counter = 0;
+    while (1)
+    {
+        // ( '&&' | '||' )
+        token = fifo_head(lexer);
+        int type;
+        if (token && token->tok == AND)
+            type = 0;
+        else if (token && token->tok == OR)
+            type = 1;
+        else
+            break; 
+        fifo_pop(lexer);
+        // {'\n'}
+        while (1)
+        {
+            token = fifo_head(lexer);
+            if (!token || token->tok != NEWLINE)
+                break;
+            fifo_pop(lexer);
+        }
+        // pipeline
+        struct ast *child2 = parse_pipeline(status, lexer);
+        if (*status != PARSER_OK)
+            return NULL; // error
+        // if we reach here, it means we at least have one and_or
+        if (counter == 0)
+        {
+            out = ast_and_or_init();
+            ast_list_add_ast(out->children, child); //we only add the child, not the operator
+        }
+        ast_and_or_add_ast(out, child2, type);
+        counter = 1;
+    }
+    if (counter == 1)
+        return &out->base;
     return child;
 }
 
@@ -155,9 +195,10 @@ static struct ast *parse_pipeline(enum parser_status *status,
             ast_list_add_ast(pipeline->pipelines, child);   
         }
         ast_list_add_ast(pipeline->pipelines, child2);
-        child = &pipeline->base;
         counter = 1 ;
     }
+    if (counter == 1)
+        return &pipeline->base;
     return child;
 }
 

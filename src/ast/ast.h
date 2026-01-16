@@ -93,6 +93,18 @@ struct ast_pipe
     struct redirection **redirections; // Can a pipe have redirections?
 };
 
+struct ast_and_or // 
+{
+    struct ast base;
+    struct ast_list *children;
+    int *op; // 0 for &&, 1 for || 
+    //the way this will function is op[i] is the operator between
+    //children[i] and children[i+1]
+    //for example, if we have a || b && c, then op[0] = 1, op[1] = 0
+    //This implementation dont work for case with parantheses, there is no and or priority
+    size_t child_count;
+};
+
 //-------------------------------------INITIALIZE AST TYPES-----------------//
 
 struct ast_cmd *ast_cmd_init(int neg);
