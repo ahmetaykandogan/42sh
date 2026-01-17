@@ -38,7 +38,7 @@ int main(int argc, char **argv)
         lex_queue = lexing_from_file(argv[1]);
     }
     enum parser_status status = PARSER_OK;
-    struct ast *ast = parse_input(&status, lex_queue);
+    struct ast *ast = main_parse(&status, lex_queue);
     run_ast(ast);
     fifo_destroy(lex_queue);
     struct_ast_destroy(ast);

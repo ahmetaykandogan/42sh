@@ -31,6 +31,36 @@ static struct redirection *parse_prefix(enum parser_status *status, struct fifo 
 int activated_negation = 0;// will check if negation is activated
 
 // La fonction au dessus va recuperer l'ast
+struct ast *main_parse(enum parser_status *status, struct fifo *lexer)
+{
+        struct ast_list *out = ast_list_init();
+        struct lextoken *token = fifo_head(lexer);
+        if (!token)
+        {
+            *status = PARSER_OK;
+            return &out->base; // EOF
+        }
+        while (1)
+        {
+            token = fifo_head(lexer);
+            if (!token)
+            {
+                *status = PARSER_OK;
+                return &out->base; // EOF
+            }
+            struct ast *child = parse_input(status, lexer);
+            if (*status != PARSER_OK)
+            {
+                struct_ast_destroy(&out->base);
+                return NULL; // error
+            }
+            ast_list_add_ast((struct ast_list *)out, child);
+        }
+        return &out->base;
+}
+
+//the problem here is that this dont read everything,
+//it just read one line or one shell command
 struct ast *parse_input(enum parser_status *status, struct fifo *lexer)
 {
     struct lextoken *token = fifo_head(lexer);
@@ -562,6 +592,8 @@ static struct ast *parse_compound_list(enum parser_status *status,
         return NULL; // error
     struct lextoken *token;
     // { ( ';' | '\n' ) {'\n'} and_or }
+    int counter = 0;
+    struct ast_list *new_list = ast_list_init();
     while (1)
     {
         token = fifo_head(lexer);
@@ -585,10 +617,17 @@ static struct ast *parse_compound_list(enum parser_status *status,
             break; // error
         }
         // create a list to hold child and next_child
-        struct ast_list *new_list = ast_list_init();
-        ast_list_add_ast(new_list, child);
+        if (counter == 0)
+        {
+            ast_list_add_ast(new_list, child);
+            counter = 1;
+        }
         ast_list_add_ast(new_list, next_child);
         child = &new_list->base;
+    }
+    if (counter == 0)
+    {
+        ast_list_destroy(new_list);
     }
     // [';']
     token = fifo_head(lexer);
@@ -602,6 +641,8 @@ static struct ast *parse_compound_list(enum parser_status *status,
             break;
         fifo_pop(lexer);
     }
+    if (counter == 1)
+        return &new_list->base;
     return child;
 }
 

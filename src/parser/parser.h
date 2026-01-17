@@ -13,6 +13,7 @@ enum parser_status
     PARSER_ERROR,
 };
 
+struct ast *main_parse(enum parser_status *status, struct fifo *lexer);
 struct ast *parse_input(enum parser_status *status, struct fifo *lexer);
 
 #endif /* ! PARSER_H */

@@ -226,7 +226,7 @@ static int try_execute_builtin(char **argv)
     return -1;
 }
 
-static pid_t fork_executor(char **argv, int in, int out)
+static pid_t fork_executor(char **argv, int in, int out, int (*filedes)[2], size_t nb_child)
 {
     pid_t pid = fork();
     if (pid != 0)
@@ -236,6 +236,15 @@ static pid_t fork_executor(char **argv, int in, int out)
         dup2(in, STDIN_FILENO);
     if (out != STDOUT_FILENO)
         dup2(out, STDOUT_FILENO);
+
+    if (filedes)
+    {
+        for (size_t k = 0; k < (nb_child ? nb_child - 1 : 0); k++)
+        {
+            close(filedes[k][0]);
+            close(filedes[k][1]);
+        }
+    }
 
     int builtin_executed = try_execute_builtin(argv);
     if (builtin_executed != -1)
@@ -281,7 +290,7 @@ void run_pipe(struct ast *enter_pipe)
         else
             out = filedes[j][1];
 
-        pid_list[j] = fork_executor(cmd->words, in, out);
+        pid_list[j] = fork_executor(cmd->words, in, out, filedes, nb_child);
     }
 
     for (size_t k = 0; k < nb_child - 1; k++)
