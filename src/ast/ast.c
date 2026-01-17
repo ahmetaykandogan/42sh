@@ -367,6 +367,7 @@ void run_command(struct ast_cmd *cmd)
     while (words[argc] != NULL)
         argc++;
 
+    run_redirections(cmd->redirections);
     int builtin_result = try_execute_builtin(words);
     if (builtin_result != -1)
     {
@@ -375,7 +376,6 @@ void run_command(struct ast_cmd *cmd)
         if (saved_stdin < 0 || saved_stdout < 0)
             err(2, "dup failed");
 
-        run_redirections(cmd->redirections);
         if_value = builtin_result;
         fflush(stdout);
 
@@ -392,7 +392,6 @@ void run_command(struct ast_cmd *cmd)
     int pid = fork();
     if (pid == 0)
     {
-        run_redirections(cmd->redirections);
         execvp(words[0], words);
         err(2, "exec dont recognize it");
     }
