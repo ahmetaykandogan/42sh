@@ -11,7 +11,7 @@ char *lexing_quotes(char *input, size_t pos);
 
 char *lexing_double_quotes(char *input, size_t pos);
 
-char *lexing_numbers(char *input, size_t pos);
+char *lexing_number(char *input, size_t pos);
 
 char *lexing_redirection(char *input, size_t pos);
 
