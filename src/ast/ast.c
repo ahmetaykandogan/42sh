@@ -82,6 +82,15 @@ struct ast_and_or *ast_and_or_init(void)
     return out;
 }
 
+struct ast_var *ast_var_init(char *name, char *value)
+{
+    struct ast_var *out = calloc(1, sizeof(struct ast_var));
+    out->base.type = AST_VAR;
+    out->name = name;
+    out->value = value;
+    return out;
+}
+
 //--------------------------------ADDINGS------------------------------------
 
 void ast_cmd_add_word(struct ast_cmd *in, char *word)
@@ -150,6 +159,7 @@ const char *ast_repr(enum ast_type type)
         [AST_UNTIL] = "UNTIL",
         [AST_PIPE] = "PIPE",
         [AST_AND_OR] = "AND_OR",
+        [AST_VAR] = "VAR",
     };
     return names[type];
 }
@@ -203,6 +213,12 @@ static void ast_run_and_or(struct ast *ast)
                 continue;
         }
     }
+}
+
+static void ast_run_var(struct ast *ast)
+{
+    struct ast_var *ast_v = (struct ast_var *)ast;
+    // not sure about how I should do it
 }
 
 static int try_execute_builtin(char **argv)
@@ -420,6 +436,7 @@ void run_ast(struct ast *ast)
         [AST_UNTIL] = &ast_run_until,
         [AST_PIPE] = &run_pipe,
         [AST_AND_OR] = &ast_run_and_or,
+        [AST_VAR] = &ast_run_var,
     };
     (*run_functions[ast->type])(ast);
 }
@@ -438,6 +455,7 @@ void struct_ast_destroy(struct ast *node)
         [AST_UNTIL] = (run_type)&ast_until_destroy,
         [AST_PIPE] = (run_type)&ast_pipe_destroy,
         [AST_AND_OR] = (run_type)&ast_and_or_destroy,
+        [AST_VAR] = (run_type)&ast_var_destroy,
     };
     (*destroy_functions[node->type])(node);
 }
@@ -511,6 +529,15 @@ void ast_and_or_destroy(struct ast_and_or *node)
         return;
     struct_ast_destroy((struct ast *)node->children);
     free(node->op);
+    free(node);
+}
+
+void ast_var_destroy(struct ast_var *node)
+{
+    if (!node)
+        return;
+    free(node->name);
+    free(node->value);
     free(node);
 }
 
