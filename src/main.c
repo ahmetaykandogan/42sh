@@ -17,7 +17,7 @@ int main(int argc, char **argv)
     }
 
     //pretty print mode pour debug et la testsuite, pas sûr si le parse input est correctement utilisé, à verifier
-    if (strcmp(argv[1], "-p") == 0)
+    else if (strcmp(argv[1], "-p") == 0)
     {
         lex_queue = lexer(argv[2]);
         enum parser_status status = PARSER_OK;
@@ -33,7 +33,7 @@ int main(int argc, char **argv)
         lex_queue = lexer(argv[2]);
     }
 
-    else if (argv[1])
+    else
     {
         lex_queue = lexing_from_file(argv[1]);
     }

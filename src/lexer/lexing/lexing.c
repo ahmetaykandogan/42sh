@@ -7,6 +7,7 @@
 
 #include "utils/check_char/check_char.h"
 #include "utils/malloc_err/malloc_err.h"
+
 /* ------------------------------ */
 /* -- LEXING THE VARIOUS CASES -- */
 /* ------------------------------ */
