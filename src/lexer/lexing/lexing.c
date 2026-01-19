@@ -19,6 +19,23 @@ char *lexing_words(char *input, size_t pos)
     size_t tok_pos = 0;
     while (pos < strlen(input) && check_char(input[pos]) == 42)
     {
+        if (input[pos] == '\\' && pos + 1 < strlen(input))
+        {
+            if (tok_pos >= capacity - 1)
+            {
+                capacity *= 2;
+                tok = realloc_err(tok, capacity);
+            }
+            tok[tok_pos++] = input[pos++];
+
+            if (tok_pos >= capacity - 1)
+            {
+                capacity *= 2;
+                tok = realloc_err(tok, capacity);
+            }
+            tok[tok_pos++] = input[pos++];
+        }
+
         if (tok_pos >= capacity - 1)
         {
             capacity *= 2;
@@ -26,6 +43,7 @@ char *lexing_words(char *input, size_t pos)
         }
         tok[tok_pos++] = input[pos++];
     }
+
     if (tok_pos >= capacity)
     {
         capacity *= 2;
@@ -37,6 +55,7 @@ char *lexing_words(char *input, size_t pos)
     return tok;
 }
 
+/*
 char *lexing_words_echo(char *input, size_t pos)
 {
     size_t capacity = 8;
@@ -62,6 +81,8 @@ char *lexing_words_echo(char *input, size_t pos)
 
     return tok;
 }
+*/
+
 char *lexing_quotes(char *input, size_t pos)
 {
     size_t input_len = strlen(input);

@@ -26,7 +26,7 @@ struct fifo *lexer(char *input)
 
     size_t input_len = strlen(input);
     size_t i = 0;
-    int echo = 0; // if there is an echo, functioning change till double \n\n
+/*    int echo = 0;*/ // if there is an echo, functioning change till double \n\n
     while (i < input_len)
     {
         if (input[i] == ' ' || input[i] == '\t')
@@ -83,6 +83,7 @@ struct fifo *lexer(char *input)
         }
 
         /* CASE WORDS */
+        /*
         if (echo == 1)
         {
             if (input[i] == '\n' || input[i] == ';' || input[i] == '\0' || input[i] == '|' || input[i] == '&' || input[i] == '<' || input[i] == '>')
@@ -95,14 +96,14 @@ struct fifo *lexer(char *input)
             fifo_push(queue, create_lextoken_commands(tok));
             continue;
         }
-        else if (check_char(input[i]) == 42 && echo == 0)
+        else */if (check_char(input[i]) == 42/* && echo == 0*/)
         {
             char *tok = lexing_words(input, i);
             i += strlen(tok);
-            if (strcmp(tok, "echo") == 0)
+/*            if (strcmp(tok, "echo") == 0)
             {
                 echo = 1;
-            }
+            }*/
             fifo_push(queue, create_lextoken_commands(tok));
         }
 
