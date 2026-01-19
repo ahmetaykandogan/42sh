@@ -116,12 +116,14 @@ static struct ast *parse_list(enum parser_status *status, struct fifo *lexer)
     ast_list_add_ast(list, child); // adding the cmd to the list
 
     // { ';' and_or } [ ; ]
+    int column_counter = 0;
     while (1)
     {
         // TODO Fix grammar rule tied to first ;
         struct lextoken *token = fifo_head(lexer);
         if (!token || token->tok != COLUMN)
             break;
+        column_counter++;
         fifo_pop(lexer);
         child = parse_and_or(status, lexer); // return a cmd
         if (*status != PARSER_OK)
@@ -129,7 +131,20 @@ static struct ast *parse_list(enum parser_status *status, struct fifo *lexer)
             *status = PARSER_OK;
             break; //this mean there is only a ; and not a and_or
         }
+        column_counter = 0;
         ast_list_add_ast(list, child); // adding the cmd to the list
+    }
+    // [ ; ]
+    struct lextoken *token = fifo_head(lexer);
+    if (token && token->tok == COLUMN)
+    {
+        if (column_counter == 1)
+        {
+            *status = PARSER_ERROR;
+            ast_list_destroy(list);
+            return NULL; // error: two ; in a row
+        }
+        fifo_pop(lexer);
     }
     return &list->base;
 }
