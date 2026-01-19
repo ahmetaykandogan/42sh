@@ -371,18 +371,8 @@ void run_command(struct ast_cmd *cmd)
     int builtin_result = try_execute_builtin(words);
     if (builtin_result != -1)
     {
-        int saved_stdin = dup(STDIN_FILENO);
-        int saved_stdout = dup(STDOUT_FILENO);
-        if (saved_stdin < 0 || saved_stdout < 0)
-            err(2, "dup failed");
-
         if_value = builtin_result;
         fflush(stdout);
-
-        if (dup2(saved_stdin, STDIN_FILENO) < 0 || dup2(saved_stdout, STDOUT_FILENO) < 0)
-            err(2, "failed to restore filedescriptors");
-        close(saved_stdin);
-        close(saved_stdout);
 
         if (cmd->negated)
             if_value = !if_value;

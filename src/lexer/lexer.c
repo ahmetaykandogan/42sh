@@ -85,9 +85,10 @@ struct fifo *lexer(char *input)
         /* CASE WORDS */
         if (echo == 1)
         {
-            if (input[i] == '\n' || input[i] == ';' || input[i] == '\0')
+            if (input[i] == '\n' || input[i] == ';' || input[i] == '\0' || input[i] == '|' || input[i] == '&' || input[i] == '<' || input[i] == '>')
             {
                 echo = 0;
+                continue;
             }
             char *tok = lexing_words_echo(input, i);
             i += strlen(tok);

@@ -43,7 +43,7 @@ int main(int argc, char **argv)
     run_ast(ast);
     if (!ast)
     {
-        fifo_destroy_with_words(lex_queue); //if parsing has failed, the fifo destroy dont free the words
+        fifo_destroy_failed(lex_queue); //if parsing has failed, the fifo destroy dont free the words
         err(2, "Parsing has failed"); //exit with error 2
     }
     fifo_destroy(lex_queue);

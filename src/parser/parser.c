@@ -274,9 +274,18 @@ static struct ast *parse_command(enum parser_status *status, struct fifo *lexer)
         *status = PARSER_ERROR;
         return NULL;
     }
+    if (*status == PARSER_CRITICAL_ERROR)
+    {
+        return NULL;
+    }
     while (1)
     {
         struct redirection *redir = parse_redirections(status, lexer); //created the struct to add 
+        if (*status == PARSER_CRITICAL_ERROR)
+        {
+            struct_ast_destroy(out);
+            return NULL; // error
+        }
         if (*status != PARSER_OK)
         {
             *status = PARSER_OK; // no redirections is ok
@@ -299,6 +308,10 @@ static struct ast *parse_simple_command(enum parser_status *status,
     {
 
         struct redirection *prefix_redir = parse_prefix(status, lexer);
+        if (*status == PARSER_CRITICAL_ERROR)
+        {
+            return NULL; // error
+        }
         if (*status != PARSER_OK)
         {
             *status = PARSER_OK; // No more prefixes to parse
@@ -325,6 +338,11 @@ static struct ast *parse_simple_command(enum parser_status *status,
     while (1)
     {
         parse_element(status, lexer, &command->base);
+        if (*status == PARSER_CRITICAL_ERROR)
+        {
+            struct_ast_destroy(&command->base);
+            return NULL; // error
+        }
         if (*status != PARSER_OK)
         {
             *status = PARSER_OK; // No more elements to parse
@@ -392,7 +410,7 @@ static struct redirection *parse_redirections(enum parser_status *status,
     token = fifo_head(lexer);
     if (!token || token->tok != WORDS)
     {
-        *status = PARSER_ERROR;
+        *status = PARSER_CRITICAL_ERROR;
         return NULL;
     }
     struct redirection *redir = redirection_init(fd, token->value, operator);
