@@ -97,7 +97,9 @@ struct ast *parse_input(enum parser_status *status, struct fifo *lexer)
         return out;
     }
     // error
-    return out; //to test?
+    struct_ast_destroy(out);
+    *status = PARSER_ERROR;
+    return NULL; //PARSING WAS INCOMPLETE
 }
 
 // list = and_or { ';' and_or } [ ';' ] ;

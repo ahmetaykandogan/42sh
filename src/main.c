@@ -41,6 +41,10 @@ int main(int argc, char **argv)
     struct ast *ast = main_parse(&status, lex_queue);
     run_ast(ast);
     fifo_destroy(lex_queue);
+    if (!ast)
+    {
+        return 2; //exit with error 2
+    }
     struct_ast_destroy(ast);
     return 0;
 }
