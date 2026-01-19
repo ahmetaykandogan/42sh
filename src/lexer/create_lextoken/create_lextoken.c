@@ -1,6 +1,6 @@
+#include <err.h>
 #include <stdlib.h>
 #include <string.h>
-#include <err.h>
 
 #include "lexer/struct_lexer.h"
 #include "utils/check_char/check_char.h"

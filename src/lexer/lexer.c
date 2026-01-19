@@ -1,7 +1,7 @@
-#include <err.h>
-#include <string.h>
-#include <stdlib.h>
 #include <ctype.h>
+#include <err.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "lexer/create_lextoken/create_lextoken.h"
 #include "lexer/lexing/lexing.h"
@@ -29,7 +29,7 @@ struct fifo *lexer(char *input)
     int echo = 0; // if there is an echo, functioning change till double \n\n
     while (i < input_len)
     {
-        if (input[i] == ' ')
+        if (input[i] == ' ' || input[i] == '\t')
         {
             i++;
             continue;
@@ -38,19 +38,41 @@ struct fifo *lexer(char *input)
         /* CASE COMMENTS */
         else if (input[i] == '#')
         {
-            while (input[i] && input[i] != '\n')
+            if (i == 0 || input[i - 1] == ' ' || input[i - 1] == ';'
+                || input[i - 1] == '\t' || input[i - 1] == '\n')
             {
-                i++;
+                while (input[i] && input[i] != '\n')
+                {
+                    i++;
+                }
+            }
+            else
+            {
+                char *tok = lexing_words(input, i);
+                i += strlen(tok);
+
+                fifo_push(queue, create_lextoken_commands(tok));
+            }
+        }
+
+        /* CASE ESCAPE */
+        else if (input[i] == '\\')
+        {
+            i++;
+
+            if (i < input_len)
+            {
+                continue;
             }
         }
 
         /* CASE NUMBER + IONUMBER */
         else if (isdigit(input[i]))
         {
-            char *tok = lexing_words(input, i);
+            char *tok = lexing_number(input, i);
             i += strlen(tok);
 
-            if (input[i] && (input[i] == '<' || input[i] == '>'))
+            if (i < input_len && (input[i] == '<' || input[i] == '>'))
             {
                 fifo_push(queue, create_lextoken_words(IONUMBER, tok));
             }
@@ -139,7 +161,7 @@ struct fifo *lexer(char *input)
             {
                 fifo_push(queue, create_lextoken_words(VAR, tok));
             }
-        }   
+        }
 
         /* CASE A 1 CARACTERE (Exemple : \n) */
         else
