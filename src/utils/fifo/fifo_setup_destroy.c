@@ -29,3 +29,17 @@ void fifo_destroy(struct fifo *fifo)
     fifo_clear(fifo);
     free(fifo);
 }
+
+void fifo_destroy_with_words(struct fifo *fifo)
+{
+    while (fifo->size != 0)
+    {
+        struct lextoken *token = fifo_head(fifo);
+        if (token->tok == WORDS || token->tok == VAR || token->tok == IONUMBER)
+        {
+            free(token->value);
+        }
+        fifo_pop(fifo);
+    }
+    free(fifo);
+}

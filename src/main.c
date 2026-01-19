@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <err.h>
 
 #include "utils/fifo/fifo.h"
 
@@ -40,11 +41,12 @@ int main(int argc, char **argv)
     enum parser_status status = PARSER_OK;
     struct ast *ast = main_parse(&status, lex_queue);
     run_ast(ast);
-    fifo_destroy(lex_queue);
     if (!ast)
     {
-        return 2; //exit with error 2
+        fifo_destroy_with_words(lex_queue); //if parsing has failed, the fifo destroy dont free the words
+        err(2, "Parsing has failed"); //exit with error 2
     }
+    fifo_destroy(lex_queue);
     struct_ast_destroy(ast);
     return 0;
 }

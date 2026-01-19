@@ -25,6 +25,7 @@ struct lextoken *fifo_head(struct fifo *fifo);
 void fifo_pop(struct fifo *fifo);
 void fifo_clear(struct fifo *fifo);
 void fifo_destroy(struct fifo *fifo);
+void fifo_destroy_with_words(struct fifo *fifo);
 // void fifo_print(const struct fifo *fifo);
 
 #endif /* !FIFO_H */

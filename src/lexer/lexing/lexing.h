@@ -5,6 +5,8 @@
 
 char *lexing_words(char *input, size_t pos);
 
+char *lexing_words_echo(char *input, size_t pos);
+
 char *lexing_quotes(char *input, size_t pos);
 
 char *lexing_double_quotes(char *input, size_t pos);
