@@ -22,6 +22,7 @@ bin_PROGRAMS = 42sh
       lexer/lexing/liblexing.a \
       lexer/create_lextoken/liblextoken.a \
       lexer/read_file/libread.a \
+      lexer/case_handler/libhandler.a \
       builtins/libbuiltins.a \
       pretty_printer/libpretty.a \
       utils/libutils.a \

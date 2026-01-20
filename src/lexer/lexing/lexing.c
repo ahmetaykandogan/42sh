@@ -55,34 +55,6 @@ char *lexing_words(char *input, size_t pos)
     return tok;
 }
 
-/*
-char *lexing_words_echo(char *input, size_t pos)
-{
-    size_t capacity = 8;
-    char *tok = malloc_err(capacity);
-
-    size_t tok_pos = 0;
-    while (pos < strlen(input) && input[pos] != ' ' && input[pos] != '\n' && input[pos] != ';' )
-    {
-        if (tok_pos >= capacity - 1)
-        {
-            capacity *= 2;
-            tok = realloc_err(tok, capacity);
-        }
-        tok[tok_pos++] = input[pos++];
-    }
-    if (tok_pos >= capacity)
-    {
-        capacity *= 2;
-        tok = realloc_err(tok, capacity);
-    }
-    tok[tok_pos] = '\0';
-    tok = realloc_err(tok, tok_pos + 1);
-
-    return tok;
-}
-*/
-
 char *lexing_quotes(char *input, size_t pos)
 {
     size_t input_len = strlen(input);
@@ -147,7 +119,7 @@ char *lexing_double_quotes(char *input, size_t pos)
     return tok;
 }
 
-char *lexing_number(char *input, size_t pos)
+char *lexing_numbers(char *input, size_t pos)
 {
     size_t capacity = 4;
     char *tok = malloc_err(capacity);
