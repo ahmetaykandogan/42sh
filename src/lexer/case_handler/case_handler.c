@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <string.h>
 
+#include "utils/malloc_err/malloc_err.h"
 #include "lexer/lexing/lexing.h"
 #include "lexer/create_lextoken/create_lextoken.h"
 #include "utils/fifo/fifo.h"
@@ -132,6 +133,5 @@ size_t handle_single_char(char *input, size_t i, struct fifo *queue)
     tok[1] = '\0';
 
     fifo_push(queue, create_lextoken_single_char(tok));
-    
     return i + 1; 
 }
