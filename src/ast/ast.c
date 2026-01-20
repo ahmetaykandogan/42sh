@@ -356,24 +356,35 @@ void run_redirections(struct redirection **redir)
         close(file_desc);
     }
 }
-
+static void restored_fds(int stdin_cp, int stdout_cp, int stderr_cp)
+{
+    dup2(stdin_cp, STDIN_FILENO);
+    dup2(stdout_cp, STDOUT_FILENO);
+    dup2(stderr_cp, STDERR_FILENO);
+    close(stdin_cp);
+    close(stdout_cp);
+    close(stderr_cp);
+}
 void run_command(struct ast_cmd *cmd)
 {
     char **words = cmd->words;
     if (!words || !words[0])
         return;
-
+    //we save the fds to restore them later
+    int stdin_cp = dup(STDIN_FILENO);
+    int stdout_cp = dup(STDOUT_FILENO);
+    int stderr_cp = dup(STDERR_FILENO);
     int argc = 0;
     while (words[argc] != NULL)
         argc++;
-
-    run_redirections(cmd->redirections);
+    if (cmd->redirections)
+        run_redirections(cmd->redirections);
     int builtin_result = try_execute_builtin(words);
     if (builtin_result != -1)
     {
         if_value = builtin_result;
         fflush(stdout);
-
+        restored_fds(stdin_cp, stdout_cp, stderr_cp);
         if (cmd->negated)
             if_value = !if_value;
         return;
@@ -393,7 +404,7 @@ void run_command(struct ast_cmd *cmd)
         if_value = WEXITSTATUS(wstatus);
     else
         if_value = 1;
-
+    restored_fds(stdin_cp, stdout_cp, stderr_cp);
     if (cmd->negated)
         if_value = !if_value;
 }
