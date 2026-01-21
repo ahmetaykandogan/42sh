@@ -126,6 +126,7 @@ void ast_list_add_ast(struct ast_list *in, struct ast *ast);
 // TODO same for this
 void ast_and_or_add_ast(struct ast_and_or *in, struct ast *ast, int type);
 // type is 0 for &&, 1 for ||
+void add_vars(struct ast_cmd *cmd, char *new_var);
 
 //---------------------LOOKUP TABLE FOR DESTROY FUNCTIONS-----------------//
 
