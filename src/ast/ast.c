@@ -365,6 +365,42 @@ static void restored_fds(int stdin_cp, int stdout_cp, int stderr_cp)
     close(stdout_cp);
     close(stderr_cp);
 }
+
+static char **expand_commad_words(char **words, struct var_env *env, char **argv, int argc)
+{
+    if (!words)
+        return NULL;
+    size_t count = 0;
+
+    for (size_t i = 0; words[i] != NULL; i++)
+    {
+        char **expanded = expand_word(words[i], env, argv, argc, if_value);
+        size_t j = 0;
+        while (expanded[j] && expanded)
+        {
+            count++;
+            j++;
+        }
+        
+        for (size_t k = 0; expanded && expanded[k]; k++)
+            free(expanded[k]);
+        free(expanded);
+    }
+
+    char **out = calloc(count + 1, sizeof(char *));
+    size_t index = 0;
+
+    for (size_t i = 0; words[i] != NULL; i++)
+    {
+        char **expanded = expand_word(words[i], env, argv, argc, if_value);
+        for(size_t j = 0; expanded && expanded[j]; j++)
+        {
+            out[index++] = strdup(expanded[j]);
+        }
+        free(expanded);
+    }
+}
+
 void run_command(struct ast_cmd *cmd)
 {
     char **words = cmd->words;
@@ -377,6 +413,21 @@ void run_command(struct ast_cmd *cmd)
     int argc = 0;
     while (words[argc] != NULL)
         argc++;
+
+    if (cmd->assignments)
+    {
+        for (size_t i = 0; cmd->assignments[i] != NULL; i++) {
+            char *eq = strchr(cmd->assignments[i], '=');
+            if (eq) {
+                *eq = '\0';
+                char *name = cmd->assignments[i];
+                char *value = eq + 1;
+                
+                *eq = '=';
+            }
+        }
+    }
+
     if (cmd->redirections)
         run_redirections(cmd->redirections);
     int builtin_result = try_execute_builtin(words);
@@ -407,6 +458,8 @@ void run_command(struct ast_cmd *cmd)
     restored_fds(stdin_cp, stdout_cp, stderr_cp);
     if (cmd->negated)
         if_value = !if_value;
+
+    free 
 }
 
 void run_ast(struct ast *ast)
