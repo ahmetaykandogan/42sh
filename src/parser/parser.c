@@ -324,9 +324,9 @@ static struct ast *parse_simple_command(enum parser_status *status,
             }
             else
             {
-                ast_cmd_add_word(command, var);
+                add_vars(command, var);
+                break;
             }
-            break;
         }
         //add to list
         add_redirection(&redir_to_add, prefix_redir);

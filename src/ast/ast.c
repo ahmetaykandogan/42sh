@@ -19,6 +19,7 @@ struct ast_cmd *ast_cmd_init(int neg)
     out->words = calloc(1, sizeof(char *));
     out->negated = neg;
     out->redirections = NULL;
+    out->assignments = NULL;
     return out;
 }
 
@@ -112,6 +113,20 @@ void ast_and_or_add_ast(struct ast_and_or *in, struct ast *ast, int type)
     in->op = realloc(in->op, sizeof(int) * (in->child_count - 1));
     in->op[in->child_count - 2] = type;
     return;
+}
+
+void add_vars(struct ast_cmd *cmd, char *new_var)
+{
+    size_t count = 0;
+    if (cmd->assignments)
+    {
+        while (cmd->assignments[count] != NULL)
+            count++;
+    }
+    char **out = realloc(cmd->assignments, sizeof(char *) * (count + 2));
+    out[count] = new_var;
+    out[count + 1] = NULL;
+    cmd->assignments = out;
 }
 //-----------------LOOKUP TABLE FOR RUN FUNCTIONS-----------------
 
@@ -414,6 +429,10 @@ void run_command(struct ast_cmd *cmd)
             run_redirections(cmd->redirections);
             restored_fds(stdin_cp, stdout_cp, stderr_cp);
         }
+        else if (cmd->assignments) // we only have variables, expansion is for every cmd, so we add to global list
+        {
+
+        }
         return;
     }
     //we save the fds to restore them later
@@ -467,8 +486,6 @@ void run_command(struct ast_cmd *cmd)
     restored_fds(stdin_cp, stdout_cp, stderr_cp);
     if (cmd->negated)
         if_value = !if_value;
-
-    free 
 }
 
 void run_ast(struct ast *ast)
@@ -518,6 +535,9 @@ void ast_cmd_destroy(struct ast_cmd *node)
     free(node->words);
     for (i = 0; node->redirections && node->redirections[i] != NULL; i++)
         redirection_destroy(node->redirections[i]);
+    for (i = 0; node->assignments && node->assignments[i] != NULL; i++)
+        free(node->assignments[i]);
+    free(node->assignments);
     free(node->redirections);
     free(node);
 }
