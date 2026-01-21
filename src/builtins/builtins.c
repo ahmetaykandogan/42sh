@@ -68,6 +68,16 @@ int builtins_echo(char **words)
             newline = 0;
             interpret = 0;
         }
+        else if (strcmp(words[i], "-en") == 0)
+        {
+            newline = 0;
+            interpret = 1;
+        }
+        else if (strcmp(words[i], "-En") == 0)
+        {
+            newline = 0;
+            interpret = 0;
+        }
         else
             break;
         i++;
