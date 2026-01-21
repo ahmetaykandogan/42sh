@@ -22,8 +22,7 @@ static struct ast *parse_rule_while(enum parser_status *status, struct fifo *lex
 static struct ast *parse_rule_until(enum parser_status *status, struct fifo *lexer);
 static struct redirection *parse_redirections(enum parser_status *status, struct fifo *lexer);
 static struct redirection *parse_prefix(enum parser_status *status, struct fifo *lexer);
-static struct ast *parse_prefix_vars(enum parser_status *status,struct fifo *lexer);
-// input =
+static char *parse_prefix_vars(enum parser_status *status, struct fifo *lexer);
 // list '\n'
 // | list EOF
 // | '\n'
@@ -304,7 +303,7 @@ static struct ast *parse_simple_command(enum parser_status *status,
                                         struct fifo *lexer)
 {
     // { prefix }
-    struct ast_list *command = ast_list_init(); // initialize command ast node
+    struct ast_cmd *command = ast_cmd_init(0); // initialize command ast node
     int redir_counter = 0;
     struct redirection **redir_to_add = NULL; //list of redirections to add to the command
     while (1)
@@ -317,7 +316,7 @@ static struct ast *parse_simple_command(enum parser_status *status,
         if (*status != PARSER_OK)
         {
             *status = PARSER_OK; // No more prefixes to parse
-            struct ast *var = parse_prefix_vars(status, lexer);
+            char *var = parse_prefix_vars(status, lexer);
             if (*status != PARSER_OK)
             {
                 *status = PARSER_OK; // No more prefixes to parse
@@ -325,7 +324,7 @@ static struct ast *parse_simple_command(enum parser_status *status,
             }
             else
             {
-                ast_list_add_ast(command, var);
+                ast_cmd_add_word(command, var);
             }
             break;
         }
@@ -335,8 +334,6 @@ static struct ast *parse_simple_command(enum parser_status *status,
     }
     // WORD
     struct lextoken *token = fifo_head(lexer);
-
-    struct ast_cmd *command_node = ast_cmd_init(0);
     if (!token || token->tok != WORDS)
     {
         if (redir_counter == 0) //no prefix total error
@@ -346,10 +343,11 @@ static struct ast *parse_simple_command(enum parser_status *status,
             return NULL;
         }
         //this is where prefix { prefix } happens
-        command_node->redirections = redir_to_add;
-        return &command_node->base; //we only have redirections
+        command->redirections = redir_to_add;
+        return &command->base; //we only have redirections
     }
-    struct ast_cmd *token_cmd = ast_cmd_init(0);
+    command->redirections = redir_to_add;
+    ast_cmd_add_word(command, token->value);
     fifo_pop(lexer);
 
     // { element }
@@ -367,13 +365,11 @@ static struct ast *parse_simple_command(enum parser_status *status,
             break;
         }
     }
-
     //add redirections to command
     if (redir_to_add)
     {
-        token_cmd->redirections = redir_to_add;
+        command->redirections = redir_to_add;
     }
-    ast_list_add_ast(command, (struct ast *)token_cmd);
     return &command->base;
 }
 // prefix = ASSIGNMENT_WORD
@@ -385,26 +381,39 @@ static struct redirection *parse_prefix(enum parser_status *status,
     struct redirection *out = parse_redirections(status, lexer);
     if (*status != PARSER_OK)
     {
-        *status = PARSER_OK;
         return NULL; // error
     }
     return out;
 }
 //So basically since prefix return redirection, I cant expand it
 //So Ill seperate the two, when we test prefix, we test for vars too
-static struct ast *parse_prefix_vars(enum parser_status *status,
+static char *parse_prefix_vars(enum parser_status *status,
                               struct fifo *lexer)
 {
     struct lextoken *token = fifo_head(lexer);
-    if (!token || token->tok != VAR)
+    if (!token || token->tok != WORDS)
     {
         *status = PARSER_ERROR;
         return NULL; // error
     }
-    struct ast_cmd *var_node = ast_cmd_init(0);
-    ast_cmd_add_word(var_node, token->value);
+    int check =0;
+    for (int i = 0; token->value[i]; i++)
+    {
+        if (token->value[i] == '=')
+        {
+            check =1;
+            break;
+        }
+    }
+    if (check ==0)
+    {
+        *status = PARSER_ERROR;
+        return NULL; // error
+    }
+    //if we reach here, its a var
+    char *var = token->value;
     fifo_pop(lexer);
-    return (struct ast *)var_node;
+    return var;
 }
 
 //redirection = [IONUMBER] ( '>' | '<' | '>>' | '>&' | '<&' | '>|' | '<>' ) WORD ;
