@@ -2,12 +2,120 @@
 #include "variable.h"
 #include <limits.h>
 #include <linux/limits.h>
+#include <ctype.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+
 
 //Le fichier est à clang-tidy
 
 struct var_env *global_var_env = NULL;
 char **global_argv = NULL;
 int global_argc = 0;
+
+char *expand_special_var(const char *var_name, char **argv, 
+                        int argc, int last_exit_status) 
+{
+    if (!var_name)
+        return NULL;
+    
+    char buffer[64];
+    
+    // $?
+    if (strcmp(var_name, "?") == 0) 
+    {
+        snprintf(buffer, sizeof(buffer), "%d", last_exit_status);
+        return strdup(buffer);
+    }
+    
+    // $$
+    if (strcmp(var_name, "$") == 0) 
+    {
+        snprintf(buffer, sizeof(buffer), "%d", getpid());
+        return strdup(buffer);
+    }
+    
+    // $#
+    if (strcmp(var_name, "#") == 0) 
+    {
+        snprintf(buffer, sizeof(buffer), "%d", argc > 0);
+        return strdup(buffer);
+    }
+    
+    // $0, $1, ..., $n
+    if (isdigit(var_name[0]) && var_name[1] == '\0') 
+    {
+        int idx = var_name[0] - '0';
+        if (idx < argc)
+            return strdup(argv[idx]);
+        return strdup("");
+    }
+    
+    // $* - tous les args séparés par des espaces
+    if (strcmp(var_name, "*") == 0) 
+    {
+        if (argc <= 1)
+            return strdup("");
+        
+        size_t total_len = 0;
+        for (int i = 1; i < argc; i++)
+            total_len += strlen(argv[i]) + 1;
+        
+        char *result = malloc(total_len);
+        result[0] = '\0';
+        for (int i = 1; i < argc; i++) 
+        {
+            strcat(result, argv[i]);
+            if (i < argc - 1)
+                strcat(result, " ");
+        }
+        return result;
+    }
+    
+    // $@ - géré dans expand_word directement
+    if (strcmp(var_name, "@") == 0) 
+    {
+        return expand_special_var("*", argv, argc, last_exit_status);
+    }
+    
+    // $RANDOM
+    if (strcmp(var_name, "RANDOM") == 0) 
+    {
+        snprintf(buffer, sizeof(buffer), "%d", rand() % 32768);
+        return strdup(buffer);
+    }
+    
+    // $UID
+    if (strcmp(var_name, "UID") == 0) 
+    {
+        snprintf(buffer, sizeof(buffer), "%d", getuid());
+        return strdup(buffer);
+    }
+    
+    // Variables d'environnement
+    if (strcmp(var_name, "PWD") == 0) 
+    {
+        char cwd[PATH_MAX];
+        if (getcwd(cwd, sizeof(cwd)))
+            return strdup(cwd);
+        return strdup("");
+    }
+    
+    if (strcmp(var_name, "OLDPWD") == 0) 
+    {
+        char *oldpwd = getenv("OLDPWD");
+        return oldpwd;;
+    }
+    
+    if (strcmp(var_name, "IFS") == 0) 
+    {
+        char *ifs = getenv("IFS");
+        return ifs;
+    }
+    
+    return NULL;
+}
 
 char **expand_word(const char *word, struct var_env *env, 
                    char **argv, int argc, int last_exit_status) 
@@ -64,7 +172,7 @@ char **expand_word(const char *word, struct var_env *env,
             
             char *value = expand_special_var(var_name, argv, argc, last_exit_status);
             if (!value)
-                value = var_get(env, var_name);
+                value = var_env_get(env, var_name);
             
             if (strcmp(var_name, "@") == 0 && argv) 
             {
@@ -132,107 +240,4 @@ char **expand_word(const char *word, struct var_env *env,
     }
     
     return results;
-}
-
-char *expand_special_var(const char *var_name, char **argv, 
-                        int argc, int last_exit_status) 
-{
-    if (!var_name)
-        return NULL;
-    
-    char buffer[64];
-    
-    // $?
-    if (strcmp(var_name, "?") == 0) 
-    {
-        snprintf(buffer, sizeof(buffer), "%d", last_exit_status);
-        return strdup(buffer);
-    }
-    
-    // $$
-    if (strcmp(var_name, "$") == 0) 
-    {
-        snprintf(buffer, sizeof(buffer), "%d", getpid());
-        return strdup(buffer);
-    }
-    
-    // $#
-    if (strcmp(var_name, "#") == 0) 
-    {
-        snprintf(buffer, sizeof(buffer), "%d", argc > 0 ? argc - 1 : 0);
-        return strdup(buffer);
-    }
-    
-    // $0, $1, ..., $n
-    if (isdigit(var_name[0]) && var_name[1] == '\0') 
-    {
-        int idx = var_name[0] - '0';
-        if (idx < argc)
-            return strdup(argv[idx]);
-        return strdup("");
-    }
-    
-    // $* - tous les args séparés par des espaces
-    if (strcmp(var_name, "*") == 0) 
-    {
-        if (argc <= 1)
-            return strdup("");
-        
-        size_t total_len = 0;
-        for (int i = 1; i < argc; i++)
-            total_len += strlen(argv[i]) + 1;
-        
-        char *result = malloc(total_len);
-        result[0] = '\0';
-        for (int i = 1; i < argc; i++) 
-        {
-            strcat(result, argv[i]);
-            if (i < argc - 1)
-                strcat(result, " ");
-        }
-        return result;
-    }
-    
-    // $@ - géré dans expand_word directement
-    if (strcmp(var_name, "@") == 0) 
-    {
-        return expand_special_var("*", argv, argc, last_exit_status);
-    }
-    
-    // $RANDOM
-    if (strcmp(var_name, "RANDOM") == 0) 
-    {
-        snprintf(buffer, sizeof(buffer), "%d", rand() % 32768);
-        return strdup(buffer);
-    }
-    
-    // $UID
-    if (strcmp(var_name, "UID") == 0) 
-    {
-        snprintf(buffer, sizeof(buffer), "%d", getuid());
-        return strdup(buffer);
-    }
-    
-    // Variables d'environnement
-    if (strcmp(var_name, "PWD") == 0) 
-    {
-        char cwd[PATH_MAX];
-        if (getcwd(cwd, sizeof(cwd)))
-            return strdup(cwd);
-        return strdup("");
-    }
-    
-    if (strcmp(var_name, "OLDPWD") == 0) 
-    {
-        char *oldpwd = getenv("OLDPWD");
-        return oldpwd ? strdup(oldpwd) : strdup("");
-    }
-    
-    if (strcmp(var_name, "IFS") == 0) 
-    {
-        char *ifs = getenv("IFS");
-        return ifs ? strdup(ifs) : strdup(" \t\n");
-    }
-    
-    return NULL;
 }

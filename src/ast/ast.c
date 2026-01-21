@@ -412,10 +412,12 @@ static char **expand_command_words(char **words, struct var_env *env, char **arg
         char **expanded = expand_word(words[i], env, argv, argc, if_value);
         for(size_t j = 0; expanded && expanded[j]; j++)
         {
-            out[index++] = strdup(expanded[j]);
+            out[index++] = expanded[j];
         }
         free(expanded);
     }
+
+    return out;
 }
 
 void run_command(struct ast_cmd *cmd)
@@ -455,7 +457,7 @@ void run_command(struct ast_cmd *cmd)
                 char **expanded_value = expand_word(value, global_var_env, 
                                                     global_argv, global_argc, if_value);
                 if (expanded_value && expanded_value[0]) {
-                    var_set(global_var_env, name, expanded_value[0]);
+                    var_env_set(global_var_env, name, expanded_value[0]);
                 }
                 
                 for (size_t j = 0; expanded_value && expanded_value[j]; j++)
@@ -486,7 +488,7 @@ void run_command(struct ast_cmd *cmd)
 
     if (cmd->redirections)
         run_redirections(cmd->redirections);
-    int builtin_result = try_execute_builtin(words);
+    builtin_result = try_execute_builtin(words);
     if (builtin_result != -1)
     {
         if_value = builtin_result;
@@ -514,13 +516,11 @@ void run_command(struct ast_cmd *cmd)
     restored_fds(stdin_cp, stdout_cp, stderr_cp);
     if (cmd->negated)
         if_value = !if_value;
-<<<<<<< HEAD
 
     for (size_t i = 0; expanded_words[i] && expanded_words; i++)
         free(expanded_words[i]);
     free(expanded_words);
-=======
->>>>>>> b283d2d72306ec63c01cf094ef2f9eb1aad1d4d5
+
 }
 
 void run_ast(struct ast *ast)
