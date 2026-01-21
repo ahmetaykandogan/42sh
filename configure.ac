@@ -36,5 +36,6 @@ AC_CONFIG_FILES([
                     src/utils/malloc_err/Makefile
                     src/builtins/Makefile
                     src/pretty_printer/Makefile
+                    tests/Makefile
                 ])
 AC_OUTPUT
