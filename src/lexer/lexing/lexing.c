@@ -279,8 +279,8 @@ char *lexing_variables(char *input, size_t pos)
                 capacity *= 2;
                 tok = realloc_err(tok, capacity);
             }
-            tok[tok_pos++] = input[pos++;]
-            tok[tok_pos++] = input[pos++;]
+            tok[tok_pos++] = input[pos++];
+            tok[tok_pos++] = input[pos++];
             continue;
         }
 
