@@ -226,8 +226,10 @@ static int try_execute_builtin(char **argv)
     return -1;
 }
 
-static pid_t fork_executor(char **argv, int in, int out, int (*filedes)[2], size_t nb_child)
+static pid_t fork_executor(struct ast_cmd *cmd, int in, int out, int (*filedes)[2], size_t nb_child)
 {
+    char **argv = cmd->words;
+
     pid_t pid = fork();
     if (pid != 0)
         return pid;
@@ -239,20 +241,20 @@ static pid_t fork_executor(char **argv, int in, int out, int (*filedes)[2], size
 
     if (filedes)
     {
-        for (size_t k = 0; k < (nb_child ? nb_child - 1 : 0); k++)
+        for (size_t k = 0; k < nb_child - 1; k++)
         {
             close(filedes[k][0]);
             close(filedes[k][1]);
         }
     }
-
+    if (cmd->redirections)
+        run_redirections(cmd->redirections);
     int builtin_executed = try_execute_builtin(argv);
     if (builtin_executed != -1)
     {
         fflush(stdout);
         exit(builtin_executed);
     }
-
     execvp(argv[0], argv);
     errx(1, "Couldn't execvp");
 }
@@ -290,7 +292,7 @@ void run_pipe(struct ast *enter_pipe)
         else
             out = filedes[j][1];
 
-        pid_list[j] = fork_executor(cmd->words, in, out, filedes, nb_child);
+        pid_list[j] = fork_executor(cmd, in, out, filedes, nb_child);
     }
 
     for (size_t k = 0; k < nb_child - 1; k++)

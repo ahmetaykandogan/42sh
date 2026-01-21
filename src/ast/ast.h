@@ -136,6 +136,7 @@ typedef void (*redir_type)(struct ast *ast, struct redirection *redir);
 void run_ast(struct ast *ast);
 void run_pipe(struct ast *enter_pipe);
 void run_command(struct ast_cmd *cmd);
+void run_redirections(struct redirection **redir);
 
 //----------------------------------DESTROY AST
 //TYPES------------------------------//
