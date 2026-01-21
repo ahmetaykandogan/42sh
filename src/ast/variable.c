@@ -10,9 +10,80 @@
 
 //Le fichier est à clang-tidy
 
+=====================INIT/DESTROY=========================
+
 struct var_env *global_var_env = NULL;
 char **global_argv = NULL;
 int global_argc = 0;
+
+struct var *var_init(const char *name, const char *value) 
+{
+    struct var *new_var = malloc(sizeof(struct var));
+    new_var->name = strdup(name);
+    new_var->value = strdup(value);
+    return new_var;
+}
+
+void var_env_destroy(struct var_env *env) 
+{
+    if (variable) 
+    {
+        free(variable->name);
+        free(variable->value);
+        free(variable);
+    }
+}
+
+=====================SET/GET/UNSET=========================
+
+void var_env_set(struct var_env *env, const char *name, const char *value) 
+{
+    for (size_t i = 0; i < env->var_count; i++) 
+    {
+        if (strcmp(env->variables[i]->name, name) == 0) 
+        {
+            free(env->variables[i]->value);
+            env->variables[i]->value = strdup(value);
+            return;
+        }
+    }
+    
+    if (env->var_count >= env->var_capacity) 
+    {
+        env->var_capacity = env->var_capacity ? env->var_capacity * 2 : 4;
+        env->variables = realloc(env->variables, env->var_capacity * sizeof(struct var *));
+    }
+    
+    env->variables[env->var_count++] = var_init(name, value);
+}
+
+void var_env_unset(struct var_env *env, const char *name) 
+{
+    for (size_t i = 0; i < env->var_count; i++) 
+    {
+        if (strcmp(env->variables[i]->name, name) == 0) 
+        {
+            var_env_destroy(env->variables[i]);
+            env->variables[i] = env->variables[env->var_count - 1];
+            env->var_count--;
+            return;
+        }
+    }
+}
+
+const char *var_env_get(struct var_env *env, const char *name) 
+{
+    for (size_t i = 0; i < env->var_count; i++) 
+    {
+        if (strcmp(env->variables[i]->name, name) == 0) 
+        {
+            return env->variables[i]->value;
+        }
+    }
+    return NULL;
+}
+
+=====================EXPANSION=========================
 
 char *expand_special_var(const char *var_name, char **argv, 
                         int argc, int last_exit_status) 
