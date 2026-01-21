@@ -117,12 +117,14 @@ static struct ast *parse_list(enum parser_status *status, struct fifo *lexer)
     ast_list_add_ast(list, child); // adding the cmd to the list
 
     // { ';' and_or } [ ; ]
+    int column_counter = 0;
     while (1)
     {
         // TODO Fix grammar rule tied to first ;
         struct lextoken *token = fifo_head(lexer);
         if (!token || token->tok != COLUMN)
             break;
+        column_counter++;
         fifo_pop(lexer);
         child = parse_and_or(status, lexer); // return a cmd
         if (*status != PARSER_OK)
@@ -130,7 +132,20 @@ static struct ast *parse_list(enum parser_status *status, struct fifo *lexer)
             *status = PARSER_OK;
             break; //this mean there is only a ; and not a and_or
         }
+        column_counter = 0;
         ast_list_add_ast(list, child); // adding the cmd to the list
+    }
+    // [ ; ]
+    struct lextoken *token = fifo_head(lexer);
+    if (token && token->tok == COLUMN)
+    {
+        if (column_counter == 1)
+        {
+            *status = PARSER_ERROR;
+            ast_list_destroy(list);
+            return NULL; // error: two ; in a row
+        }
+        fifo_pop(lexer);
     }
     return &list->base;
 }
@@ -249,20 +264,29 @@ static struct ast *parse_command(enum parser_status *status, struct fifo *lexer)
         return NULL;
     }
     struct ast *out;
-    if (token->tok == WORDS)
-        out = parse_simple_command(status, lexer);
 
     // shell commands
-    else if (token->tok == IF || token->tok == WHILE || token->tok == UNTIL)
+    if (token->tok == IF || token->tok == WHILE || token->tok == UNTIL)
         out = parse_shell_command(status, lexer);
+    else if (token->tok == WORDS || token->tok == RED_IN || token->tok == RED_OUT)
+        out = parse_simple_command(status, lexer);
     else
     {
         *status = PARSER_ERROR;
         return NULL;
     }
+    if (*status == PARSER_CRITICAL_ERROR)
+    {
+        return NULL;
+    }
     while (1)
     {
         struct redirection *redir = parse_redirections(status, lexer); //created the struct to add 
+        if (*status == PARSER_CRITICAL_ERROR)
+        {
+            struct_ast_destroy(out);
+            return NULL; // error
+        }
         if (*status != PARSER_OK)
         {
             *status = PARSER_OK; // no redirections is ok
@@ -281,11 +305,16 @@ static struct ast *parse_simple_command(enum parser_status *status,
 {
     // { prefix }
     struct ast_list *command = ast_list_init(); // initialize command ast node
+    int redir_counter = 0;
     struct redirection **redir_to_add = NULL; //list of redirections to add to the command
     while (1)
     {
         struct redirection *prefix_redir = parse_prefix(status, lexer);
-        if (*status != PARSER_OK)//Now we check for vars, since parse_prefix doesnt do it!
+        if (*status == PARSER_CRITICAL_ERROR)
+        {
+            return NULL; // error
+        }
+        if (*status != PARSER_OK)
         {
             *status = PARSER_OK; // No more prefixes to parse
             struct ast *var = parse_prefix_vars(status, lexer);
@@ -302,15 +331,22 @@ static struct ast *parse_simple_command(enum parser_status *status,
         }
         //add to list
         add_redirection(&redir_to_add, prefix_redir);
+        redir_counter++;
     }
     // WORD
     struct lextoken *token = fifo_head(lexer);
 
     if (!token || token->tok != WORDS)
     {
-        *status = PARSER_ERROR;
-        struct_ast_destroy(&command->base);
-        return NULL;
+        if (redir_counter == 0) //no prefix total error
+        {
+            *status = PARSER_ERROR;
+            struct_ast_destroy(&command->base);
+            return NULL;
+        }
+        //this is where prefix { prefix } happens
+        command->redirections = redir_to_add;
+        return &command->base;
     }
     struct ast_cmd *token_cmd = ast_cmd_init(0);
     fifo_pop(lexer);
@@ -318,7 +354,12 @@ static struct ast *parse_simple_command(enum parser_status *status,
     // { element }
     while (1)
     {
-        parse_element(status, lexer, (struct ast *)token_cmd);
+        parse_element(status, lexer, &command->base);
+        if (*status == PARSER_CRITICAL_ERROR)
+        {
+            struct_ast_destroy(&command->base);
+            return NULL; // error
+        }
         if (*status != PARSER_OK)
         {
             *status = PARSER_OK; // No more elements to parse
@@ -405,7 +446,7 @@ static struct redirection *parse_redirections(enum parser_status *status,
     token = fifo_head(lexer);
     if (!token || token->tok != WORDS)
     {
-        *status = PARSER_ERROR;
+        *status = PARSER_CRITICAL_ERROR;
         return NULL;
     }
     struct redirection *redir = redirection_init(fd, token->value, operator);
