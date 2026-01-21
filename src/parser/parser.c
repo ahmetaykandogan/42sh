@@ -336,6 +336,7 @@ static struct ast *parse_simple_command(enum parser_status *status,
     // WORD
     struct lextoken *token = fifo_head(lexer);
 
+    struct ast_cmd *command_node = ast_cmd_init(0);
     if (!token || token->tok != WORDS)
     {
         if (redir_counter == 0) //no prefix total error
@@ -345,8 +346,8 @@ static struct ast *parse_simple_command(enum parser_status *status,
             return NULL;
         }
         //this is where prefix { prefix } happens
-        command->redirections = redir_to_add;
-        return &command->base;
+        command_node->redirections = redir_to_add;
+        return &command_node->base; //we only have redirections
     }
     struct ast_cmd *token_cmd = ast_cmd_init(0);
     fifo_pop(lexer);
@@ -384,6 +385,7 @@ static struct redirection *parse_prefix(enum parser_status *status,
     struct redirection *out = parse_redirections(status, lexer);
     if (*status != PARSER_OK)
     {
+        *status = PARSER_OK;
         return NULL; // error
     }
     return out;
