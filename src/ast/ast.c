@@ -520,7 +520,6 @@ void run_command(struct ast_cmd *cmd)
     for (size_t i = 0; expanded_words[i] && expanded_words; i++)
         free(expanded_words[i]);
     free(expanded_words);
-
 }
 
 void run_ast(struct ast *ast)
