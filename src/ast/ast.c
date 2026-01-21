@@ -366,7 +366,7 @@ static void restored_fds(int stdin_cp, int stdout_cp, int stderr_cp)
     close(stderr_cp);
 }
 
-static char **expand_commad_words(char **words, struct var_env *env, char **argv, int argc)
+static char **expand_command_words(char **words, struct var_env *env, char **argv, int argc)
 {
     if (!words)
         return NULL;
@@ -422,6 +422,7 @@ void run_command(struct ast_cmd *cmd)
                 *eq = '\0';
                 char *name = cmd->assignments[i];
                 char *value = eq + 1;
+                
                 
                 *eq = '=';
             }
