@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <err.h>
 #include <string.h>
+#include "variable.h"
+#include "variable.c"
 
 #include "../builtins/builtins.h"
 
@@ -431,10 +433,36 @@ void run_command(struct ast_cmd *cmd)
                 char *name = cmd->assignments[i];
                 char *value = eq + 1;
                 
+                char **expanded_value = expand_word(value, global_var_env, 
+                                                    global_argv, global_argc, if_value);
+                if (expanded_value && expanded_value[0]) {
+                    var_set(global_var_env, name, expanded_value[0]);
+                }
+                
+                for (size_t j = 0; expanded_value && expanded_value[j]; j++)
+                    free(expanded_value[j]);
+                free(expanded_value);
                 
                 *eq = '=';
             }
         }
+    }
+
+    char **expanded_words = expand_command_words(words, global_var_env, global_argv, global_argc);
+
+    int builtin_result = try_execute_builtin(expanded_words);
+    if (builtin_result != -1) {
+        run_redirections(cmd->redirections);
+        if_value = builtin_result;
+        fflush(stdout);
+        
+        if (cmd->negated)
+            if_value = !if_value;
+        
+        for (size_t i = 0; expanded_words && expanded_words[i]; i++)
+            free(expanded_words[i]);
+        free(expanded_words);
+        return;
     }
 
     if (cmd->redirections)
@@ -468,7 +496,9 @@ void run_command(struct ast_cmd *cmd)
     if (cmd->negated)
         if_value = !if_value;
 
-    free 
+    for (size_t i = 0; expanded_words[i] && expanded_words; i++)
+        free(expanded_words[i]);
+    free(expanded_words);
 }
 
 void run_ast(struct ast *ast)
