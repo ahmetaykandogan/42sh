@@ -11,6 +11,7 @@ enum parser_status
 {
     PARSER_OK,
     PARSER_ERROR,
+    PARSER_CRITICAL_ERROR,
 };
 
 struct ast *main_parse(enum parser_status *status, struct fifo *lexer);

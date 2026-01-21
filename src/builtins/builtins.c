@@ -20,7 +20,7 @@ static void print_word(const char *s, int interpret)
 
     while (s[i])
     {
-        if (interpret && s[i] == '\\')
+        if (interpret && s[i] == '\\' && s[i + 1])
         {
             i++;
             if (s[i] == 'n')
@@ -85,5 +85,6 @@ int builtins_echo(char **words)
     if (newline)
         putchar('\n');
 
+    fflush(stdout);
     return 0;
 }

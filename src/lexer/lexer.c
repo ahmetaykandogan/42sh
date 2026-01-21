@@ -1,10 +1,9 @@
-#include <err.h>
-#include <string.h>
-#include <stdlib.h>
 #include <ctype.h>
+#include <err.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "lexer/create_lextoken/create_lextoken.h"
-#include "lexer/lexing/lexing.h"
+#include "lexer/case_handler/case_handler.h"
 #include "lexer/read_file/read_file.h"
 #include "lexer/struct_lexer.h"
 #include "utils/check_char/check_char.h"
@@ -14,7 +13,6 @@
 /* --------------------------- */
 /* -- MAIN LEXING FUNCTIONS -- */
 /* --------------------------- */
-
 struct fifo *lexer(char *input)
 {
     struct fifo *queue = fifo_init();
@@ -26,128 +24,65 @@ struct fifo *lexer(char *input)
 
     size_t input_len = strlen(input);
     size_t i = 0;
-    int echo = 0; // if there is an echo, functioning change till double \n\n
     while (i < input_len)
     {
-        if (input[i] == ' ')
+        if (input[i] == ' ' || input[i] == '\t')
         {
-            i++;
-            continue;
+            i = handle_whitespace(input, i);
         }
 
         /* CASE COMMENTS */
         else if (input[i] == '#')
         {
-            while (input[i] && input[i] != '\n')
-            {
-                i++;
-            }
+            i = handle_comment(input, i, queue);
         }
 
         /* CASE NUMBER + IONUMBER */
         else if (isdigit(input[i]))
         {
-            char *tok = lexing_words(input, i);
-            i += strlen(tok);
-
-            if (input[i] && (input[i] == '<' || input[i] == '>'))
-            {
-                fifo_push(queue, create_lextoken_words(IONUMBER, tok));
-            }
-            else
-            {
-                fifo_push(queue, create_lextoken_words(WORDS, tok));
-            }
+            i = handle_number(input, i, input_len, queue);
         }
 
         /* CASE WORDS */
-        if (echo == 1)
+        if (check_char(input[i]) == 42)
         {
-            if (input[i] == '\n' || input[i] == ';' || input[i] == '\0')
-            {
-                echo = 0;
-            }
-            char *tok = lexing_words_echo(input, i);
-            i += strlen(tok);
-            fifo_push(queue, create_lextoken_commands(tok));
-            continue;
-        }
-        else if (check_char(input[i]) == 42 && echo == 0)
-        {
-            char *tok = lexing_words(input, i);
-            i += strlen(tok);
-            if (strcmp(tok, "echo") == 0)
-            {
-                echo = 1;
-            }
-            fifo_push(queue, create_lextoken_commands(tok));
+            i = handle_word(input, i, queue);
         }
 
         /* CASE APOSTROPHE + QUOTE */
         else if (check_char(input[i]) == 1)
         {
-            i++; // on skip la premiere quote
-
-            char *tok = lexing_quotes(input, i);
-            i += strlen(tok) + 1; // on skip la seconde quote
-
-            fifo_push(queue, create_lextoken_words(APSTRPH, tok));
+            i = handle_single_quote(input, i, queue);
         }
 
         /* CASE GUILLMT + DOUBLE QUOTE */
         else if (check_char(input[i]) == 2)
         {
-            i++; // on skip la premiere quote
-
-            char *tok = lexing_double_quotes(input, i);
-            i += strlen(tok) + 1; // on skip la seconde quote
-
-            fifo_push(queue, create_lextoken_words(GUILLMT, tok));
+            i = handle_double_quote(input, i, queue);
         }
 
         /* CASE REDIRECTION */
         else if (input[i] == '<' || input[i] == '>')
         {
-            char *tok = lexing_redirection(input, i);
-            i += strlen(tok);
-
-            fifo_push(queue, create_lextoken_redirection(tok));
+            i = handle_redirection(input, i, queue);
         }
 
         /* CASE OPERATORS + PIPE */
         else if (input[i] == '|' || input[i] == '&')
         {
-            char *tok = lexing_operators(input, i);
-            i += strlen(tok);
-
-            fifo_push(queue, create_lextoken_operators(tok));
+            i = handle_operator(input, i, queue);
         }
 
         /* CASE VARIABLE */
         else if (input[i] == '$')
         {
-            i++;
-
-            char *tok = lexing_variables(input, i);
-            i += strlen(tok);
-
-            if (strcmp(tok, "$") == 0)
-            {
-                fifo_push(queue, create_lextoken_words(WORDS, tok));
-            }
-            else
-            {
-                fifo_push(queue, create_lextoken_words(VAR, tok));
-            }
-        }   
+            i = handle_variable(input, i, input_len, queue);
+        }
 
         /* CASE A 1 CARACTERE (Exemple : \n) */
         else
         {
-            char *tok = malloc_err(2);
-            tok[0] = input[i++];
-            tok[1] = '\0';
-            fifo_push(queue, create_lextoken_single_char(tok));
+            i = handle_single_char(input, i, queue);
         }
     }
     return queue;

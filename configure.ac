@@ -28,6 +28,7 @@ AC_CONFIG_FILES([
                     src/lexer/create_lextoken/Makefile
                     src/lexer/lexing/Makefile
                     src/lexer/read_file/Makefile
+                    src/lexer/case_handler/Makefile
                     src/parser/Makefile
                     src/utils/Makefile
                     src/utils/check_char/Makefile

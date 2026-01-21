@@ -1,12 +1,13 @@
 #include <ctype.h>
+#include <err.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include <string.h>
 #include <stdlib.h>
-#include <err.h>
+#include <string.h>
 
-#include "utils/malloc_err/malloc_err.h"
 #include "utils/check_char/check_char.h"
+#include "utils/malloc_err/malloc_err.h"
+
 /* ------------------------------ */
 /* -- LEXING THE VARIOUS CASES -- */
 /* ------------------------------ */
@@ -18,6 +19,23 @@ char *lexing_words(char *input, size_t pos)
     size_t tok_pos = 0;
     while (pos < strlen(input) && check_char(input[pos]) == 42)
     {
+        if (input[pos] == '\\' && pos + 1 < strlen(input))
+        {
+            if (tok_pos >= capacity - 1)
+            {
+                capacity *= 2;
+                tok = realloc_err(tok, capacity);
+            }
+            tok[tok_pos++] = input[pos++];
+
+            if (tok_pos >= capacity - 1)
+            {
+                capacity *= 2;
+                tok = realloc_err(tok, capacity);
+            }
+            tok[tok_pos++] = input[pos++];
+        }
+
         if (tok_pos >= capacity - 1)
         {
             capacity *= 2;
@@ -25,6 +43,7 @@ char *lexing_words(char *input, size_t pos)
         }
         tok[tok_pos++] = input[pos++];
     }
+
     if (tok_pos >= capacity)
     {
         capacity *= 2;
@@ -36,31 +55,6 @@ char *lexing_words(char *input, size_t pos)
     return tok;
 }
 
-char *lexing_words_echo(char *input, size_t pos)
-{
-    size_t capacity = 8;
-    char *tok = malloc_err(capacity);
-
-    size_t tok_pos = 0;
-    while (pos < strlen(input) && input[pos] != ' ' && input[pos] != '\n' && input[pos] != ';' )
-    {
-        if (tok_pos >= capacity - 1)
-        {
-            capacity *= 2;
-            tok = realloc_err(tok, capacity);
-        }
-        tok[tok_pos++] = input[pos++];
-    }
-    if (tok_pos >= capacity)
-    {
-        capacity *= 2;
-        tok = realloc_err(tok, capacity);
-    }
-    tok[tok_pos] = '\0';
-    tok = realloc_err(tok, tok_pos + 1);
-
-    return tok;
-}
 char *lexing_quotes(char *input, size_t pos)
 {
     size_t input_len = strlen(input);
@@ -125,7 +119,7 @@ char *lexing_double_quotes(char *input, size_t pos)
     return tok;
 }
 
-char *lexing_number(char *input, size_t pos)
+char *lexing_numbers(char *input, size_t pos)
 {
     size_t capacity = 4;
     char *tok = malloc_err(capacity);
@@ -150,7 +144,6 @@ char *lexing_number(char *input, size_t pos)
 
     return tok;
 }
-
 
 char *lexing_redirection(char *input, size_t pos)
 {
@@ -216,13 +209,14 @@ static char *lexing_special_variables(char *input, size_t pos)
         tok[1] = '\0';
         return tok;
     }
-    if (input[pos] == '@' || input[pos] == '*' || input[pos] == '?' || input[pos] == '$' || input[pos] == '#' || isdigit(input[pos]))
+    if (input[pos] == '@' || input[pos] == '*' || input[pos] == '?'
+        || input[pos] == '$' || input[pos] == '#' || isdigit(input[pos]))
     {
         char *tok = malloc_err(3);
         tok[0] = '$';
         tok[1] = input[pos];
         tok[2] = '\0';
-        return tok; 
+        return tok;
     }
     return NULL;
 }
@@ -254,7 +248,7 @@ static char *lexing_variables_no_braces(char *input, size_t pos)
     }
     tok[tok_pos] = '\0';
     tok = realloc_err(tok, tok_pos + 1);
-    
+
     return tok;
 }
 
