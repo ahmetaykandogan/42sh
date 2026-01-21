@@ -82,6 +82,16 @@ struct ast_and_or *ast_and_or_init(void)
     return out;
 }
 
+struct ast_for *ast_for_init(void)
+{
+    struct ast_for *out = calloc(1, sizeof(struct ast_for));
+    out->base.type = AST_FOR;
+    out->varname = NULL;
+    out->list = NULL;
+    out->body = NULL;
+    out->redirections = NULL;
+    return out;
+}
 //--------------------------------ADDINGS------------------------------------
 
 void ast_cmd_add_word(struct ast_cmd *in, char *word)

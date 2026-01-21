@@ -461,6 +461,7 @@ static void parse_element(enum parser_status *status, struct fifo *lexer,
 // shell_command = rule_if ;
 //| rule_while ;
 //| rule_until ;
+//| rule_for ;
 static struct ast *parse_shell_command(enum parser_status *status,
                                        struct fifo *lexer)
 {
@@ -476,7 +477,15 @@ static struct ast *parse_shell_command(enum parser_status *status,
             child = parse_rule_until(status, lexer);
             if (*status != PARSER_OK)
             {
-                return NULL; // error
+                child = parse_rule_for(status, lexer);
+                if (*status != PARSER_OK)
+                {
+                    return NULL; // error
+                }
+                else
+                {
+                    *status = PARSER_OK;
+                }
             }
             else
             {
@@ -490,7 +499,118 @@ static struct ast *parse_shell_command(enum parser_status *status,
     }
     return child;
 }
+//rule_for =
+//'for' WORD ( [';'] | [ {'\n'} 'in' { WORD } ( ';' | '\n' ) ] ) {'\n'} 'do' compound_list
+//'done' ;
 
+static struct ast *parse_for(enum parser_status *status,struct fifo *lexer)
+{
+    //'for'
+    struct lextoken *token = fifo_head(lexer);
+    if (!token || token->tok != FOR)
+    {
+        *status = PARSER_ERROR;
+        return NULL;
+    }
+    fifo_pop(lexer);
+    //WORD
+    token = fifo_head(lexer);
+    if (!token || token->tok != WORDS)
+    {
+        *status = PARSER_ERROR;
+        return NULL;
+    }
+    char *var_name = token->value;
+    fifo_pop(lexer);
+    struct ast *inside = create_parse_for_body(status,lexer);
+    if (*status != PARSER_OK)
+    {
+        return NULL; // error
+    }
+    //'do'
+    token = fifo_head(lexer);
+    if (!token || token->tok != DO)
+    {
+        *status = PARSER_ERROR;
+        return NULL;
+    }
+    fifo_pop(lexer);
+    //compound_list
+    struct ast *body = parse_compound_list(status, lexer);
+    if (*status != PARSER_OK)
+    {
+        return NULL; // error
+    }
+    //'done'
+    token = fifo_head(lexer);
+    if (!token || token->tok != DONE)
+    {
+        *status = PARSER_ERROR;
+        return NULL;
+    }
+    fifo_pop(lexer);
+    struct ast_for *out = ast_for_init();
+    out->varname = var_name;
+    out->inside = inside;
+    out->body = body;
+    return &out->base;
+}
+
+//[ [';'] | [ {'\n'} 'in' { WORD } ( ';' | '\n' ) ]
+static struct ast *create_parse_for_body(enum parser_status *status, struct fifo *lexer)
+{
+    struct lextoken *token = fifo_head(lexer);
+    // [';']
+    if (!token)
+    {
+        *status = PARSER_ERROR;
+        return NULL;
+    }
+    if (token->tok == COLUMN)
+    {
+        fifo_pop(lexer);
+        return NULL; // no list, just ;
+    }
+    else 
+    {
+        // {'\n'}
+        while (1)
+        {
+            token = fifo_head(lexer);
+            if (!token || token->tok != NEWLINE)
+                break;
+            fifo_pop(lexer);
+        }
+        // 'in'
+        token = fifo_head(lexer);
+        if (!token || token->tok != IN)
+        {
+            *status = PARSER_ERROR;
+            return NULL;
+        }
+        fifo_pop(lexer);
+        // { WORD }
+        struct ast_cmd *inside = ast_cmd_init();
+        while (1)
+        {
+            token = fifo_head(lexer);
+            if (!token || token->tok != WORDS)
+                break;
+            ast_cmd_add_word(inside, token->value);
+            fifo_pop(lexer);
+        }
+        // ( ';' | '\n' )
+        token = fifo_head(lexer);
+        if (!token || (token->tok != COLUMN && token->tok != NEWLINE))
+        {
+            ast_cmd_destroy(inside);
+            *status = PARSER_ERROR;
+            return NULL;
+        }
+        fifo_pop(lexer);
+        return &inside->base;
+    }
+}
 // rule_if = 'if' compound_list 'then' compound_list [else_clause] 'fi' ;
 static struct ast *parse_rule_if(enum parser_status *status, struct fifo *lexer)
 {

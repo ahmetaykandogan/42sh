@@ -105,7 +105,15 @@ struct ast_and_or //
     //This implementation dont work for case with parantheses, there is no and or priority
     size_t child_count;
 };
+struct ast_for //
+{
+    struct ast base;
+    char *varname; // name of the variable
+    struct ast *inside; // list over which we iterate
+    struct ast *body; // body of the for loop
 
+    struct redirection **redirections;
+};
 //-------------------------------------INITIALIZE AST TYPES-----------------//
 
 struct ast_cmd *ast_cmd_init(int neg);
@@ -115,7 +123,7 @@ struct ast_while *ast_while_init();
 struct ast_until *ast_until_init();
 struct ast_pipe *ast_pipeline_init(int neg);
 struct ast_and_or *ast_and_or_init();
-
+struct ast_for *ast_for_init();
 //--------------------------------ADDINGS------------------------------------//
 
 void ast_cmd_add_word(struct ast_cmd *in, char *word);
