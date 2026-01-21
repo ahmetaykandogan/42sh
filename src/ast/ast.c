@@ -514,13 +514,10 @@ void run_command(struct ast_cmd *cmd)
     restored_fds(stdin_cp, stdout_cp, stderr_cp);
     if (cmd->negated)
         if_value = !if_value;
-<<<<<<< HEAD
 
     for (size_t i = 0; expanded_words[i] && expanded_words; i++)
         free(expanded_words[i]);
     free(expanded_words);
-=======
->>>>>>> b283d2d72306ec63c01cf094ef2f9eb1aad1d4d5
 }
 
 void run_ast(struct ast *ast)
