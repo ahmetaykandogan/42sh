@@ -2,7 +2,9 @@ lib_LIBRARIES = libast.a
 
 libast_a_SOURCES =  \
   ast.c \
-  ast.h
+  ast.h \
+  variable.c \
+  variable.h
 
 libast_a_CPPFLAGS = -I$(top_srcdir)/src
 
