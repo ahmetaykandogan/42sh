@@ -368,12 +368,20 @@ static void restored_fds(int stdin_cp, int stdout_cp, int stderr_cp)
 void run_command(struct ast_cmd *cmd)
 {
     char **words = cmd->words;
-    if (!words || !words[0])
-        return;
-    //we save the fds to restore them later
     int stdin_cp = dup(STDIN_FILENO);
     int stdout_cp = dup(STDOUT_FILENO);
     int stderr_cp = dup(STDERR_FILENO);
+    if (!words || !words[0])
+    {
+        if (cmd->redirections)
+        {
+            run_redirections(cmd->redirections);
+            restored_fds(stdin_cp, stdout_cp, stderr_cp);
+        }
+        return;
+    }
+    //we save the fds to restore them later
+
     int argc = 0;
     while (words[argc] != NULL)
         argc++;
