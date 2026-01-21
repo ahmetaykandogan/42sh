@@ -19,14 +19,16 @@ bin_PROGRAMS = 42sh
       ast/libast.a \
       parser/libparser.a \
       lexer/liblexer.a \
-      lexer/lexing/liblexing.a \
-      lexer/create_lextoken/liblextoken.a \
       lexer/read_file/libread.a \
       lexer/case_handler/libhandler.a \
+      lexer/lexing/liblexing.a \
+      lexer/create_lextoken/liblextoken.a \
       builtins/libbuiltins.a \
       pretty_printer/libpretty.a \
       utils/libutils.a \
       utils/fifo/libfifo.a \
       utils/check_char/libcchar.a \
       utils/malloc_err/libmallocer.a
+
+
 

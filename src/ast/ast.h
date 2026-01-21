@@ -45,7 +45,7 @@ struct ast_cmd
     struct ast base;
     int negated; // 1 if the command is negated with '!'
     char **words; // NULL terminated char* list */
-    char **assignement; // NULL terminated char* list of variable assignments
+    char **assignments; // NULL terminated char* list of variable assignments
     struct redirection **redirections; // NULL terminated redirection list 
     //if there are none, this is NULL
 };
