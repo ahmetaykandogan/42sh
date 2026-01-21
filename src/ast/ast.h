@@ -15,7 +15,6 @@ enum ast_type // All the pseudo types of AST nodes
     AST_UNTIL,
     AST_PIPE,
     AST_AND_OR,
-    AST_VAR
 };
 
 // To understand how this works, see the 42SH Design AST documentation
@@ -37,6 +36,7 @@ struct redirection
     char *operator;//the redirection operator (>, <, >>, etc)
 };
 
+
 //--------------------------------------THE TYPES OF AST
 //NODES--------------------------------------//
 
@@ -45,7 +45,7 @@ struct ast_cmd
     struct ast base;
     int negated; // 1 if the command is negated with '!'
     char **words; // NULL terminated char* list */
-
+    char **assignement; // NULL terminated char* list of variable assignments
     struct redirection **redirections; // NULL terminated redirection list 
     //if there are none, this is NULL
 };
@@ -107,12 +107,6 @@ struct ast_and_or //
     size_t child_count;
 };
 
-struct ast_var
-{
-    struct ast base;
-    char *name;
-    char *value;
-};
 
 //-------------------------------------INITIALIZE AST TYPES-----------------//
 
@@ -123,7 +117,6 @@ struct ast_while *ast_while_init();
 struct ast_until *ast_until_init();
 struct ast_pipe *ast_pipeline_init(int neg);
 struct ast_and_or *ast_and_or_init();
-struct ast_var *ast_var_init(char *name, char *value);
 
 //--------------------------------ADDINGS------------------------------------//
 
@@ -158,7 +151,6 @@ void ast_while_destroy(struct ast_while *node);
 void ast_until_destroy(struct ast_until *node);
 void ast_pipe_destroy(struct ast_pipe *node);
 void ast_and_or_destroy(struct ast_and_or *node);
-void ast_var_destroy(struct ast_var *node);
 
 //--------------------------------------redirections-----------------------------
 
