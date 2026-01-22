@@ -122,6 +122,9 @@ void var_env_unset(const char *name)
 
 char *var_env_get(const char *name) 
 {
+    if (global_var_env == NULL) {
+        err(2, "Variable dont exist");
+    }
     for (size_t i = 0; i < global_var_env->var_count; i++) 
     {
         if (strcmp(global_var_env->variables[i]->name, name) == 0) 
@@ -159,7 +162,7 @@ char *expand_special_var(const char *var_name, char **argv,
     // $#
     if (strcmp(var_name, "#") == 0) 
     {
-        snprintf(buffer, sizeof(buffer), "%d", argc > 0);
+        snprintf(buffer, sizeof(buffer), "%d", argc - 1);
         return my_strdup(buffer);
     }
     
@@ -202,7 +205,7 @@ char *expand_special_var(const char *var_name, char **argv,
     // $RANDOM
     if (strcmp(var_name, "RANDOM") == 0) 
     {
-        snprintf(buffer, sizeof(buffer), "%d", rand() % 84352);
+        snprintf(buffer, sizeof(buffer), "%d", rand() % 67);
         return my_strdup(buffer);
     }
     
@@ -258,13 +261,21 @@ static char *clean_word(char *word)
     }
     return word;
 }
-char *expand_word(char *word) 
+char *expand_word(char *word, char **argv, int argc, int if_value) 
 {
     if (!word)
         return NULL;
     if (word[0] != '$')
         return word;
     word = clean_word(word); //turn ${VAR} to VAR
+    //check for special variables
+    char *special = expand_special_var(word, argv, argc, if_value);
+    if (special)
+    {
+        free(word);
+        return special;
+    }
+    //normal variable
     char *value = var_env_get(word);
     if (value)
     {

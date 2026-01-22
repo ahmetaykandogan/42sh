@@ -132,13 +132,14 @@ void add_vars(struct ast_cmd *cmd, char *new_var);
 
 const char *ast_repr(enum ast_type type);
 
-typedef void (*run_type)(struct ast *ast);
+typedef void (*run_type)(struct ast *ast, int argc, char **argv);
+typedef void (*destroy_type)(struct ast *ast);
 /* FIX: separate function pointer type for redirections */
 typedef void (*redir_type)(struct ast *ast, struct redirection *redir);
 
-void run_ast(struct ast *ast);
-void run_pipe(struct ast *enter_pipe);
-void run_command(struct ast_cmd *cmd);
+void run_ast(struct ast *ast, int argc, char **argv);
+void run_pipe(struct ast *enter_pipe, int argc, char **argv);
+void run_command(struct ast_cmd *cmd, int argc, char **argv);
 
 //----------------------------------DESTROY AST
 //TYPES------------------------------//
