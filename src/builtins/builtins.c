@@ -98,3 +98,10 @@ int builtins_echo(char **words)
     fflush(stdout);
     return 0;
 }
+
+int builtins_exit(char **words)
+{
+    int i = 0;
+
+    return i;
+}
