@@ -382,7 +382,7 @@ static void restored_fds(int stdin_cp, int stdout_cp, int stderr_cp)
     close(stdout_cp);
     close(stderr_cp);
 }
-
+/*
 static char **expand_command_words(char **words, struct var_env *env, char **argv, int argc)
 {
     if (!words)
@@ -419,13 +419,26 @@ static char **expand_command_words(char **words, struct var_env *env, char **arg
 
     return out;
 }
-
+*/
+static void run_assignment(struct ast_cmd *cmd)
+{
+    for (size_t i = 0; cmd->assignments[i] != NULL; i++) {
+        char *eq = strchr(cmd->assignments[i], '=');
+        if (eq) {
+            *eq = '\0';
+            char *name = cmd->assignments[i];
+            char *value = eq + 1;
+            var_env_set(name, value);
+        }
+    }
+}
 void run_command(struct ast_cmd *cmd)
 {
     char **words = cmd->words;
     int stdin_cp = dup(STDIN_FILENO);
     int stdout_cp = dup(STDOUT_FILENO);
     int stderr_cp = dup(STDERR_FILENO);
+    
     if (!words || !words[0])
     {
         if (cmd->redirections)
@@ -435,60 +448,21 @@ void run_command(struct ast_cmd *cmd)
         }
         else if (cmd->assignments) // we only have variables, expansion is for every cmd, so we add to global list
         {
-
+            run_assignment(cmd);
         }
         return;
     }
-    //we save the fds to restore them later
-
     int argc = 0;
     while (words[argc] != NULL)
-        argc++;
-
-    if (cmd->assignments)
     {
-        for (size_t i = 0; cmd->assignments[i] != NULL; i++) {
-            char *eq = strchr(cmd->assignments[i], '=');
-            if (eq) {
-                *eq = '\0';
-                char *name = cmd->assignments[i];
-                char *value = eq + 1;
-                
-                char **expanded_value = expand_word(value, global_var_env, 
-                                                    global_argv, global_argc, if_value);
-                if (expanded_value && expanded_value[0]) {
-                    var_env_set(global_var_env, name, expanded_value[0]);
-                }
-                
-                for (size_t j = 0; expanded_value && expanded_value[j]; j++)
-                    free(expanded_value[j]);
-                free(expanded_value);
-                
-                *eq = '=';
-            }
-        }
+        words[argc] = expand_word(words[argc]);
+        argc++;
     }
-
-    char **expanded_words = expand_command_words(words, global_var_env, global_argv, global_argc);
-
-    int builtin_result = try_execute_builtin(expanded_words);
-    if (builtin_result != -1) {
-        run_redirections(cmd->redirections);
-        if_value = builtin_result;
-        fflush(stdout);
-        
-        if (cmd->negated)
-            if_value = !if_value;
-        
-        for (size_t i = 0; expanded_words && expanded_words[i]; i++)
-            free(expanded_words[i]);
-        free(expanded_words);
-        return;
-    }
-
     if (cmd->redirections)
         run_redirections(cmd->redirections);
-    builtin_result = try_execute_builtin(words);
+    //case where var is only for this line
+    //run_assignment(cmd);
+    int builtin_result = try_execute_builtin(words);
     if (builtin_result != -1)
     {
         if_value = builtin_result;
@@ -516,10 +490,6 @@ void run_command(struct ast_cmd *cmd)
     restored_fds(stdin_cp, stdout_cp, stderr_cp);
     if (cmd->negated)
         if_value = !if_value;
-
-    for (size_t i = 0; expanded_words[i] && expanded_words; i++)
-        free(expanded_words[i]);
-    free(expanded_words);
 }
 
 void run_ast(struct ast *ast)

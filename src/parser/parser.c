@@ -325,6 +325,7 @@ static struct ast *parse_simple_command(enum parser_status *status,
             else
             {
                 add_vars(command, var);
+                redir_counter++;
                 break;
             }
         }
