@@ -6,11 +6,47 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 
 //Le fichier est à clang-tidy
 
-=====================INIT/DESTROY=========================
+static size_t my_strnlen(const char *s, size_t n) 
+{
+    size_t len = 0;
+    while (len < n && s[len] != '\0') 
+    {
+        len++;
+    }
+    return len;
+}
+
+static char *my_strdup(const char *s) 
+{
+    if (!s)
+        return NULL;
+    size_t len = strlen(s);
+    char *dup = malloc(len + 1);
+    if (dup)
+        strcpy(dup, s);
+    return dup;
+}
+
+static char *my_strndup(const char *s, size_t n) 
+{
+    if (!s)
+        return NULL;
+    size_t len = my_strnlen(s, n);
+    char *dup = malloc(len + 1);
+    if (dup) 
+    {
+        strncpy(dup, s, len);
+        dup[len] = '\0';
+    }
+    return dup;
+}
+
+//=====================INIT/DESTROY=========================
 
 struct var_env *global_var_env = NULL;
 char **global_argv = NULL;
@@ -19,22 +55,21 @@ int global_argc = 0;
 struct var *var_init(const char *name, const char *value) 
 {
     struct var *new_var = malloc(sizeof(struct var));
-    new_var->name = strdup(name);
-    new_var->value = strdup(value);
+    new_var->name = my_strdup(name);
+    new_var->value = my_strdup(value);
     return new_var;
 }
 
-void var_env_destroy(struct var_env *env) 
+void var_destroy(struct var *var) 
 {
-    if (variable) 
-    {
-        free(variable->name);
-        free(variable->value);
-        free(variable);
-    }
+    if (!var)
+        return;
+    free(var->name);
+    free(var->value);
+    free(var);
 }
 
-=====================SET/GET/UNSET=========================
+//=====================SET/GET/UNSET=========================
 
 void var_env_set(struct var_env *env, const char *name, const char *value) 
 {
@@ -43,7 +78,7 @@ void var_env_set(struct var_env *env, const char *name, const char *value)
         if (strcmp(env->variables[i]->name, name) == 0) 
         {
             free(env->variables[i]->value);
-            env->variables[i]->value = strdup(value);
+            env->variables[i]->value = my_strdup(value);
             return;
         }
     }
@@ -63,7 +98,7 @@ void var_env_unset(struct var_env *env, const char *name)
     {
         if (strcmp(env->variables[i]->name, name) == 0) 
         {
-            var_env_destroy(env->variables[i]);
+            var_destroy(env->variables[i]);
             env->variables[i] = env->variables[env->var_count - 1];
             env->var_count--;
             return;
@@ -71,7 +106,7 @@ void var_env_unset(struct var_env *env, const char *name)
     }
 }
 
-const char *var_env_get(struct var_env *env, const char *name) 
+char *var_env_get(struct var_env *env, const char *name) 
 {
     for (size_t i = 0; i < env->var_count; i++) 
     {
@@ -83,7 +118,7 @@ const char *var_env_get(struct var_env *env, const char *name)
     return NULL;
 }
 
-=====================EXPANSION=========================
+//=====================EXPANSION=========================
 
 char *expand_special_var(const char *var_name, char **argv, 
                         int argc, int last_exit_status) 
@@ -97,21 +132,21 @@ char *expand_special_var(const char *var_name, char **argv,
     if (strcmp(var_name, "?") == 0) 
     {
         snprintf(buffer, sizeof(buffer), "%d", last_exit_status);
-        return strdup(buffer);
+        return my_strdup(buffer);
     }
     
     // $$
     if (strcmp(var_name, "$") == 0) 
     {
         snprintf(buffer, sizeof(buffer), "%d", getpid());
-        return strdup(buffer);
+        return my_strdup(buffer);
     }
     
     // $#
     if (strcmp(var_name, "#") == 0) 
     {
         snprintf(buffer, sizeof(buffer), "%d", argc > 0);
-        return strdup(buffer);
+        return my_strdup(buffer);
     }
     
     // $0, $1, ..., $n
@@ -119,15 +154,15 @@ char *expand_special_var(const char *var_name, char **argv,
     {
         int idx = var_name[0] - '0';
         if (idx < argc)
-            return strdup(argv[idx]);
-        return strdup("");
+            return my_strdup(argv[idx]);
+        return my_strdup("");
     }
     
     // $* - tous les args séparés par des espaces
     if (strcmp(var_name, "*") == 0) 
     {
         if (argc <= 1)
-            return strdup("");
+            return my_strdup("");
         
         size_t total_len = 0;
         for (int i = 1; i < argc; i++)
@@ -154,14 +189,14 @@ char *expand_special_var(const char *var_name, char **argv,
     if (strcmp(var_name, "RANDOM") == 0) 
     {
         snprintf(buffer, sizeof(buffer), "%d", rand() % 32768);
-        return strdup(buffer);
+        return my_strdup(buffer);
     }
     
     // $UID
     if (strcmp(var_name, "UID") == 0) 
     {
         snprintf(buffer, sizeof(buffer), "%d", getuid());
-        return strdup(buffer);
+        return my_strdup(buffer);
     }
     
     // Variables d'environnement
@@ -169,8 +204,8 @@ char *expand_special_var(const char *var_name, char **argv,
     {
         char cwd[PATH_MAX];
         if (getcwd(cwd, sizeof(cwd)))
-            return strdup(cwd);
-        return strdup("");
+            return my_strdup(cwd);
+        return my_strdup("");
     }
     
     if (strcmp(var_name, "OLDPWD") == 0) 
@@ -197,7 +232,7 @@ char **expand_word(const char *word, struct var_env *env,
     if (!strchr(word, '$')) 
     {
         char **result = calloc(2, sizeof(char *));
-        result[0] = strdup(word);
+        result[0] = my_strdup(word);
         result[1] = NULL;
         return result;
     }
@@ -223,20 +258,20 @@ char **expand_word(const char *word, struct var_env *env,
                 while (word[i] && word[i] != '}')
                     i++;
                 var_len = i - start;
-                var_name = strndup(&word[start], var_len);
+                var_name = my_strndup(&word[start], var_len);
             } 
             else 
             {
                 i++;
                 if (isdigit(word[i]) || strchr("@*?$#", word[i])) {
-                    var_name = strndup(&word[i], 1);
+                    var_name = my_strndup(&word[i], 1);
                     var_len = 1;
                 } else {
                     size_t start = i;
                     while (word[i] && (isalnum(word[i]) || word[i] == '_'))
                         i++;
                     var_len = i - start;
-                    var_name = strndup(&word[start], var_len);
+                    var_name = my_strndup(&word[start], var_len);
                     i--;
                 }
             }
@@ -250,14 +285,14 @@ char **expand_word(const char *word, struct var_env *env,
                 if (pos > 0) {
                     buffer[pos] = '\0';
                     results = realloc(results, sizeof(char *) * (result_count + 1));
-                    results[result_count++] = strdup(buffer);
+                    results[result_count++] = my_strdup(buffer);
                     pos = 0;
                 }
                 
                 for (int j = 1; j < argc; j++) 
                 {
                     results = realloc(results, sizeof(char *) * (result_count + 1));
-                    results[result_count++] = strdup(argv[j]);
+                    results[result_count++] = my_strdup(argv[j]);
                 }
                 
                 free(var_name);
