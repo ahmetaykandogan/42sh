@@ -1,5 +1,5 @@
 #!/bin/sh
 
-# Multiple following -e
+# Multiple following -E
 
-echo -e -e -e -e HI '\t' '\n' Goodbye
+echo -E -E -E -E HI '\t' '\n' Goodbye

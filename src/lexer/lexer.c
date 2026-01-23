@@ -88,6 +88,8 @@ struct fifo *lexer(char *input)
     return queue;
 }
 
+/* CASE FROM FILE */
+/* Ex : ./src/42sh script.sh */
 struct fifo *lexing_from_file(char *path)
 {
     char *script = read_file(open_file(path));
@@ -103,6 +105,8 @@ struct fifo *lexing_from_file(char *path)
     return lex_queue;
 }
 
+/* CASE FROM STDIN */
+/* Ex : cat script.sh | ./src/42sh */
 struct fifo *lexing_from_stdin(FILE *f)
 {
     char *script = read_file(f);
