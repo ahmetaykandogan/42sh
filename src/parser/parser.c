@@ -538,14 +538,6 @@ static struct ast *parse_shell_command(enum parser_status *status,
                     return NULL; // error
                 }
             }
-            else
-            {
-                *status = PARSER_OK;
-            }
-        }
-        else
-        {
-            *status = PARSER_OK;
         }
     }
     return child;

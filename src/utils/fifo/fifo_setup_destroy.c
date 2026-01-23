@@ -39,7 +39,8 @@ void fifo_destroy_failed(struct fifo *fifo)
             || token->tok == RED_IN || token->tok == RED_OUT
             || token->tok == APPEND_OUT || token->tok == DUP_IN
             || token->tok == DUP_OUT || token->tok == RED_FORCE
-            || token->tok == FD_RW)
+            || token->tok == FD_RW || token->tok == GUILLMT
+            || token->tok == ESCAPE || token->tok == APSTRPH)
         {
             free(token->value);
         }
