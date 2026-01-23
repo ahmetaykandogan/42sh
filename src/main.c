@@ -1,12 +1,12 @@
+#include <err.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "ast/ast.h"
 #include "lexer/lexer.h"
 #include "parser/parser.h"
 #include "pretty_printer/pretty_printer.h"
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <err.h>
-
 #include "utils/fifo/fifo.h"
 
 int main(int argc, char **argv)
@@ -17,7 +17,8 @@ int main(int argc, char **argv)
         lex_queue = lexing_from_stdin(stdin);
     }
 
-    //pretty print mode pour debug et la testsuite, pas sûr si le parse input est correctement utilisé, à verifier
+    // pretty print mode pour debug et la testsuite, pas sûr si le parse input
+    // est correctement utilisé, à verifier
     else if (strcmp(argv[1], "-p") == 0)
     {
         lex_queue = lexer(argv[2]);
@@ -28,7 +29,7 @@ int main(int argc, char **argv)
         struct_ast_destroy(ast);
         return 0;
     }
-    
+
     else if (strcmp(argv[1], "-c") == 0)
     {
         lex_queue = lexer(argv[2]);
@@ -40,11 +41,12 @@ int main(int argc, char **argv)
     }
     enum parser_status status = PARSER_OK;
     struct ast *ast = main_parse(&status, lex_queue);
-    run_ast(ast, argc -1, argv + 1);
+    run_ast(ast, argc - 1, argv + 1);
     if (!ast)
     {
-        fifo_destroy_failed(lex_queue); //if parsing has failed, the fifo destroy dont free the words
-        err(2, "Parsing has failed"); //exit with error 2
+        fifo_destroy_failed(lex_queue); // if parsing has failed, the fifo
+                                        // destroy dont free the words
+        err(2, "Parsing has failed"); // exit with error 2
     }
     fifo_destroy(lex_queue);
     struct_ast_destroy(ast);

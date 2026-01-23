@@ -1,16 +1,17 @@
-#include "ast.h"
 #include "variable.h"
+
+#include <ctype.h>
+#include <err.h>
 #include <limits.h>
 #include <linux/limits.h>
-#include <ctype.h>
-#include <unistd.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-#include <err.h>
+#include <unistd.h>
 
+#include "ast.h"
 
-//Le fichier est à clang-tidy
+// Le fichier est à clang-tidy
 static char *remove_char(char *line, int index)
 {
     size_t i = index;
@@ -24,8 +25,7 @@ static char *remove_char(char *line, int index)
     return line;
 }
 
-
-static char *my_strdup(const char *s) 
+static char *my_strdup(const char *s)
 {
     if (!s)
         return NULL;
@@ -36,13 +36,13 @@ static char *my_strdup(const char *s)
     return dup;
 }
 /*
-static char *my_strndup(const char *s, size_t n) 
+static char *my_strndup(const char *s, size_t n)
 {
     if (!s)
         return NULL;
     size_t len = my_strnlen(s, n);
     char *dup = malloc(len + 1);
-    if (dup) 
+    if (dup)
     {
         strncpy(dup, s, len);
         dup[len] = '\0';
@@ -51,7 +51,7 @@ static char *my_strndup(const char *s, size_t n)
 }
 */
 //=====================INIT/DESTROY=========================
-struct var_env *var_env_init() 
+struct var_env *var_env_init()
 {
     struct var_env *env = calloc(1, sizeof(struct var_env));
     env->variables = NULL;
@@ -61,7 +61,7 @@ struct var_env *var_env_init()
 }
 struct var_env *global_var_env = NULL;
 
-struct var *var_init(const char *name, const char *value) 
+struct var *var_init(const char *name, const char *value)
 {
     struct var *new_var = malloc(sizeof(struct var));
     new_var->name = my_strdup(name);
@@ -69,7 +69,7 @@ struct var *var_init(const char *name, const char *value)
     return new_var;
 }
 
-void var_destroy(struct var *var) 
+void var_destroy(struct var *var)
 {
     if (!var)
         return;
@@ -80,54 +80,62 @@ void var_destroy(struct var *var)
 
 //=====================SET/GET/UNSET=========================
 
-void var_env_set(const char *name, const char *value) //add a new variable
+void var_env_set(const char *name, const char *value) // add a new variable
 {
-    if (global_var_env == NULL) {
+    if (global_var_env == NULL)
+    {
         global_var_env = var_env_init();
     }
-    if (global_var_env->var_count >= global_var_env->var_capacity) //resize if needed
+    if (global_var_env->var_count
+        >= global_var_env->var_capacity) // resize if needed
     {
-        if (global_var_env->var_capacity == 0) //initial capacity
+        if (global_var_env->var_capacity == 0) // initial capacity
             global_var_env->var_capacity = 4;
         else
-            global_var_env->var_capacity *= 2; //double if needed
-        global_var_env->variables = realloc(global_var_env->variables, global_var_env->var_capacity * sizeof(struct var *));
+            global_var_env->var_capacity *= 2; // double if needed
+        global_var_env->variables =
+            realloc(global_var_env->variables,
+                    global_var_env->var_capacity * sizeof(struct var *));
     }
-    for (size_t i = 0; i < global_var_env->var_count; i++) 
+    for (size_t i = 0; i < global_var_env->var_count; i++)
     {
-        if (strcmp(global_var_env->variables[i]->name, name) == 0) //check if the variable already exists
+        if (strcmp(global_var_env->variables[i]->name, name)
+            == 0) // check if the variable already exists
         {
             free(global_var_env->variables[i]->value);
             global_var_env->variables[i]->value = my_strdup(value);
             return;
         }
     }
-    
-    global_var_env->variables[global_var_env->var_count++] = var_init(name, value);
+
+    global_var_env->variables[global_var_env->var_count++] =
+        var_init(name, value);
 }
 
-void var_env_unset(const char *name) 
+void var_env_unset(const char *name)
 {
-    for (size_t i = 0; i < global_var_env->var_count; i++) 
+    for (size_t i = 0; i < global_var_env->var_count; i++)
     {
-        if (strcmp(global_var_env->variables[i]->name, name) == 0) 
+        if (strcmp(global_var_env->variables[i]->name, name) == 0)
         {
             var_destroy(global_var_env->variables[i]);
-            global_var_env->variables[i] = global_var_env->variables[global_var_env->var_count - 1];
+            global_var_env->variables[i] =
+                global_var_env->variables[global_var_env->var_count - 1];
             global_var_env->var_count--;
             return;
         }
     }
 }
 
-char *var_env_get(const char *name) 
+char *var_env_get(const char *name)
 {
-    if (global_var_env == NULL) {
+    if (global_var_env == NULL)
+    {
         err(2, "Variable dont exist");
     }
-    for (size_t i = 0; i < global_var_env->var_count; i++) 
+    for (size_t i = 0; i < global_var_env->var_count; i++)
     {
-        if (strcmp(global_var_env->variables[i]->name, name) == 0) 
+        if (strcmp(global_var_env->variables[i]->name, name) == 0)
         {
             return global_var_env->variables[i]->value;
         }
@@ -137,57 +145,57 @@ char *var_env_get(const char *name)
 
 //=====================EXPANSION=========================
 
-char *expand_special_var(const char *var_name, char **argv, 
-                        int argc, int last_exit_status) 
+char *expand_special_var(const char *var_name, char **argv, int argc,
+                         int last_exit_status)
 {
     if (!var_name)
         return NULL;
-    
+
     char buffer[64];
-    
+
     // $?
-    if (strcmp(var_name, "?") == 0) 
+    if (strcmp(var_name, "?") == 0)
     {
         snprintf(buffer, sizeof(buffer), "%d", last_exit_status);
         return my_strdup(buffer);
     }
-    
+
     // $$
-    if (strcmp(var_name, "$") == 0) 
+    if (strcmp(var_name, "$") == 0)
     {
         snprintf(buffer, sizeof(buffer), "%d", getpid());
         return my_strdup(buffer);
     }
-    
+
     // $#
-    if (strcmp(var_name, "#") == 0) 
+    if (strcmp(var_name, "#") == 0)
     {
         snprintf(buffer, sizeof(buffer), "%d", argc - 1);
         return my_strdup(buffer);
     }
-    
+
     // $0, $1, ..., $n
-    if (isdigit(var_name[0]) && var_name[1] == '\0') 
+    if (isdigit(var_name[0]) && var_name[1] == '\0')
     {
         int idx = var_name[0] - '0';
         if (idx < argc)
             return my_strdup(argv[idx]);
         return my_strdup("");
     }
-    
+
     // $* - tous les args séparés par des espaces
-    if (strcmp(var_name, "*") == 0) 
+    if (strcmp(var_name, "*") == 0)
     {
         if (argc <= 1)
             return my_strdup("");
-        
+
         size_t total_len = 0;
         for (int i = 1; i < argc; i++)
             total_len += strlen(argv[i]) + 1;
-        
+
         char *result = malloc(total_len);
         result[0] = '\0';
-        for (int i = 1; i < argc; i++) 
+        for (int i = 1; i < argc; i++)
         {
             strcat(result, argv[i]);
             if (i < argc - 1)
@@ -195,56 +203,57 @@ char *expand_special_var(const char *var_name, char **argv,
         }
         return result;
     }
-    
+
     // $@ - géré dans expand_word directement
-    if (strcmp(var_name, "@") == 0) 
+    if (strcmp(var_name, "@") == 0)
     {
         return expand_special_var("*", argv, argc, last_exit_status);
     }
-    
+
     // $RANDOM
-    if (strcmp(var_name, "RANDOM") == 0) 
+    if (strcmp(var_name, "RANDOM") == 0)
     {
         snprintf(buffer, sizeof(buffer), "%d", rand() % 67);
         return my_strdup(buffer);
     }
-    
+
     // $UID
-    if (strcmp(var_name, "UID") == 0) 
+    if (strcmp(var_name, "UID") == 0)
     {
         snprintf(buffer, sizeof(buffer), "%d", getuid());
         return my_strdup(buffer);
     }
-    
+
     // Variables d'environnement
-    if (strcmp(var_name, "PWD") == 0) 
+    if (strcmp(var_name, "PWD") == 0)
     {
         char cwd[PATH_MAX];
         if (getcwd(cwd, sizeof(cwd)))
             return my_strdup(cwd);
         return my_strdup("");
     }
-    
-    if (strcmp(var_name, "OLDPWD") == 0) 
+
+    if (strcmp(var_name, "OLDPWD") == 0)
     {
         char *oldpwd = getenv("OLDPWD");
-        return oldpwd;;
+        return oldpwd;
+        ;
     }
-    
-    if (strcmp(var_name, "IFS") == 0) 
+
+    if (strcmp(var_name, "IFS") == 0)
     {
         char *ifs = getenv("IFS");
         return ifs;
     }
-    
+
     return NULL;
 }
 
 static char *clean_word(char *word)
 {
-    //erase $
+    // erase $
     word = remove_char(word, 0);
-    //check for {}
+    // check for {}
     if (word[0] == '{')
     {
         word = remove_char(word, 0);
@@ -255,27 +264,27 @@ static char *clean_word(char *word)
         }
         else
         {
-            //syntax error, missing } //error should be done here?
+            // syntax error, missing } //error should be done here?
             err(2, "syntax error: missing }");
         }
     }
     return word;
 }
-char *expand_word(char *word, char **argv, int argc, int if_value) 
+char *expand_word(char *word, char **argv, int argc, int if_value)
 {
     if (!word)
         return NULL;
     if (word[0] != '$')
         return word;
-    word = clean_word(word); //turn ${VAR} to VAR
-    //check for special variables
+    word = clean_word(word); // turn ${VAR} to VAR
+    // check for special variables
     char *special = expand_special_var(word, argv, argc, if_value);
     if (special)
     {
         free(word);
         return special;
     }
-    //normal variable
+    // normal variable
     char *value = var_env_get(word);
     if (value)
     {
