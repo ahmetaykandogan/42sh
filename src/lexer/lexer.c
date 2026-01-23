@@ -44,7 +44,7 @@ struct fifo *lexer(char *input)
         }
 
         /* CASE WORDS */
-        if (check_char(input[i]) == 42)
+        else if (check_char(input[i]) == 42)
         {
             i = handle_word(input, i, queue);
         }
