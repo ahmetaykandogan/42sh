@@ -13,7 +13,7 @@
 #include "variable.c"
 #include "variable.h"
 
-int if_value = 0;
+int return_value = 0;
 static char **dup_words(char **src)
 {
     size_t n = 0;
@@ -27,10 +27,10 @@ static char **dup_words(char **src)
     return dst;
 }
 
-static void expand_words(char **words, char **argv, int argc, int if_value)
+static void expand_words(char **words, char **argv, int argc, int return_value)
 {
     for (size_t i = 0; words && words[i]; i++)
-        words[i] = expand_word(words[i], argv, argc, if_value);
+        words[i] = expand_word(words[i], argv, argc, return_value);
 }
 
 static void free_words(char **words)
@@ -181,7 +181,7 @@ static void ast_run_if(struct ast *ast, int argc, char **argv)
 
     run_ast(ast_if->condition, argc, argv);
 
-    if (if_value == 0)
+    if (return_value == 0)
         run_ast(ast_if->then_body, argc, argv);
     else if (ast_if->else_body)
         run_ast(ast_if->else_body, argc, argv);
@@ -210,7 +210,7 @@ static void ast_run_while(struct ast *ast, int argc, char **argv)
     while (1)
     {
         run_ast(ast_w->condition, argc, argv);
-        if (if_value != 0)
+        if (return_value != 0)
             break;
         run_ast(ast_w->body, argc, argv);
     }
@@ -222,7 +222,7 @@ static void ast_run_until(struct ast *ast, int argc, char **argv)
     while (1)
     {
         run_ast(ast_u->condition, argc, argv);
-        if (if_value == 0)
+        if (return_value == 0)
             break;
         run_ast(ast_u->body, argc, argv);
     }
@@ -240,14 +240,14 @@ static void ast_run_and_or(struct ast *ast, int argc, char **argv)
         int operator= ast_ao->op[i];
         if (operator== 0) // &&
         {
-            if (if_value == 0)
+            if (return_value == 0)
                 run_ast(ast_ao->children->children[i + 1], argc, argv);
             else
                 continue;
         }
         else if (operator== 1) // ||
         {
-            if (if_value != 0)
+            if (return_value != 0)
                 run_ast(ast_ao->children->children[i + 1], argc, argv);
             else
                 continue;
@@ -257,7 +257,7 @@ static void ast_run_and_or(struct ast *ast, int argc, char **argv)
 static char *expand_for_value(char *word, char **argv, int argc)
 {
     char *dup = my_strdup(word);
-    return expand_word(dup, argv, argc, if_value);
+    return expand_word(dup, argv, argc, return_value);
 }
 
 static void ast_run_for(struct ast *ast, int argc, char **argv)
@@ -334,7 +334,7 @@ static pid_t fork_executor(struct ast_cmd *cmd, int in, int out,
         run_redirections(cmd->redirections);
 
     char **words = dup_words(cmd->words);
-    expand_words(words, argv, argc, if_value);
+    expand_words(words, argv, argc, return_value);
 
     int builtin = try_execute_builtin(words);
     if (builtin != -1)
@@ -389,12 +389,12 @@ void run_pipe(struct ast *enter_pipe, int argc, char **argv)
         waitpid(pid_list[x], &wstatus, 0);
 
     if (WIFEXITED(wstatus))
-        if_value = WEXITSTATUS(wstatus);
+        return_value = WEXITSTATUS(wstatus);
     else
-        if_value = 1;
+        return_value = 1;
 
     if (pipe_node->negated)
-        if_value = !if_value;
+        return_value = !return_value;
 
     restored_fds(stdin_cp, stdout_cp, stderr_cp);
 
@@ -501,7 +501,7 @@ void run_command(struct ast_cmd *cmd, int argc, char **argv)
     if (cmd->assignments)
         run_assignment(cmd, 0); //we only add "" to everyone
     char **words = dup_words(cmd->words);
-    expand_words(words, argv, argc, if_value);
+    expand_words(words, argv, argc, return_value);
     if (cmd->redirections)
         run_redirections(cmd->redirections);
     // case where var is only for this line
@@ -509,11 +509,11 @@ void run_command(struct ast_cmd *cmd, int argc, char **argv)
     int builtin_result = try_execute_builtin(words);
     if (builtin_result != -1)
     {
-        if_value = builtin_result;
+        return_value = builtin_result;
         fflush(stdout);
         restored_fds(stdin_cp, stdout_cp, stderr_cp);
         if (cmd->negated)
-            if_value = !if_value;
+            return_value = !return_value;
         free_words(words);
         return;
     }
@@ -529,12 +529,12 @@ void run_command(struct ast_cmd *cmd, int argc, char **argv)
     waitpid(pid, &wstatus, 0);
 
     if (WIFEXITED(wstatus))
-        if_value = WEXITSTATUS(wstatus);
+        return_value = WEXITSTATUS(wstatus);
     else
-        if_value = 1;
+        return_value = 1;
     restored_fds(stdin_cp, stdout_cp, stderr_cp);
     if (cmd->negated)
-        if_value = !if_value;
+        return_value = !return_value;
 
     free_words(words);
 }

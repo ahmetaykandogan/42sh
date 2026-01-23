@@ -486,7 +486,29 @@ static void parse_element(enum parser_status *status, struct fifo *lexer,
     struct ast_cmd *out = (struct ast_cmd *)in; // its always a command
     struct lextoken *token = fifo_head(lexer);
     // WORD
-    if (token && (token->tok == WORDS || token->tok == WORDS))
+    /*
+    if (token && token->tok == DO)
+    {
+        char *word = malloc(sizeof(char) * 3);
+        word[0] = 'd';
+        word[1] = 'o';
+        word[2] = '\0';
+        ast_cmd_add_word(out, word);
+        fifo_pop(lexer);
+        *status = PARSER_OK;
+    }
+    else if (token && token->tok == IN)
+    {
+        char *word = malloc(sizeof(char) * 3);
+        word[0] = 'i';
+        word[1] = 'n';
+        word[2] = '\0';
+        ast_cmd_add_word(out, word);
+        fifo_pop(lexer);
+        *status = PARSER_OK;
+    }
+    */ //This is just a joke
+    else if (token && (token->tok == WORDS || token->tok == WORDS))
     {
         ast_cmd_add_word(out, token->value);
         fifo_pop(lexer);
