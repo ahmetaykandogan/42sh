@@ -10,65 +10,110 @@ CYAN="\e[0;36m"
 WHITE="\e[0;37m"
 NC='\033[0m'
 
-
 # -------------------------- GLOBV -------------------------- #
-TEST_DIR=$1
+TEST_DIR=${1:-.}
 MODULE=$2
 
+# Check for required environment variable
+if [ -z "$BIN_PATH" ]; then
+    BIN_PATH="$(pwd)/src/42sh"
+fi
 
 # -------------------------- TESTS -------------------------- #
 if [ -z "$MODULE" ]; then
-    TESTS_TO_RUN=$(ls $TEST_DIR) # Fetch all tests if no module specified.
+    TESTS_TO_RUN=$(ls "$TEST_DIR" 2>/dev/null | grep -v Makefile | grep -v testsuite.sh)
 else
     TESTS_TO_RUN=$MODULE
 fi
 
 # -------------------------- RECAP -------------------------- #
-RECAP=/tmp/recap
+RECAP=/tmp/recap_$$
+echo "============ RECAP ============" > "$RECAP"
 
-echo ============ RECAP ============ > $RECAP
+total_tests=0
+total_passed=0
 
 for dir in $TESTS_TO_RUN; do
+    # Skip if not a directory
+    if [ ! -d "$TEST_DIR/$dir" ]; then
+        continue
+    fi
+    
     cat_total=0
     cat_passed=0
-    for test_file in $(find "$TEST_DIR/$dir" -name "*.sh"); do
-        ./src/42sh "$test_file" > /tmp/out
-        bash --posix "$test_file" > /tmp/ref_out
 
-        ref_out=/tmp/ref_out
-        out=/tmp/out
-
-        if diff -u "$out" "$ref_out" > /dev/null; then
+    # Find all .sh files in this module directory
+    for test_file in $(find "$TEST_DIR/$dir" -type f -name "*.sh" 2>/dev/null | sort); do
+        cat_total=$((cat_total + 1))
+        total_tests=$((total_tests + 1))
+        
+        # Run with your shell
+        "$BIN_PATH" "$test_file" > /tmp/out_$$ 2>&1
+        your_exit=$?
+        
+        # Run with reference bash
+        bash --posix "$test_file" > /tmp/ref_out_$$ 2>&1
+        ref_exit=$?
+        
+        ref_out=/tmp/ref_out_$$
+        out=/tmp/out_$$
+        
+        # Compare outputs
+        if diff -u "$out" "$ref_out" > /dev/null && [ $your_exit -eq $ref_exit ]; then
             test_passed=true
         else
             test_passed=false
         fi
-
-        cat_total=$((cat_total + 1))
+        
         if $test_passed; then
             cat_passed=$((cat_passed + 1))
+            total_passed=$((total_passed + 1))
         else
             echo -e "${RED}FAILED${NC}: $test_file"
             echo
+            if [ $your_exit -ne $ref_exit ]; then
+                echo -e "Exit codes differ: expected $ref_exit, got $your_exit"
+            fi
             echo -e "=== Diff:"
             echo -e "Content of stdout differs:"
             echo -e "Expected: ${GREEN}"
             cat "$ref_out"
-            echo -n ${NC}
+            echo -e "${NC}"
             echo -e "Got: ${RED}"
             cat "$out"
-            echo -n ${NC}
+            echo -e "${NC}"
             echo
         fi
+
+        # Clean temp files
+        rm -f "$out" "$ref_out"
     done
-    if [ $cat_passed -eq 0 ] && [ $cat_total -eq 0 ]; then
-        continue;
-    elif [ $cat_passed = $cat_total ]; then
-        color=$GREEN
-    else
-        color=$RED
+
+    # Only print recap line if tests were found
+    if [ $cat_total -gt 0 ]; then
+        if [ $cat_passed -eq $cat_total ]; then
+            color=$GREEN
+        else
+            color=$RED
+        fi
+        printf "%-15s ${color}%+15s${NC}\n" "$dir" "($cat_passed/$cat_total passed)" >> "$RECAP"
     fi
-    printf "%-15s ${color}%+15s${NC}\n" $dir "($cat_passed/$cat_total passed)" >> $RECAP
 done
 
-cat $RECAP
+cat "$RECAP"
+rm -f "$RECAP"
+
+if [ $cat_total -ne 0 ]; then
+    POURCENT=$((($cat_passed / $cat_total) * 100))
+    echo $POURCENT > $OUTPUT_FILE
+fi
+
+echo
+echo "============ TOTAL ============"
+if [ $total_passed -eq $total_tests ]; then
+    echo -e "${GREEN}All tests passed: $total_passed/$total_tests${NC}"
+    exit 0
+else
+    echo -e "${RED}Some tests failed: $total_passed/$total_tests${NC}"
+    exit 1
+fi

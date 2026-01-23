@@ -142,7 +142,7 @@ size_t handle_variable(char *input, size_t i, size_t input_len, struct fifo *que
 size_t handle_single_char(char *input, size_t i, struct fifo *queue)
 {
     char *tok = malloc_err(2);
-    tok[0] = input[i++];
+    tok[0] = input[i];
     tok[1] = '\0';
 
     fifo_push(queue, create_lextoken_single_char(tok));
