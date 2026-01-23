@@ -35,10 +35,7 @@ enum token
     AND, // '&&'
     OR, // '||'
 
-    GUILLMT, // ' "" '
     ESCAPE, // ' \ '
-    APSTRPH, // ' '' '
-
     VAR, // '$name ${name}'
 
     WORDS // 'words'

@@ -49,13 +49,13 @@ struct fifo *lexer(char *input)
             i = handle_word(input, i, queue);
         }
 
-        /* CASE APOSTROPHE + QUOTE */
+        /* CASE SINGLE QUOTE */
         else if (check_char(input[i]) == 1)
         {
             i = handle_single_quote(input, i, queue);
         }
 
-        /* CASE GUILLMT + DOUBLE QUOTE */
+        /* CASE DOUBLE QUOTE */
         else if (check_char(input[i]) == 2)
         {
             i = handle_double_quote(input, i, queue);
