@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     }
     enum parser_status status = PARSER_OK;
     struct ast *ast = main_parse(&status, lex_queue);
-    run_ast(ast);
+    run_ast(ast, argc -1, argv + 1);
     if (!ast)
     {
         fifo_destroy_failed(lex_queue); //if parsing has failed, the fifo destroy dont free the words

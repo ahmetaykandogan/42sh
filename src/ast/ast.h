@@ -14,7 +14,7 @@ enum ast_type // All the pseudo types of AST nodes
     AST_WHILE,
     AST_UNTIL,
     AST_PIPE,
-    AST_AND_OR
+    AST_AND_OR,
 };
 
 // To understand how this works, see the 42SH Design AST documentation
@@ -36,6 +36,7 @@ struct redirection
     char *operator;//the redirection operator (>, <, >>, etc)
 };
 
+
 //--------------------------------------THE TYPES OF AST
 //NODES--------------------------------------//
 
@@ -44,7 +45,7 @@ struct ast_cmd
     struct ast base;
     int negated; // 1 if the command is negated with '!'
     char **words; // NULL terminated char* list */
-
+    char **assignments; // NULL terminated char* list of variable assignments
     struct redirection **redirections; // NULL terminated redirection list 
     //if there are none, this is NULL
 };
@@ -106,6 +107,7 @@ struct ast_and_or //
     size_t child_count;
 };
 
+
 //-------------------------------------INITIALIZE AST TYPES-----------------//
 
 struct ast_cmd *ast_cmd_init(int neg);
@@ -124,18 +126,20 @@ void ast_list_add_ast(struct ast_list *in, struct ast *ast);
 // TODO same for this
 void ast_and_or_add_ast(struct ast_and_or *in, struct ast *ast, int type);
 // type is 0 for &&, 1 for ||
+void add_vars(struct ast_cmd *cmd, char *new_var);
 
 //---------------------LOOKUP TABLE FOR DESTROY FUNCTIONS-----------------//
 
 const char *ast_repr(enum ast_type type);
 
-typedef void (*run_type)(struct ast *ast);
+typedef void (*run_type)(struct ast *ast, int argc, char **argv);
+typedef void (*destroy_type)(struct ast *ast);
 /* FIX: separate function pointer type for redirections */
 typedef void (*redir_type)(struct ast *ast, struct redirection *redir);
 
-void run_ast(struct ast *ast);
-void run_pipe(struct ast *enter_pipe);
-void run_command(struct ast_cmd *cmd);
+void run_ast(struct ast *ast, int argc, char **argv);
+void run_pipe(struct ast *enter_pipe, int argc, char **argv);
+void run_command(struct ast_cmd *cmd, int argc, char **argv);
 void run_redirections(struct redirection **redir);
 
 //----------------------------------DESTROY AST

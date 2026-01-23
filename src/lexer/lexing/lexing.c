@@ -266,18 +266,39 @@ char *lexing_variables(char *input, size_t pos)
 
     size_t tok_pos = 0;
 
-    bool quoted = 0;
-    bool escaped = 0;
-    while (pos < input_len && input[pos] != '}' && !quoted && !escaped)
+    bool single_quoted = 0;
+    bool double_quoted = 0;
+    while (pos < input_len)
     {
-        if (input[pos] == '\"' && input[pos - 1] != '\\')
+        char c = input[pos];
+
+        if (c == '\\' && pos + 1 < input_len && !single_quoted)
         {
-            quoted = !quoted;
+            if (tok_pos >= capacity - 2)
+            {
+                capacity *= 2;
+                tok = realloc_err(tok, capacity);
+            }
+            tok[tok_pos++] = input[pos++];
+            tok[tok_pos++] = input[pos++];
+            continue;
         }
-        else if (input[pos] == '\\')
+
+        if (c == '\'' && !double_quoted)
         {
-            escaped = !escaped;
+            single_quoted = !single_quoted;
         }
+
+        else if (c == '\"' && !single_quoted)
+        {
+            double_quoted = !double_quoted;
+        }
+
+        else if (c == '}' && !single_quoted && !double_quoted)
+        {
+            break;
+        }
+
         if (tok_pos >= capacity - 1)
         {
             capacity *= 2;
@@ -285,6 +306,7 @@ char *lexing_variables(char *input, size_t pos)
         }
         tok[tok_pos++] = input[pos++];
     }
+
     if (pos >= input_len)
     {
         free(tok);
