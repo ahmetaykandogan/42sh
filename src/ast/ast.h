@@ -2,9 +2,9 @@
 #define AST_H
 
 #include <assert.h>
-#include <unistd.h>
-#include <sys/types.h>
 #include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 enum ast_type // All the pseudo types of AST nodes
 {
@@ -30,15 +30,14 @@ struct ast
 
 struct redirection
 {
-    char *fd;//if there is an IONUMBER (IF not NULL)
-    //int flags;//O_RDONLY, O_WRONLY, etc may be needed for future steps?
-    char *filename;//the file to redirect to/from
-    char *operator;//the redirection operator (>, <, >>, etc)
+    char *fd; // if there is an IONUMBER (IF not NULL)
+    // int flags;//O_RDONLY, O_WRONLY, etc may be needed for future steps?
+    char *filename; // the file to redirect to/from
+    char *operator; // the redirection operator (>, <, >>, etc)
 };
 
-
 //--------------------------------------THE TYPES OF AST
-//NODES--------------------------------------//
+// NODES--------------------------------------//
 
 struct ast_cmd
 {
@@ -46,8 +45,8 @@ struct ast_cmd
     int negated; // 1 if the command is negated with '!'
     char **words; // NULL terminated char* list */
     char **assignments; // NULL terminated char* list of variable assignments
-    struct redirection **redirections; // NULL terminated redirection list 
-    //if there are none, this is NULL
+    struct redirection **redirections; // NULL terminated redirection list
+    // if there are none, this is NULL
 };
 
 struct ast_if
@@ -56,9 +55,9 @@ struct ast_if
     struct ast *condition; // the condition
     struct ast *then_body; // the body of the then clause
     struct ast *else_body; // the body of the else, may be NULL
-    
+
     struct redirection **redirections;
-    //NULL if none
+    // NULL if none
 };
 
 struct ast_list
@@ -95,18 +94,18 @@ struct ast_pipe
     struct redirection **redirections; // Can a pipe have redirections?
 };
 
-struct ast_and_or // 
+struct ast_and_or //
 {
     struct ast base;
     struct ast_list *children;
-    int *op; // 0 for &&, 1 for || 
-    //the way this will function is op[i] is the operator between
-    //children[i] and children[i+1]
-    //for example, if we have a || b && c, then op[0] = 1, op[1] = 0
-    //This implementation dont work for case with parantheses, there is no and or priority
+    int *op; // 0 for &&, 1 for ||
+    // the way this will function is op[i] is the operator between
+    // children[i] and children[i+1]
+    // for example, if we have a || b && c, then op[0] = 1, op[1] = 0
+    // This implementation dont work for case with parantheses, there is no and
+    // or priority
     size_t child_count;
 };
-
 
 //-------------------------------------INITIALIZE AST TYPES-----------------//
 
@@ -143,9 +142,10 @@ void run_command(struct ast_cmd *cmd, int argc, char **argv);
 void run_redirections(struct redirection **redir);
 
 //----------------------------------DESTROY AST
-//TYPES------------------------------//
+// TYPES------------------------------//
 
-void struct_ast_destroy(struct ast *node); // generic destroy function for all ast types
+void struct_ast_destroy(
+    struct ast *node); // generic destroy function for all ast types
 
 void ast_cmd_destroy(struct ast_cmd *node);
 void ast_if_destroy(struct ast_if *node);
@@ -157,11 +157,9 @@ void ast_and_or_destroy(struct ast_and_or *node);
 
 //--------------------------------------redirections-----------------------------
 
-
 struct redirection *redirection_init(char *fd, char *filename, char *operator);
 void redirection_destroy(struct redirection *redir);
 void ast_add_redirection(struct ast *node, struct redirection *redir);
-
 
 void ast_cmd_add_redirection(struct ast *ast_node, struct redirection *redir);
 void ast_if_add_redirection(struct ast *ast_node, struct redirection *redir);
@@ -172,5 +170,4 @@ void ast_until_add_redirection(struct ast *ast_node, struct redirection *redir);
 void add_redirection(struct redirection ***ast_redir,
                      struct redirection *new_redir);
 
-    
 #endif /* ! AST_H */

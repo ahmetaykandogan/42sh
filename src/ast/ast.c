@@ -1,16 +1,17 @@
 #include "ast.h"
+
 #include <assert.h>
-#include <fcntl.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <stdio.h>
 #include <err.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include "variable.h"
-#include "variable.c"
+#include <sys/wait.h>
+#include <unistd.h>
 
 #include "../builtins/builtins.h"
+#include "variable.c"
+#include "variable.h"
 
 int if_value = 0;
 
@@ -47,7 +48,7 @@ struct ast_list *ast_list_init()
 
 struct ast_while *ast_while_init(void)
 {
-    struct ast_while *out= calloc(1, sizeof(struct ast_while));
+    struct ast_while *out = calloc(1, sizeof(struct ast_while));
     out->base.type = AST_WHILE;
     out->condition = NULL;
     out->body = NULL;
@@ -57,7 +58,7 @@ struct ast_while *ast_while_init(void)
 
 struct ast_until *ast_until_init(void)
 {
-    struct ast_until *out= calloc(1, sizeof(struct ast_until));
+    struct ast_until *out = calloc(1, sizeof(struct ast_until));
     out->base.type = AST_UNTIL;
     out->condition = NULL;
     out->body = NULL;
@@ -140,7 +141,6 @@ static void ast_run_cmd(struct ast *ast, int argc, char **argv)
 
 static void ast_run_if(struct ast *ast, int argc, char **argv)
 {
-
     struct ast_if *ast_if = (struct ast_if *)ast;
 
     run_ast(ast_if->condition, argc, argv);
@@ -161,12 +161,8 @@ static void ast_run_list(struct ast *ast, int argc, char **argv)
 const char *ast_repr(enum ast_type type)
 {
     static const char *const names[] = {
-        [AST_CMD] = "CMD",
-        [AST_IF] = "IF",
-        [AST_LIST] = "LIST",
-        [AST_WHILE] = "WHILE",
-        [AST_UNTIL] = "UNTIL",
-        [AST_PIPE] = "PIPE",
+        [AST_CMD] = "CMD",       [AST_IF] = "IF",       [AST_LIST] = "LIST",
+        [AST_WHILE] = "WHILE",   [AST_UNTIL] = "UNTIL", [AST_PIPE] = "PIPE",
         [AST_AND_OR] = "AND_OR",
     };
     return names[type];
@@ -205,15 +201,15 @@ static void ast_run_and_or(struct ast *ast, int argc, char **argv)
     run_ast(ast_ao->children->children[0], argc, argv);
     for (size_t i = 0; i < ast_ao->child_count - 1; i++)
     {
-        int operator = ast_ao->op[i];
-        if (operator == 0) // &&
+        int operator= ast_ao->op[i];
+        if (operator== 0) // &&
         {
             if (if_value == 0)
                 run_ast(ast_ao->children->children[i + 1], argc, argv);
             else
                 continue;
         }
-        else if (operator == 1) // ||
+        else if (operator== 1) // ||
         {
             if (if_value != 0)
                 run_ast(ast_ao->children->children[i + 1], argc, argv);
@@ -252,7 +248,8 @@ static void restored_fds(int stdin_cp, int stdout_cp, int stderr_cp)
     close(stdout_cp);
     close(stderr_cp);
 }
-static pid_t fork_executor(struct ast_cmd *cmd, int in, int out, int (*filedes)[2], size_t nb_child)
+static pid_t fork_executor(struct ast_cmd *cmd, int in, int out,
+                           int (*filedes)[2], size_t nb_child)
 {
     char **argv = cmd->words;
 
@@ -301,7 +298,7 @@ void run_pipe(struct ast *enter_pipe, int argc, char **argv)
     if (nb_child < 2)
         return;
 
-    int (*filedes)[2] = calloc(nb_child - 1, sizeof(int[2]));
+    int(*filedes)[2] = calloc(nb_child - 1, sizeof(int[2]));
 
     pid_t *pid_list = calloc(nb_child, sizeof(pid_t));
 
@@ -355,7 +352,6 @@ void run_pipe(struct ast *enter_pipe, int argc, char **argv)
     free(pid_list);
 }
 
-
 void run_redirections(struct redirection **redir)
 {
     if (!redir)
@@ -403,9 +399,11 @@ static void run_assignment(struct ast_cmd *cmd, int check)
 {
     if (check == 1)
     {
-        for (size_t i = 0; cmd->assignments[i] != NULL; i++) {
+        for (size_t i = 0; cmd->assignments[i] != NULL; i++)
+        {
             char *eq = strchr(cmd->assignments[i], '=');
-            if (eq) {
+            if (eq)
+            {
                 *eq = '\0';
                 char *name = cmd->assignments[i];
                 char *value = eq + 1;
@@ -415,9 +413,11 @@ static void run_assignment(struct ast_cmd *cmd, int check)
     }
     else
     {
-        for (size_t i = 0; cmd->assignments[i] != NULL; i++) {
+        for (size_t i = 0; cmd->assignments[i] != NULL; i++)
+        {
             char *eq = strchr(cmd->assignments[i], '=');
-            if (eq) {
+            if (eq)
+            {
                 *eq = '\0';
                 char *name = cmd->assignments[i];
                 var_env_set(name, "");
@@ -431,7 +431,7 @@ void run_command(struct ast_cmd *cmd, int argc, char **argv)
     int stdin_cp = dup(STDIN_FILENO);
     int stdout_cp = dup(STDOUT_FILENO);
     int stderr_cp = dup(STDERR_FILENO);
-    
+
     if (!words || !words[0])
     {
         if (cmd->redirections)
@@ -439,7 +439,8 @@ void run_command(struct ast_cmd *cmd, int argc, char **argv)
             run_redirections(cmd->redirections);
             restored_fds(stdin_cp, stdout_cp, stderr_cp);
         }
-        else if (cmd->assignments) // we only have variables, expansion is for every cmd, so we add to global list
+        else if (cmd->assignments) // we only have variables, expansion is for
+                                   // every cmd, so we add to global list
         {
             run_assignment(cmd, 1); //we add to everyone
         }
@@ -455,8 +456,8 @@ void run_command(struct ast_cmd *cmd, int argc, char **argv)
     }
     if (cmd->redirections)
         run_redirections(cmd->redirections);
-    //case where var is only for this line
-    //run_assignment(cmd);
+    // case where var is only for this line
+    // run_assignment(cmd);
     int builtin_result = try_execute_builtin(words);
     if (builtin_result != -1)
     {
@@ -492,18 +493,15 @@ void run_ast(struct ast *ast, int argc, char **argv)
     if (!ast)
         return;
     static run_type run_functions[] = {
-        [AST_CMD] = &ast_run_cmd,
-        [AST_IF] = &ast_run_if,
-        [AST_LIST] = &ast_run_list,
-        [AST_WHILE] = &ast_run_while,
-        [AST_UNTIL] = &ast_run_until,
-        [AST_PIPE] = &run_pipe,
+        [AST_CMD] = &ast_run_cmd,       [AST_IF] = &ast_run_if,
+        [AST_LIST] = &ast_run_list,     [AST_WHILE] = &ast_run_while,
+        [AST_UNTIL] = &ast_run_until,   [AST_PIPE] = &run_pipe,
         [AST_AND_OR] = &ast_run_and_or,
     };
     (*run_functions[ast->type])(ast, argc, argv);
 }
 //----------------------------------DESTROY AST
-//TYPES------------------------------
+// TYPES------------------------------
 
 void struct_ast_destroy(struct ast *node)
 {
@@ -596,18 +594,16 @@ void ast_and_or_destroy(struct ast_and_or *node)
     free(node);
 }
 
-
-
 //--------------------------------------redirections-----------------------------
 
 struct redirection *redirection_init(char *fd, char *filename, char *operator)
 {
     struct redirection *out = calloc(1, sizeof(struct redirection));
     out->fd = fd;
-    //out->flags = flags;
+    // out->flags = flags;
     out->filename = filename;
-    out->operator = NULL;
-    out->operator = operator;
+    out->operator= NULL;
+    out->operator= operator;
     return out;
 }
 
@@ -621,7 +617,7 @@ void redirection_destroy(struct redirection *redir)
     free(redir);
 }
 
-//THERE IS PROABLY A CLEANER WAY TO DO THIS BUT I DIDNT FIND IT
+// THERE IS PROABLY A CLEANER WAY TO DO THIS BUT I DIDNT FIND IT
 void ast_add_redirection(struct ast *node, struct redirection *redir)
 {
     if (!node || !redir)

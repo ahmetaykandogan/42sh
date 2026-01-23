@@ -35,7 +35,11 @@ void fifo_destroy_failed(struct fifo *fifo)
     while (fifo->size != 0)
     {
         struct lextoken *token = fifo_head(fifo);
-        if (token->tok == WORDS || token->tok == VAR || token->tok == IONUMBER || token->tok == RED_IN || token->tok == RED_OUT || token->tok == APPEND_OUT || token->tok == DUP_IN || token->tok == DUP_OUT || token->tok == RED_FORCE || token->tok == FD_RW)
+        if (token->tok == WORDS || token->tok == VAR || token->tok == IONUMBER
+            || token->tok == RED_IN || token->tok == RED_OUT
+            || token->tok == APPEND_OUT || token->tok == DUP_IN
+            || token->tok == DUP_OUT || token->tok == RED_FORCE
+            || token->tok == FD_RW)
         {
             free(token->value);
         }
