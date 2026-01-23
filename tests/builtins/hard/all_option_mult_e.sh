@@ -1,5 +1,5 @@
 #!/bin/sh
 
-# All option multiple time finishing with an e
+# All option multiple time finishing by an E
 
-echo -n -E -E -E -e -n -E -E -e -e -e -e HI '\t' '\n' Goodbye
+echo -E -E -n -E -e -E -n -E -e -e -e -E HI '\t' '\n' Goodbye
