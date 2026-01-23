@@ -243,7 +243,15 @@ static int try_execute_builtin(char **argv)
 
     return -1;
 }
-
+static void restored_fds(int stdin_cp, int stdout_cp, int stderr_cp)
+{
+    dup2(stdin_cp, STDIN_FILENO);
+    dup2(stdout_cp, STDOUT_FILENO);
+    dup2(stderr_cp, STDERR_FILENO);
+    close(stdin_cp);
+    close(stdout_cp);
+    close(stderr_cp);
+}
 static pid_t fork_executor(struct ast_cmd *cmd, int in, int out, int (*filedes)[2], size_t nb_child)
 {
     char **argv = cmd->words;
@@ -279,9 +287,13 @@ static pid_t fork_executor(struct ast_cmd *cmd, int in, int out, int (*filedes)[
 
 void run_pipe(struct ast *enter_pipe, int argc, char **argv)
 {
-    (void)argc;
-    (void)argv;
+    int stdin_cp;
+    int stdout_cp;
+    int stderr_cp;
 
+    stdin_cp = dup(STDIN_FILENO);
+    stdout_cp = dup(STDOUT_FILENO);
+    stderr_cp = dup(STDERR_FILENO);
     struct ast_pipe *pipe_node = (struct ast_pipe *)enter_pipe;
     struct ast_list *pipelines = pipe_node->pipelines;
 
@@ -300,6 +312,12 @@ void run_pipe(struct ast *enter_pipe, int argc, char **argv)
     for (size_t j = 0; j < nb_child; j++)
     {
         struct ast_cmd *cmd = (struct ast_cmd *)pipelines->children[j];
+        int word_count = 0;
+        while (cmd->words[word_count] != NULL)
+        {
+            cmd->words[word_count] = expand_word(cmd->words[word_count], argv, argc, if_value);
+            word_count++;
+        }
         int in;
         int out;
 
@@ -331,6 +349,7 @@ void run_pipe(struct ast *enter_pipe, int argc, char **argv)
         if_value = 1;
     if (pipe_node->negated)
         if_value = !if_value;
+    restored_fds(stdin_cp, stdout_cp, stderr_cp);
 
     free(filedes);
     free(pid_list);
@@ -379,62 +398,30 @@ void run_redirections(struct redirection **redir)
         close(file_desc);
     }
 }
-static void restored_fds(int stdin_cp, int stdout_cp, int stderr_cp)
-{
-    dup2(stdin_cp, STDIN_FILENO);
-    dup2(stdout_cp, STDOUT_FILENO);
-    dup2(stderr_cp, STDERR_FILENO);
-    close(stdin_cp);
-    close(stdout_cp);
-    close(stderr_cp);
-}
-/*
-static char **expand_command_words(char **words, struct var_env *env, char **argv, int argc)
-{
-    if (!words)
-        return NULL;
-    size_t count = 0;
 
-    for (size_t i = 0; words[i] != NULL; i++)
+static void run_assignment(struct ast_cmd *cmd, int check)
+{
+    if (check == 1)
     {
-        char **expanded = expand_word(words[i], env, argv, argc, if_value);
-        size_t j = 0;
-        while (expanded[j] && expanded)
-        {
-            count++;
-            j++;
+        for (size_t i = 0; cmd->assignments[i] != NULL; i++) {
+            char *eq = strchr(cmd->assignments[i], '=');
+            if (eq) {
+                *eq = '\0';
+                char *name = cmd->assignments[i];
+                char *value = eq + 1;
+                var_env_set(name, value);
+            }
         }
-        
-        for (size_t k = 0; expanded && expanded[k]; k++)
-            free(expanded[k]);
-        free(expanded);
     }
-
-    char **out = calloc(count + 1, sizeof(char *));
-    size_t index = 0;
-
-    for (size_t i = 0; words[i] != NULL; i++)
+    else
     {
-        char **expanded = expand_word(words[i], env, argv, argc, if_value);
-        for(size_t j = 0; expanded && expanded[j]; j++)
-        {
-            out[index++] = expanded[j];
-        }
-        free(expanded);
-    }
-
-    return out;
-}
-*/
-static void run_assignment(struct ast_cmd *cmd)
-{
-    for (size_t i = 0; cmd->assignments[i] != NULL; i++) {
-        char *eq = strchr(cmd->assignments[i], '=');
-        if (eq) {
-            *eq = '\0';
-            char *name = cmd->assignments[i];
-            char *value = eq + 1;
-            var_env_set(name, value);
+        for (size_t i = 0; cmd->assignments[i] != NULL; i++) {
+            char *eq = strchr(cmd->assignments[i], '=');
+            if (eq) {
+                *eq = '\0';
+                char *name = cmd->assignments[i];
+                var_env_set(name, "");
+            }
         }
     }
 }
@@ -454,16 +441,16 @@ void run_command(struct ast_cmd *cmd, int argc, char **argv)
         }
         else if (cmd->assignments) // we only have variables, expansion is for every cmd, so we add to global list
         {
-            run_assignment(cmd);
+            run_assignment(cmd, 1); //we add to everyone
         }
         return;
     }
+    if (cmd->assignments)
+        run_assignment(cmd, 0); //we only add "" to everyone
     int word_count = 0;
     while (words[word_count] != NULL)
     {
         words[word_count] = expand_word(words[word_count], argv, argc, if_value);
-        //run_assignment(cmd);
-        //TODO Case where var declared at same time as command
         word_count++;
     }
     if (cmd->redirections)

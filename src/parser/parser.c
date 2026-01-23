@@ -474,7 +474,7 @@ static void parse_element(enum parser_status *status, struct fifo *lexer,
     struct ast_cmd *out = (struct ast_cmd *)in; // its always a command
     struct lextoken *token = fifo_head(lexer);
     // WORD
-    if (token && token->tok == WORDS)
+    if (token && (token->tok == WORDS || token->tok == GUILLMT))
     {
         ast_cmd_add_word(out, token->value);
         fifo_pop(lexer);
