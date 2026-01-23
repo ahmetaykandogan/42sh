@@ -15,6 +15,7 @@ enum ast_type // All the pseudo types of AST nodes
     AST_UNTIL,
     AST_PIPE,
     AST_AND_OR,
+    AST_FOR
 };
 
 // To understand how this works, see the 42SH Design AST documentation
@@ -55,9 +56,8 @@ struct ast_if
     struct ast *condition; // the condition
     struct ast *then_body; // the body of the then clause
     struct ast *else_body; // the body of the else, may be NULL
+    struct redirection **redirections; // NULL terminated redirection list
 
-    struct redirection **redirections;
-    // NULL if none
 };
 
 struct ast_list
@@ -65,6 +65,8 @@ struct ast_list
     struct ast base;
     struct ast **children;
     size_t child_count;
+    struct redirection **redirections; // NULL terminated redirection list
+
 };
 
 struct ast_while
@@ -72,8 +74,7 @@ struct ast_while
     struct ast base;
     struct ast *condition;
     struct ast *body;
-
-    struct redirection **redirections;
+    struct redirection **redirections; // NULL terminated redirection list
 };
 
 struct ast_until
@@ -81,8 +82,8 @@ struct ast_until
     struct ast base;
     struct ast *condition;
     struct ast *body;
+    struct redirection **redirections; // NULL terminated redirection list
 
-    struct redirection **redirections;
 };
 
 struct ast_pipe
@@ -90,8 +91,8 @@ struct ast_pipe
     struct ast base;
     struct ast_list *pipelines;
     int negated;
+    struct redirection **redirections; // NULL terminated redirection list
 
-    struct redirection **redirections; // Can a pipe have redirections?
 };
 
 struct ast_and_or //
@@ -105,6 +106,17 @@ struct ast_and_or //
     // This implementation dont work for case with parantheses, there is no and
     // or priority
     size_t child_count;
+    struct redirection **redirections; // NULL terminated redirection list
+
+};
+
+struct ast_for //
+{
+    struct ast base;
+    char *var_name;
+    char **list; // NULL terminated list of words
+    struct ast *body;
+
 };
 
 //-------------------------------------INITIALIZE AST TYPES-----------------//
@@ -116,6 +128,7 @@ struct ast_while *ast_while_init();
 struct ast_until *ast_until_init();
 struct ast_pipe *ast_pipeline_init(int neg);
 struct ast_and_or *ast_and_or_init();
+struct ast_for *ast_for_init();
 
 //--------------------------------ADDINGS------------------------------------//
 
@@ -154,6 +167,7 @@ void ast_while_destroy(struct ast_while *node);
 void ast_until_destroy(struct ast_until *node);
 void ast_pipe_destroy(struct ast_pipe *node);
 void ast_and_or_destroy(struct ast_and_or *node);
+void ast_for_destroy(struct ast_for *node);
 
 //--------------------------------------redirections-----------------------------
 

@@ -35,21 +35,7 @@ static char *my_strdup(const char *s)
         strcpy(dup, s);
     return dup;
 }
-/*
-static char *my_strndup(const char *s, size_t n)
-{
-    if (!s)
-        return NULL;
-    size_t len = my_strnlen(s, n);
-    char *dup = malloc(len + 1);
-    if (dup)
-    {
-        strncpy(dup, s, len);
-        dup[len] = '\0';
-    }
-    return dup;
-}
-*/
+
 //=====================INIT/DESTROY=========================
 struct var_env *var_env_init()
 {
@@ -236,14 +222,13 @@ char *expand_special_var(const char *var_name, char **argv, int argc,
     if (strcmp(var_name, "OLDPWD") == 0)
     {
         char *oldpwd = getenv("OLDPWD");
-        return oldpwd;
-        ;
+        return my_strdup(oldpwd);
     }
 
     if (strcmp(var_name, "IFS") == 0)
     {
         char *ifs = getenv("IFS");
-        return ifs;
+        return my_strdup(ifs);
     }
 
     return NULL;
@@ -289,7 +274,7 @@ char *expand_word(char *word, char **argv, int argc, int if_value)
     if (value)
     {
         free(word);
-        return value;
+        return my_strdup(value);
     }
     free(word);
     return my_strdup("");
