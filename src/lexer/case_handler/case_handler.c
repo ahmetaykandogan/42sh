@@ -1,12 +1,11 @@
 #include <ctype.h>
-#include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
 
-#include "lexer/create_lextoken/create_lextoken.h"
-#include "lexer/lexing/lexing.h"
-#include "utils/fifo/fifo.h"
 #include "utils/malloc_err/malloc_err.h"
+#include "lexer/lexing/lexing.h"
+#include "lexer/create_lextoken/create_lextoken.h"
+#include "utils/fifo/fifo.h"
 
 size_t handle_whitespace(char *input, size_t i)
 {
@@ -36,8 +35,7 @@ size_t handle_comment(char *input, size_t i, struct fifo *queue)
     return i;
 }
 
-size_t handle_number(char *input, size_t i, size_t input_len,
-                     struct fifo *queue)
+size_t handle_number(char *input, size_t i, size_t input_len, struct fifo *queue)
 {
     char *tok = lexing_numbers(input, i);
     i += strlen(tok);
@@ -71,7 +69,7 @@ size_t handle_single_quote(char *input, size_t i, struct fifo *queue)
     char *tok = lexing_quotes(input, i);
     i += strlen(tok) + 1; // on skip la seconde quote
 
-    fifo_push(queue, create_lextoken_words(APSTRPH, tok));
+    fifo_push(queue, create_lextoken_words(WORDS, tok));
 
     return i;
 }
@@ -83,10 +81,11 @@ size_t handle_double_quote(char *input, size_t i, struct fifo *queue)
     char *tok = lexing_double_quotes(input, i);
     i += strlen(tok) + 1; // on skip la seconde quote
 
-    fifo_push(queue, create_lextoken_words(GUILLMT, tok));
+    fifo_push(queue, create_lextoken_words(WORDS, tok));
 
     return i;
 }
+
 
 size_t handle_redirection(char *input, size_t i, struct fifo *queue)
 {
@@ -108,25 +107,12 @@ size_t handle_operator(char *input, size_t i, struct fifo *queue)
     return i;
 }
 
-size_t handle_variable(char *input, size_t i, size_t input_len,
-                       struct fifo *queue)
+size_t handle_variable(char *input, size_t i, size_t input_len, struct fifo *queue)
 {
-    i++; // skip le $
-
-    bool braced = (i < input_len && input[i] == '{');
-    if (braced)
-    {
-        i++;
-    }
+    i++;
 
     char *tok = lexing_variables(input, i);
     i += strlen(tok);
-
-    braced = (i < input_len && input[i] == '}');
-    if (braced)
-    {
-        i++;
-    }
 
     if (strcmp(tok, "$") == 0)
     {
@@ -147,5 +133,5 @@ size_t handle_single_char(char *input, size_t i, struct fifo *queue)
     tok[1] = '\0';
 
     fifo_push(queue, create_lextoken_single_char(tok));
-    return i + 1;
+    return i + 1; 
 }
