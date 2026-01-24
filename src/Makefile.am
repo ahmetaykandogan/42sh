@@ -16,8 +16,8 @@ bin_PROGRAMS = 42sh
 42sh_CFLAGS = -std=c99 -pedantic -Werror -Wall -Wextra -Wvla -g
 
 42sh_LDADD = \
-      ast/libast.a \
       parser/libparser.a \
+      ast/libast.a \
       lexer/liblexer.a \
       lexer/read_file/libread.a \
       lexer/case_handler/libhandler.a \
@@ -29,6 +29,7 @@ bin_PROGRAMS = 42sh
       utils/fifo/libfifo.a \
       utils/check_char/libcchar.a \
       utils/malloc_err/libmallocer.a
+
 
 
 

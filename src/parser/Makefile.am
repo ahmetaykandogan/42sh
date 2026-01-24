@@ -2,6 +2,9 @@ lib_LIBRARIES = libparser.a
 
 libparser_a_SOURCES =  \
   parser.c \
+  parse_shell.c \
+  parse_command.c \
+  parse_redirections.c \
   parser.h
 
 libparser_a_CPPFLAGS = -I$(top_srcdir)/src

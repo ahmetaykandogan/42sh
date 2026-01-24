@@ -2,6 +2,10 @@ lib_LIBRARIES = libast.a
 
 libast_a_SOURCES =  \
   ast.c \
+  ast_init.c \
+  ast_destroy.c \
+  ast_add.c \
+  ast_redir.c \
   ast.h \
   variable.c \
   variable.h
