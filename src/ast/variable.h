@@ -20,7 +20,7 @@ struct var_env
 };
 
 //===========================INIT/DESTROY=============================
-struct var_env *var_env_init();
+struct var_env *var_env_init(void);
 void var_env_destroy(struct var_env *env);
 
 //============================SET=GET/UNSET=============================
@@ -29,8 +29,7 @@ char *var_env_get(const char *name);
 void var_env_unset(const char *name);
 
 //===========================EXPANSION=============================
-char *expand_variable_spec(const char *var_name, struct var_env *env,
-                           char **argv, int argc, int last_exit);
+
 char *expand_word(char *word, char **argv, int argc, int if_value);
 
 #endif /* ! VARIABLE_H */

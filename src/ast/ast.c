@@ -10,10 +10,20 @@
 #include <unistd.h>
 
 #include "../builtins/builtins.h"
-#include "variable.c"
 #include "variable.h"
 
 int return_value = 0;
+
+static char *my_strdup(const char *s)
+{
+    if (!s)
+        return NULL;
+    size_t len = strlen(s);
+    char *dup = malloc(len + 1);
+    if (dup)
+        strcpy(dup, s);
+    return dup;
+}
 
 int return_value_to_main(void)
 {

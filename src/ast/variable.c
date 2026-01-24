@@ -37,7 +37,7 @@ static char *my_strdup(const char *s)
 }
 
 //=====================INIT/DESTROY=========================
-struct var_env *var_env_init()
+struct var_env *var_env_init(void)
 {
     struct var_env *env = calloc(1, sizeof(struct var_env));
     env->variables = NULL;
