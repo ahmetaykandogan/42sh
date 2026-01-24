@@ -10,3 +10,5 @@ echo -n "# " >> $1
 echo $2 >> $1
 echo >> $1
 echo $3 >> $1
+
+chmod 777 $1
