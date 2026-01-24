@@ -57,7 +57,6 @@ struct ast_if
     struct ast *then_body; // the body of the then clause
     struct ast *else_body; // the body of the else, may be NULL
     struct redirection **redirections; // NULL terminated redirection list
-
 };
 
 struct ast_list
@@ -66,7 +65,6 @@ struct ast_list
     struct ast **children;
     size_t child_count;
     struct redirection **redirections; // NULL terminated redirection list
-
 };
 
 struct ast_while
@@ -83,7 +81,6 @@ struct ast_until
     struct ast *condition;
     struct ast *body;
     struct redirection **redirections; // NULL terminated redirection list
-
 };
 
 struct ast_pipe
@@ -92,7 +89,6 @@ struct ast_pipe
     struct ast_list *pipelines;
     int negated;
     struct redirection **redirections; // NULL terminated redirection list
-
 };
 
 struct ast_and_or //
@@ -107,7 +103,6 @@ struct ast_and_or //
     // or priority
     size_t child_count;
     struct redirection **redirections; // NULL terminated redirection list
-
 };
 
 struct ast_for //
@@ -116,7 +111,6 @@ struct ast_for //
     char *var_name;
     char **list; // NULL terminated list of words
     struct ast *body;
-
 };
 
 //-------------------------------------INITIALIZE AST TYPES-----------------//

@@ -14,7 +14,8 @@ int main(int argc, char **argv)
     struct fifo *lex_queue;
 
     /* There are three ways 42sh must read an input Shell program: */
-    /* When no other source is provided, it must read commands from standard input */
+    /* When no other source is provided, it must read commands from standard
+     * input */
     if (argc < 2)
     {
         lex_queue = lexing_from_stdin(stdin);

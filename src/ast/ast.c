@@ -314,8 +314,8 @@ static void restored_fds(int stdin_cp, int stdout_cp, int stderr_cp)
     close(stderr_cp);
 }
 static pid_t fork_executor(struct ast_cmd *cmd, int in, int out,
-                           int (*filedes)[2], size_t nb_child,
-                           char **argv, int argc)
+                           int (*filedes)[2], size_t nb_child, char **argv,
+                           int argc)
 {
     pid_t pid = fork();
     if (pid != 0)
@@ -353,7 +353,6 @@ static pid_t fork_executor(struct ast_cmd *cmd, int in, int out,
     errx(1, "Couldn't execvp");
 }
 
-
 void run_pipe(struct ast *enter_pipe, int argc, char **argv)
 {
     int stdin_cp = dup(STDIN_FILENO);
@@ -367,7 +366,7 @@ void run_pipe(struct ast *enter_pipe, int argc, char **argv)
     if (nb_child < 2)
         return;
 
-    int (*filedes)[2] = calloc(nb_child - 1, sizeof(int[2]));
+    int(*filedes)[2] = calloc(nb_child - 1, sizeof(int[2]));
     pid_t *pid_list = calloc(nb_child, sizeof(pid_t));
 
     for (size_t i = 0; i < nb_child - 1; i++)
@@ -378,9 +377,8 @@ void run_pipe(struct ast *enter_pipe, int argc, char **argv)
         int in = (j == 0) ? STDIN_FILENO : filedes[j - 1][0];
         int out = (j == nb_child - 1) ? STDOUT_FILENO : filedes[j][1];
 
-        pid_list[j] =
-            fork_executor((struct ast_cmd *)pipelines->children[j],
-                          in, out, filedes, nb_child, argv, argc);
+        pid_list[j] = fork_executor((struct ast_cmd *)pipelines->children[j],
+                                    in, out, filedes, nb_child, argv, argc);
     }
 
     for (size_t k = 0; k < nb_child - 1; k++)
@@ -406,7 +404,6 @@ void run_pipe(struct ast *enter_pipe, int argc, char **argv)
     free(filedes);
     free(pid_list);
 }
-
 
 void run_redirections(struct redirection **redir)
 {
@@ -482,7 +479,6 @@ static void run_assignment(struct ast_cmd *cmd, int check)
     }
 }
 
-
 void run_command(struct ast_cmd *cmd, int argc, char **argv)
 {
     int stdin_cp = dup(STDIN_FILENO);
@@ -499,12 +495,12 @@ void run_command(struct ast_cmd *cmd, int argc, char **argv)
         else if (cmd->assignments) // we only have variables, expansion is for
                                    // every cmd, so we add to global list
         {
-            run_assignment(cmd, 1); //we add to everyone
+            run_assignment(cmd, 1); // we add to everyone
         }
         return;
     }
     if (cmd->assignments)
-        run_assignment(cmd, 0); //we only add "" to everyone
+        run_assignment(cmd, 0); // we only add "" to everyone
     char **words = dup_words(cmd->words);
     expand_words(words, argv, argc, return_value);
     if (cmd->redirections)
@@ -549,14 +545,10 @@ void run_ast(struct ast *ast, int argc, char **argv)
     if (!ast)
         return;
     static run_type run_functions[] = {
-        [AST_CMD] = &ast_run_cmd,       
-        [AST_IF] = &ast_run_if,
-        [AST_LIST] = &ast_run_list,     
-        [AST_WHILE] = &ast_run_while,
-        [AST_UNTIL] = &ast_run_until,   
-        [AST_PIPE] = &run_pipe,
-        [AST_AND_OR] = &ast_run_and_or,
-        [AST_FOR] = &ast_run_for,
+        [AST_CMD] = &ast_run_cmd,       [AST_IF] = &ast_run_if,
+        [AST_LIST] = &ast_run_list,     [AST_WHILE] = &ast_run_while,
+        [AST_UNTIL] = &ast_run_until,   [AST_PIPE] = &run_pipe,
+        [AST_AND_OR] = &ast_run_and_or, [AST_FOR] = &ast_run_for,
     };
     (*run_functions[ast->type])(ast, argc, argv);
 }
@@ -750,4 +742,3 @@ void add_redirection(struct redirection ***ast_redir,
     out[count + 1] = NULL;
     *ast_redir = out;
 }
-
