@@ -14,6 +14,11 @@
 #include "variable.h"
 
 int return_value = 0;
+
+int return_value_to_main(void)
+{
+    return return_value;
+}
 static char **dup_words(char **src)
 {
     size_t n = 0;

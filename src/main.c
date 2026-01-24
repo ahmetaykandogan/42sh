@@ -55,5 +55,5 @@ int main(int argc, char **argv)
     }
     fifo_destroy(lex_queue);
     struct_ast_destroy(ast);
-    return 0;
+    return return_value_to_main();
 }

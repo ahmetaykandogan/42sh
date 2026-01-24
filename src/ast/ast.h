@@ -184,4 +184,6 @@ void ast_until_add_redirection(struct ast *ast_node, struct redirection *redir);
 void add_redirection(struct redirection ***ast_redir,
                      struct redirection *new_redir);
 
+int return_value_to_main(void);
+
 #endif /* ! AST_H */

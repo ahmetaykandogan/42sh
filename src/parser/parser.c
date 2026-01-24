@@ -349,6 +349,7 @@ static struct ast *parse_simple_command(enum parser_status *status,
         redir_counter++;
     }
     // WORD
+    command->redirections = redir_to_add;
     struct lextoken *token = fifo_head(lexer);
     if (!token || token->tok != WORDS)
     {
@@ -359,10 +360,8 @@ static struct ast *parse_simple_command(enum parser_status *status,
             return NULL;
         }
         // this is where prefix { prefix } happens
-        command->redirections = redir_to_add;
         return &command->base; // we only have redirections
     }
-    command->redirections = redir_to_add;
     ast_cmd_add_word(command, token->value);
     fifo_pop(lexer);
 
@@ -380,11 +379,6 @@ static struct ast *parse_simple_command(enum parser_status *status,
             *status = PARSER_OK; // No more elements to parse
             break;
         }
-    }
-    // add redirections to command
-    if (redir_to_add)
-    {
-        command->redirections = redir_to_add;
     }
     return &command->base;
 }
@@ -470,6 +464,7 @@ static struct redirection *parse_redirections(enum parser_status *status,
     token = fifo_head(lexer);
     if (!token || token->tok != WORDS)
     {
+        free(operator);
         *status = PARSER_CRITICAL_ERROR;
         return NULL;
     }
@@ -508,7 +503,7 @@ static void parse_element(enum parser_status *status, struct fifo *lexer,
         *status = PARSER_OK;
     }
     */ //This is just a joke
-    else if (token && (token->tok == WORDS || token->tok == WORDS))
+    if (token && (token->tok == WORDS || token->tok == WORDS))
     {
         ast_cmd_add_word(out, token->value);
         fifo_pop(lexer);
