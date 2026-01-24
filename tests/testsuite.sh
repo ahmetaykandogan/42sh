@@ -126,7 +126,7 @@ rm -f "$RECAP"
 
 if [ ! -z $OUTPUT_FILE ]; then
     if [ $cat_total -ne 0 ]; then
-        POURCENT=$((($cat_passed / $cat_total) * 100))
+        POURCENT=$((cat_passed * 100 / $cat_total))
         echo $POURCENT > $OUTPUT_FILE
     fi
 fi
