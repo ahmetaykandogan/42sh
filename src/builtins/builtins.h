@@ -6,5 +6,6 @@ int builtins_true(void);
 int builtins_false(void);
 
 int builtins_echo(char **words);
+int builtins_cd(char **words);
 
 #endif // BUILTINS_H
