@@ -1,7 +1,21 @@
 #include <criterion/criterion.h>
 #include <criterion/redirect.h>
 
+#include <stdlib.h>
+#include <string.h>
+
 #include "../../../src/ast/ast.h"
+
+static char *my_strdup(const char *s)
+{
+    if (!s)
+        return NULL;
+    size_t len = strlen(s);
+    char *dup = malloc(len + 1);
+    if (dup)
+        strcpy(dup, s);
+    return dup;
+}
 
 // TestSuite definition
 TestSuite(TestCmd);
@@ -34,7 +48,7 @@ Test(TestCmd, add_single_word)
 {
     struct ast_cmd *cmd = ast_cmd_init(0);
     
-    ast_cmd_add_word(cmd, strdup("echo"));
+    ast_cmd_add_word(cmd, my_strdup("echo"));
     
     cr_assert_not_null(cmd->words, "Words should not be NULL after adding");
     cr_assert_str_eq(cmd->words[0], "echo", "First word should be 'echo'");
@@ -47,9 +61,9 @@ Test(TestCmd, add_multiple_words)
 {
     struct ast_cmd *cmd = ast_cmd_init(0);
     
-    ast_cmd_add_word(cmd, strdup("echo"));
-    ast_cmd_add_word(cmd, strdup("hello"));
-    ast_cmd_add_word(cmd, strdup("world"));
+    ast_cmd_add_word(cmd, my_strdup("echo"));
+    ast_cmd_add_word(cmd, my_strdup("hello"));
+    ast_cmd_add_word(cmd, my_strdup("world"));
     
     cr_assert_str_eq(cmd->words[0], "echo");
     cr_assert_str_eq(cmd->words[1], "hello");
@@ -63,7 +77,7 @@ Test(TestCmd, add_variable)
 {
     struct ast_cmd *cmd = ast_cmd_init(0);
     
-    add_vars(cmd, strdup("VAR=value"));
+    add_vars(cmd, my_strdup("VAR=value"));
     
     cr_assert_not_null(cmd->assignments);
     cr_assert_str_eq(cmd->assignments[0], "VAR=value");

@@ -16,7 +16,7 @@ MODULE=$2
 
 # Check for required environment variable
 if [ -z "$BIN_PATH" ]; then
-    BIN_PATH="$(pwd)/src/42sh"
+    BIN_PATH="$(pwd)/../src/42sh"
 fi
 
 # -------------------------- TESTS -------------------------- #
