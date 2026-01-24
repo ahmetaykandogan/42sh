@@ -37,5 +37,11 @@ AC_CONFIG_FILES([
                     src/builtins/Makefile
                     src/pretty_printer/Makefile
                     tests/Makefile
+                    tests/pretty_printer/Makefile
+                    tests/pretty_printer/hard/Makefile
+                    tests/pretty_printer/error/Makefile
+                    tests/pretty_printer/simple/Makefile
+                    tests/builtins/Makefile
+                    tests/builtins/simple/Makefile
                 ])
 AC_OUTPUT

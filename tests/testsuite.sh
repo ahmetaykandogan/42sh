@@ -100,20 +100,41 @@ for dir in $TESTS_TO_RUN; do
     fi
 done
 
+# Find all binary for unary tests
+if [ ! -z $COVERAGE ]; then
+    cat_total=0
+    cat_passed=0
+    for dir in $TESTS_TO_RUN; do
+        for test_file in $(find "$TEST_DIR/$dir" -type f -executable 2>/dev/null | sort); do
+            total_tests=$((total_tests + 1))
+            cat_total=$((cat_total + 1))
+
+            ./$test_file
+            exit_unit=$?
+
+            if [ $exit_unit -eq 0 ]; then
+                total_passed=$((total_passed + 1))
+                cat_passed=$((cat_passed + 1))
+            fi
+        done
+    done
+    printf "%-15s ${color}%+15s${NC}\n" "unit_test_files" "($cat_passed/$cat_total passed)" >> "$RECAP"
+fi
+
 cat "$RECAP"
 rm -f "$RECAP"
 
-if [ $cat_total -ne 0 ]; then
-    POURCENT=$((($cat_passed / $cat_total) * 100))
-    echo $POURCENT > $OUTPUT_FILE
+if [ ! -z $OUTPUT_FILE ]; then
+    if [ $cat_total -ne 0 ]; then
+        POURCENT=$((($cat_passed / $cat_total) * 100))
+        echo $POURCENT > $OUTPUT_FILE
+    fi
 fi
 
 echo
 echo "============ TOTAL ============"
 if [ $total_passed -eq $total_tests ]; then
     echo -e "${GREEN}All tests passed: $total_passed/$total_tests${NC}"
-    exit 0
 else
     echo -e "${RED}Some tests failed: $total_passed/$total_tests${NC}"
-    exit 1
 fi

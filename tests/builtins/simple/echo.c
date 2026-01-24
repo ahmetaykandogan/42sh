@@ -9,7 +9,7 @@ TestSuite(TestEchoSimple);
 
 Test(TestEchoSimple, basic_echo_test, .init = cr_redirect_stdout)
 {
-    char **words = calloc(sizeof(char **), 1);
+    char *words[3];
     char *word1 = "echo";
     char *word2 = "Hello World!";
     char *word3 = NULL;
@@ -25,7 +25,7 @@ Test(TestEchoSimple, basic_echo_test, .init = cr_redirect_stdout)
 
 Test(TestEchoSimple, basic_n_option_echo_test, .init = cr_redirect_stdout)
 {
-    char **words = calloc(sizeof(char **), 1);
+    char *words[4];
     char *word1 = "echo";
     char *option = "-n";
     char *word2 = "Hello World!";
@@ -43,7 +43,7 @@ Test(TestEchoSimple, basic_n_option_echo_test, .init = cr_redirect_stdout)
 
 Test(TestEchoSimple, n_option_inside_echo_test, .init = cr_redirect_stdout)
 {
-    char **words = calloc(sizeof(char **), 1);
+    char *words[4];
     char *word1 = "echo";
     char *option = "-n";
     char *word2 = "Hello \n World!";
@@ -61,7 +61,7 @@ Test(TestEchoSimple, n_option_inside_echo_test, .init = cr_redirect_stdout)
 
 Test(TestEchoSimple, n_option_after_echo_test, .init = cr_redirect_stdout)
 {
-    char **words = calloc(sizeof(char **), 1);
+    char *words[5];
     char *word1 = "echo";
     char *option = "-n";
     char *word2 = "Hello World!";
@@ -81,7 +81,7 @@ Test(TestEchoSimple, n_option_after_echo_test, .init = cr_redirect_stdout)
 
 Test(TestEchoSimple, nothing_e_option_echo_test, .init = cr_redirect_stdout)
 {
-    char **words = calloc(sizeof(char **), 1);
+    char *words[4];
     char *word1 = "echo";
     char *option = "-e";
     char *word2 = "Hello World!";
@@ -99,7 +99,7 @@ Test(TestEchoSimple, nothing_e_option_echo_test, .init = cr_redirect_stdout)
 
 Test(TestEchoSimple, e_option_inside_echo_test, .init = cr_redirect_stdout)
 {
-    char **words = calloc(sizeof(char **), 1);
+    char *words[4];
     char *word1 = "echo";
     char *option = "-n";
     char *word2 = "Hello \n World!";
@@ -117,7 +117,7 @@ Test(TestEchoSimple, e_option_inside_echo_test, .init = cr_redirect_stdout)
 
 Test(TestEchoSimple, e_option_outside_echo_test, .init = cr_redirect_stdout)
 {
-    char **words = calloc(sizeof(char **), 1);
+    char *words[5];
     char *word1 = "echo";
     char *option = "-n";
     char *word2 = "Hello World!";
@@ -137,7 +137,7 @@ Test(TestEchoSimple, e_option_outside_echo_test, .init = cr_redirect_stdout)
 
 Test(TestEchoSimple, e_option_tab_outside_echo_test, .init = cr_redirect_stdout)
 {
-    char **words = calloc(sizeof(char **), 1);
+    char *words[5];
     char *word1 = "echo";
     char *option = "-n";
     char *word2 = "Hello World!";
@@ -157,7 +157,7 @@ Test(TestEchoSimple, e_option_tab_outside_echo_test, .init = cr_redirect_stdout)
 
 Test(TestEchoSimple, e_option_escape_outside_echo_test, .init = cr_redirect_stdout)
 {
-    char **words = calloc(sizeof(char **), 1);
+    char *words[5];
     char *word1 = "echo";
     char *option = "-n";
     char *word2 = "Hello World!";
@@ -177,7 +177,7 @@ Test(TestEchoSimple, e_option_escape_outside_echo_test, .init = cr_redirect_stdo
 
 Test(TestEchoSimple, nothing_E_option_echo_test, .init = cr_redirect_stdout)
 {
-    char **words = calloc(sizeof(char **), 1);
+    char *words[4];
     char *word1 = "echo";
     char *option = "-E";
     char *word2 = "Hello World!";
@@ -195,7 +195,7 @@ Test(TestEchoSimple, nothing_E_option_echo_test, .init = cr_redirect_stdout)
 
 Test(TestEchoSimple, E_option_inside_echo_test, .init = cr_redirect_stdout)
 {
-    char **words = calloc(sizeof(char **), 1);
+    char *words[4];
     char *word1 = "echo";
     char *option = "-n";
     char *word2 = "Hello \n World!";
@@ -213,7 +213,7 @@ Test(TestEchoSimple, E_option_inside_echo_test, .init = cr_redirect_stdout)
 
 Test(TestEchoSimple, E_option_outside_echo_test, .init = cr_redirect_stdout)
 {
-    char **words = calloc(sizeof(char **), 1);
+    char *words[5];
     char *word1 = "echo";
     char *option = "-n";
     char *word2 = "Hello World!";
@@ -233,7 +233,7 @@ Test(TestEchoSimple, E_option_outside_echo_test, .init = cr_redirect_stdout)
 
 Test(TestEchoSimple, E_option_tab_outside_echo_test, .init = cr_redirect_stdout)
 {
-    char **words = calloc(sizeof(char **), 1);
+    char *words[5];
     char *word1 = "echo";
     char *option = "-n";
     char *word2 = "Hello World!";
@@ -253,7 +253,7 @@ Test(TestEchoSimple, E_option_tab_outside_echo_test, .init = cr_redirect_stdout)
 
 Test(TestEchoSimple, E_option_escape_outside_echo_test, .init = cr_redirect_stdout)
 {
-    char **words = calloc(sizeof(char **), 1);
+    char *words[5];
     char *word1 = "echo";
     char *option = "-n";
     char *word2 = "Hello World!";

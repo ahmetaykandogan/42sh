@@ -10,12 +10,12 @@ Test(TestTrueFalse, test_basic_true)
 {
     int result = builtins_true();
     int expected = 0;
-    cr_expect(eq(str, result, expected));
+    cr_expect(eq(result, expected));
 }
 
 Test(TestTrueFalse, test_basic_false)
 {
     int result = builtins_false();
     int expected = 1;
-    cr_expect(eq(str, result, expected));
+    cr_expect(eq(result, expected));
 }

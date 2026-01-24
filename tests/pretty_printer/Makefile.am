@@ -1,0 +1,4 @@
+SUBDIRS = \
+	hard \
+	error \
+	simple
