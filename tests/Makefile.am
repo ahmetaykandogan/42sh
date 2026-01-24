@@ -1,6 +1,7 @@
 SUBDIRS = \
 	pretty_printer \
-	builtins
+	builtins \
+	ast
 
 check-local:
 	./testsuite.sh

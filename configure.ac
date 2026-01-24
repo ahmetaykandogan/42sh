@@ -43,5 +43,7 @@ AC_CONFIG_FILES([
                     tests/pretty_printer/simple/Makefile
                     tests/builtins/Makefile
                     tests/builtins/simple/Makefile
+                    tests/ast/Makefile
+                    tests/ast/simple/Makefile
                 ])
 AC_OUTPUT
