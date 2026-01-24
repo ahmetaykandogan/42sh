@@ -536,21 +536,21 @@ static struct ast *parse_shell_command(enum parser_status *status,
 {
     // rule_if
     struct ast *child = parse_rule_if(status, lexer);
-    if (*status != PARSER_OK)
+    if (*status ==PARSER_ERROR)
     {
         // rule_while
         *status = PARSER_OK; // reset status
         child = parse_rule_while(status, lexer);
-        if (*status != PARSER_OK)
+        if (*status != PARSER_ERROR)
         {
             // rule_until
             *status = PARSER_OK; // reset status
             child = parse_rule_until(status, lexer);
-            if (*status != PARSER_OK)
+            if (*status != PARSER_ERROR)
             {
                 *status = PARSER_OK; // reset status
                 child = parse_rule_for(status, lexer);
-                if (*status != PARSER_OK)
+                if (*status != PARSER_ERROR)
                 {
                     return NULL; // error
                 }
@@ -578,6 +578,7 @@ static struct ast *parse_rule_if(enum parser_status *status, struct fifo *lexer)
     struct ast *condition = parse_compound_list(status, lexer);
     if (*status != PARSER_OK)
     {
+        *status = PARSER_CRITICAL_ERROR;
         struct_ast_destroy(&out_if->base);
         return NULL; // error
     }
@@ -587,30 +588,39 @@ static struct ast *parse_rule_if(enum parser_status *status, struct fifo *lexer)
     if (!token || token->tok != THEN)
     {
         struct_ast_destroy(&out_if->base);
-        *status = PARSER_ERROR;
+        *status = PARSER_CRITICAL_ERROR;
         return NULL;
     }
     fifo_pop(lexer);
     // compound_list
     struct ast *then_body = parse_compound_list(status, lexer);
-    if (*status != PARSER_OK)
+    if (*status != PARSER_OK || !then_body)
     {
+        *status = PARSER_CRITICAL_ERROR;
         struct_ast_destroy(&out_if->base);
         return NULL; // error
     }
     out_if->then_body = then_body;
     //[else_clause]
-    struct ast *else_body = parse_else_clause(status, lexer);
-    if (*status != PARSER_OK)
-        *status = PARSER_OK; // no else clause is ok
-    else
-        out_if->else_body = else_body;
+
+    token = fifo_head(lexer); // check for 'else of elif'
+    if (token && (token->tok==ELSE || token->tok==ELIF))
+    {
+        struct ast *else_body = parse_else_clause(status, lexer);
+        if (*status != PARSER_OK)
+        {
+            struct_ast_destroy(&out_if->base);
+            return NULL; // no else clause is ok
+        }
+        else
+            out_if->else_body = else_body;
+    }
     //'fi'
     token = fifo_head(lexer); // check for 'fi'
     if (!token || token->tok != FI)
     {
         struct_ast_destroy(&out_if->base);
-        *status = PARSER_ERROR;
+        *status = PARSER_CRITICAL_ERROR;
         return NULL;
     }
     fifo_pop(lexer);
