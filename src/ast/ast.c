@@ -255,7 +255,8 @@ void run_pipe(struct ast *enter_pipe, int argc, char **argv)
     pid_t *pid_list = calloc(nb_child, sizeof(pid_t));
 
     for (size_t i = 0; i < nb_child - 1; i++)
-        pipe(filedes[i]);
+        if (pipe(filedes[i]) < 0)
+            err(2, "pipe failed");
 
     for (size_t j = 0; j < nb_child; j++)
     {
