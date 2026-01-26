@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
 
@@ -107,12 +108,25 @@ size_t handle_operator(char *input, size_t i, struct fifo *queue)
     return i;
 }
 
-size_t handle_variable(char *input, size_t i, struct fifo *queue)
+size_t handle_variable(char *input, size_t i, size_t input_len,
+                       struct fifo *queue)
 {
-    i++;
+    i++; // skip le $
+
+    bool braced = (i < input_len && input[i] == '{');
+    if (braced)
+    {
+        i++; // skip le {
+    }
 
     char *tok = lexing_variables(input, i);
     i += strlen(tok);
+
+    braced = (i < input_len && input[i] == '}');
+    if (braced)
+    {
+        i++; // skip le }
+    }
 
     if (strcmp(tok, "$") == 0)
     {

@@ -21,27 +21,24 @@ char *lexing_words(char *input, size_t pos)
     {
         if (input[pos] == '\\' && pos + 1 < strlen(input))
         {
-            if (tok_pos >= capacity - 1)
+            if (tok_pos >= capacity - 2)
             {
                 capacity *= 2;
                 tok = realloc_err(tok, capacity);
             }
             tok[tok_pos++] = input[pos++];
-
-            if (tok_pos >= capacity - 1)
-            {
-                capacity *= 2;
-                tok = realloc_err(tok, capacity);
-            }
             tok[tok_pos++] = input[pos++];
         }
-
-        if (tok_pos >= capacity - 1)
+        
+        else
         {
-            capacity *= 2;
-            tok = realloc_err(tok, capacity);
+            if (tok_pos >= capacity - 1)
+            {
+                capacity *= 2;
+                tok = realloc_err(tok, capacity);
+            }
+            tok[tok_pos++] = input[pos++];
         }
-        tok[tok_pos++] = input[pos++];
     }
 
     if (tok_pos >= capacity)

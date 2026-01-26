@@ -29,7 +29,8 @@ struct ast *parse_rule_until(enum parser_status *, struct fifo *);
 struct ast *parse_rule_for(enum parser_status *, struct fifo *);
 struct ast *parse_compound_list(enum parser_status *, struct fifo *);
 struct ast *parse_else_clause(enum parser_status *, struct fifo *);
-
+struct ast *parse_command_block(enum parser_status *status,
+                                     struct fifo *lexer);
 
 struct redirection *parse_redirections(enum parser_status *, struct fifo *);
 struct redirection *parse_prefix(enum parser_status *, struct fifo *);

@@ -35,6 +35,9 @@ enum token
     AND, // '&&'
     OR, // '||'
 
+    BRACE_OPEN, // '{'
+    BRACE_CLOSE, // '}'
+
     ESCAPE, // ' \ '
     VAR, // '$name ${name}'
 

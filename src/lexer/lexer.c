@@ -79,7 +79,7 @@ struct fifo *lexer(char *input)
         /* CASE VARIABLE */
         else if (input[i] == '$')
         {
-            i = handle_variable(input, i, queue);
+            i = handle_variable(input, i, input_len, queue);
         }
 
         /* CASE A 1 CARACTERE (Exemple : \n) */

@@ -113,6 +113,18 @@ struct lextoken *create_lextoken_single_char(char *token)
         return create_lextoken(ESCAPE, token);
     }
 
+    /* BRACE OPEN */
+    else if (strcmp(token, "{") == 0) // BRACE_OPEN
+    {
+        return create_lextoken(BRACE_OPEN, token);
+    }
+
+    /* BRACE CLOSE */
+    else if (strcmp(token, "}") == 0) // BRACE_CLOSE
+    {
+        return create_lextoken(BRACE_CLOSE, token);
+    }
+
     free(token);
     err(2, "invalid token");
 }
