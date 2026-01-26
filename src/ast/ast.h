@@ -22,7 +22,8 @@ enum ast_type // All the pseudo types of AST nodes
     AST_UNTIL,
     AST_PIPE,
     AST_AND_OR,
-    AST_FOR
+    AST_FOR,
+    AST_FUNCTION
 };
 
 // To understand how this works, see the 42SH Design AST documentation
@@ -120,6 +121,13 @@ struct ast_for //
     struct ast *body;
 };
 
+struct ast_function
+{
+    struct ast base;
+    char *name;
+    struct ast *body; //probably an ast_list
+};
+//Unlike others, we will just add it to the global struct in executing
 //-------------------------------------INITIALIZE AST TYPES-----------------//
 
 struct ast_cmd *ast_cmd_init(int neg);
@@ -130,7 +138,7 @@ struct ast_until *ast_until_init();
 struct ast_pipe *ast_pipeline_init(int neg);
 struct ast_and_or *ast_and_or_init();
 struct ast_for *ast_for_init();
-
+struct ast_function *ast_function_init();
 //--------------------------------ADDINGS------------------------------------//
 
 void ast_cmd_add_word(struct ast_cmd *in, char *word);
@@ -169,7 +177,7 @@ void ast_until_destroy(struct ast_until *node);
 void ast_pipe_destroy(struct ast_pipe *node);
 void ast_and_or_destroy(struct ast_and_or *node);
 void ast_for_destroy(struct ast_for *node);
-
+void ast_function_destroy(struct ast_function *node);
 //--------------------------------------redirections-----------------------------
 
 struct redirection *redirection_init(char *fd, char *filename, char *operator);

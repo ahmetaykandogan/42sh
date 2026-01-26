@@ -82,3 +82,12 @@ struct ast_for *ast_for_init(void)
     out->body = NULL;
     return out;
 }
+
+struct ast_function *ast_function_init(void)
+{
+    struct ast_function *out = calloc(1, sizeof(struct ast_function));
+    out->base.type = AST_FUNCTION;
+    out->name = NULL;
+    out->body = NULL;
+    return out;
+}
