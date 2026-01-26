@@ -229,6 +229,10 @@ static int try_execute_builtin(char **argv)
         shell.should_exit = 3; //Indicate a continue
         return 0;
     }
+    else if (strcmp(argv[0], "export") == 0)
+    {
+        return builtins_export(argv);
+    }
 
     return -1;
 }
