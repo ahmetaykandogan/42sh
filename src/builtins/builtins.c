@@ -1,5 +1,6 @@
 #include "builtins.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -108,4 +109,79 @@ int builtins_exit(char **argv)
         exit_status = atoi(argv[1]);
     }
     return exit_status;
+}
+
+/* Validate variable name according to POSIX rules */
+static int is_valid_name(const char *name, size_t len)
+{
+    if (len == 0)
+    {
+        return 1;
+    }
+    
+    /* First character must be letter or underscore */
+    if (!(name[0] == '_' || isalpha(name[0]) == 0))
+    {
+        return 1;
+    }
+    
+    /* Remaining characters must be letter, digit, or underscore */
+    for (size_t i = 1; i < len; i++)
+    {
+        if (!(name[i] == '_' || isalnum(name[i]) == 0)) {
+            return 1;
+        }
+    }
+    
+    return 0;
+}
+
+int builtin_export(char **argv)
+{
+    char *arg = argv[1];
+    char *eq = strchr(arg, '=');
+    
+    if (eq == NULL)
+    {
+        /* No value: export NAME */
+        size_t name_len = strlen(arg);
+        
+        if (is_valid_name(arg, name_len) == 1)
+        {
+            fprintf(stderr, "export: `%s': not a valid identifier\n", arg);
+            return 1;
+        }
+        
+        /* If variable exists in environment, keep its value */
+        char *value = getenv(arg);
+        if (value != NULL)
+        {
+            setenv(arg, value, 1);
+        }
+    }
+    else
+    {
+        /* Has value: export NAME=VALUE */
+        size_t name_len = eq - arg;
+        char name[name_len + 1];
+        
+        strncpy(name, arg, name_len);
+        name[name_len] = '\0';
+        
+        if (is_valid_name(name, name_len) == 1)
+        {
+            fprintf(stderr, "export: `%s': not a valid identifier\n", name);
+            return 1;
+        }
+        
+        char *value = eq + 1;
+        
+        /* Set the environment variable */
+        if (setenv(name, value, 1) != 0)
+        {
+            perror("export");
+            return 1;
+        }
+    }
+    return 0;
 }

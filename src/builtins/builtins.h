@@ -9,4 +9,6 @@ int builtins_echo(char **words);
 
 int builtins_exit(char **argv);
 
+int builtins_export(char **argv);
+
 #endif // BUILTINS_H
