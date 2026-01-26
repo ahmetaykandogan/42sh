@@ -101,6 +101,11 @@ static void ast_run_while(struct ast *ast, int argc, char **argv)
     struct ast_while *ast_w = (struct ast_while *)ast;
     while (1)
     {
+        if (shell.should_exit == 2)
+        {
+            shell.should_exit = 0;
+            break;
+        }
         run_ast(ast_w->condition, argc, argv);
         if (shell.last_status != 0)
             break;
@@ -113,6 +118,11 @@ static void ast_run_until(struct ast *ast, int argc, char **argv)
     struct ast_until *ast_u = (struct ast_until *)ast;
     while (1)
     {
+        if (shell.should_exit == 2)
+        {
+            shell.should_exit = 0;
+            break;
+        }
         run_ast(ast_u->condition, argc, argv);
         if (shell.last_status == 0)
             break;
@@ -164,6 +174,11 @@ static void ast_run_for(struct ast *ast, int argc, char **argv)
 
     for (size_t i = 0; list[i] != NULL; i++)
     {
+        if (shell.should_exit == 2)
+        {
+            shell.should_exit = 0;
+            break;
+        }
         char *value = expand_for_value(list[i], argv, argc, shell);
         var_env_set(var_name, value);
         free(value);
@@ -194,6 +209,13 @@ static int try_execute_builtin(char **argv)
         shell.should_exit = 1;
         shell.exit_status = builtins_exit(argv);
         return shell.exit_status;
+    }
+    else if (strcmp(argv[0], "break") == 0)
+    {
+        
+        shell.should_exit = 2; //Indicate a break
+        //There's no need for a builtin actually
+        return 0;
     }
     return -1;
 }
@@ -436,8 +458,14 @@ void run_command(struct ast_cmd *cmd, int argc, char **argv)
 
 void run_ast(struct ast *ast, int argc, char **argv)
 {
-    if (shell.should_exit)
+    if (shell.should_exit == 1)
         return;
+    if (shell.should_exit == 2)
+    {
+        shell.should_exit = 0;
+        //the break happened, the rest may continue
+        return;
+    }
     if (!ast)
         return;
     static run_type run_functions[] = {
