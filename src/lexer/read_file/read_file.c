@@ -17,6 +17,7 @@ FILE *open_file(char *file)
     return f;
 }
 
+// convert the file content into a char[]
 char *read_file(FILE *f)
 {
     char *line = NULL;

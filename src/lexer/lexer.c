@@ -13,6 +13,9 @@
 /* --------------------------- */
 /* -- MAIN LEXING FUNCTIONS -- */
 /* --------------------------- */
+
+// Lexing from a char[]
+// if the input is a file or stdin we convert it into a char[]
 struct fifo *lexer(char *input)
 {
     struct fifo *queue = fifo_init();
@@ -76,7 +79,7 @@ struct fifo *lexer(char *input)
         /* CASE VARIABLE */
         else if (input[i] == '$')
         {
-            i = handle_variable(input, i, input_len, queue);
+            i = handle_variable(input, i, queue);
         }
 
         /* CASE A 1 CARACTERE (Exemple : \n) */
