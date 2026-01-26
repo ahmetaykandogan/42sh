@@ -83,7 +83,14 @@ static void ast_run_list(struct ast *ast, int argc, char **argv)
 {
     struct ast_list *ast_list = (struct ast_list *)ast;
     for (size_t i = 0; i < ast_list->child_count; i++)
+    {
+        if (shell.should_exit == 3)
+        {
+            shell.should_exit = 0;
+            break;
+        }
         run_ast(ast_list->children[i], argc, argv);
+    }
 }
 
 const char *ast_repr(enum ast_type type)
@@ -217,6 +224,12 @@ static int try_execute_builtin(char **argv)
         //There's no need for a builtin actually
         return 0;
     }
+    else if (strcmp(argv[0], "continue") == 0)
+    {
+        shell.should_exit = 3; //Indicate a continue
+        return 0;
+    }
+
     return -1;
 }
 static void restored_fds(int stdin_cp, int stdout_cp, int stderr_cp)
