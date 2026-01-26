@@ -1,5 +1,5 @@
 #include "builtins.h"
-
+#include "../ast/variable.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -109,3 +109,44 @@ int builtins_exit(char **argv)
     }
     return exit_status;
 }
+
+int builtins_cd(char **argv)
+{
+    const char *target = NULL;
+    // cd
+    if (!argv[1])
+    {
+        target = getenv("HOME");
+    }
+    // cd -
+    else if (strcmp(argv[1], "-") == 0)
+    {
+        target = var_env_get("OLDPWD");
+        if (!target)
+        {
+            return 1;
+        }
+        printf("%s\n", target);
+    }
+    // cd path
+    else
+    {
+        target = argv[1];
+    }
+    char oldpwd[64];
+    if (!getcwd(oldpwd, sizeof(oldpwd)))
+        oldpwd[0] = '\0';
+
+    if (chdir(target) != 0)
+    {
+        return 1;
+    }
+
+    if (oldpwd[0])
+        var_env_set("OLDPWD", oldpwd);
+    char newpwd[64];
+    if (getcwd(newpwd, sizeof(newpwd)))
+        var_env_set("PWD", newpwd);
+    return 0;
+}
+

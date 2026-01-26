@@ -229,7 +229,10 @@ static int try_execute_builtin(char **argv)
         shell.should_exit = 3; //Indicate a continue
         return 0;
     }
-
+    else if (strcmp(argv[0], "cd") == 0)
+    {
+        return builtins_cd(argv);
+    }
     return -1;
 }
 static void restored_fds(int stdin_cp, int stdout_cp, int stderr_cp)
