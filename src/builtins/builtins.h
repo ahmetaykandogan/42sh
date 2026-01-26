@@ -8,5 +8,6 @@ int builtins_false(void);
 int builtins_echo(char **words);
 
 int builtins_exit(char **argv);
+int builtins_cd(char **argv);
 
 #endif // BUILTINS_H
