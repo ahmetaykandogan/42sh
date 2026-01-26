@@ -1,11 +1,10 @@
-#include "parser.h"
-
 #include <stdlib.h>
+
+#include "parser.h"
 // prefix = ASSIGNMENT_WORD
 //| redirection;
 
-struct redirection *parse_prefix(enum parser_status *status,
-                                        struct fifo *lexer)
+struct redirection *parse_prefix(enum parser_status *status, struct fifo *lexer)
 {
     struct redirection *out = parse_redirections(status, lexer);
     if (*status != PARSER_OK)
@@ -48,7 +47,7 @@ char *parse_prefix_vars(enum parser_status *status, struct fifo *lexer)
 // WORD ;
 
 struct redirection *parse_redirections(enum parser_status *status,
-                                              struct fifo *lexer)
+                                       struct fifo *lexer)
 {
     struct lextoken *token = fifo_head(lexer);
     char *fd = NULL;

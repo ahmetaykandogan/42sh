@@ -2,7 +2,6 @@
 
 #include <stdlib.h>
 
-
 // list '\n'
 // | list EOF
 // | '\n'
@@ -182,8 +181,7 @@ struct ast *parse_and_or(enum parser_status *status, struct fifo *lexer)
 
 // pipeline = ['!'] command { '|' {'\n'} command } ;
 
-struct ast *parse_pipeline(enum parser_status *status,
-                                  struct fifo *lexer)
+struct ast *parse_pipeline(enum parser_status *status, struct fifo *lexer)
 {
     // ['!']
     struct lextoken *token = fifo_head(lexer);

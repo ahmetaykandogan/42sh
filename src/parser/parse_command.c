@@ -2,8 +2,7 @@
 
 // simple_command = { prefix } WORD { element }
 // prefix { prefix }; //TODO
-struct ast *parse_simple_command(enum parser_status *status,
-                                        struct fifo *lexer)
+struct ast *parse_simple_command(enum parser_status *status, struct fifo *lexer)
 {
     // { prefix }
     struct ast_cmd *command = ast_cmd_init(0); // initialize command ast node
@@ -72,10 +71,9 @@ struct ast *parse_simple_command(enum parser_status *status,
     return &command->base;
 }
 
-
 // element = WORD | redirection;
 void parse_element(enum parser_status *status, struct fifo *lexer,
-                          struct ast *in)
+                   struct ast *in)
 {
     struct ast_cmd *out = (struct ast_cmd *)in; // its always a command
     struct lextoken *token = fifo_head(lexer);

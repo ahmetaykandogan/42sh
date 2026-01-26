@@ -1,6 +1,6 @@
-#include "parser.h"
-
 #include <stdlib.h>
+
+#include "parser.h"
 //----------------------------------------------------------------------------------
 // shell_command = rule_if ;
 //| rule_while ;
@@ -137,8 +137,7 @@ struct ast *parse_rule_if(enum parser_status *status, struct fifo *lexer)
 // else_clause =
 //'else' compound_list
 //| 'elif' compound_list 'then' compound_list [else_clause]
-struct ast *parse_else_clause(enum parser_status *status,
-                                     struct fifo *lexer)
+struct ast *parse_else_clause(enum parser_status *status, struct fifo *lexer)
 {
     // FIRST PART
     //'else'
@@ -201,8 +200,7 @@ struct ast *parse_else_clause(enum parser_status *status,
 // compound_list =
 //{'\n'} and_or { ( ';' | '\n' ) {'\n'} and_or } [';'] {'\n'} ;
 
-struct ast *parse_compound_list(enum parser_status *status,
-                                       struct fifo *lexer)
+struct ast *parse_compound_list(enum parser_status *status, struct fifo *lexer)
 {
     // {'\n'}
     while (1)
@@ -276,8 +274,7 @@ struct ast *parse_compound_list(enum parser_status *status,
 // while--------------------------------------// rule_while = 'while'
 // compound_list 'do' compound_list 'done' ;
 
-struct ast *parse_rule_while(enum parser_status *status,
-                                    struct fifo *lexer)
+struct ast *parse_rule_while(enum parser_status *status, struct fifo *lexer)
 {
     //'while'
     struct lextoken *token = fifo_head(lexer);
@@ -328,8 +325,7 @@ struct ast *parse_rule_while(enum parser_status *status,
 
 // rule_until = 'until' compound_list 'do' compound_list 'done' ;
 
-struct ast *parse_rule_until(enum parser_status *status,
-                                    struct fifo *lexer)
+struct ast *parse_rule_until(enum parser_status *status, struct fifo *lexer)
 {
     //'until'
     struct lextoken *token = fifo_head(lexer);
@@ -382,8 +378,7 @@ struct ast *parse_rule_until(enum parser_status *status,
 //'for' WORD ( [';'] | [ {'\n'} 'in' { WORD } ( ';' | '\n' ) ] ) {'\n'} 'do'
 // compound_list 'done' ;
 
-struct ast *parse_rule_for(enum parser_status *status,
-                                  struct fifo *lexer)
+struct ast *parse_rule_for(enum parser_status *status, struct fifo *lexer)
 {
     //'for'
     struct lextoken *token = fifo_head(lexer);
@@ -412,7 +407,7 @@ struct ast *parse_rule_for(enum parser_status *status,
     token = fifo_head(lexer);
     if (!token || token->tok != DO)
     {
-        *status =   PARSER_CRITICAL_ERROR;
+        *status = PARSER_CRITICAL_ERROR;
         return NULL;
     }
     fifo_pop(lexer);
@@ -458,8 +453,7 @@ static char **add_word_to_words(char **words, char *word)
     return words;
 }
 //[ [';'] | [ {'\n'} 'in' { WORD } ( ';' | '\n' ) ]
-char **create_parse_for_body(enum parser_status *status,
-                                    struct fifo *lexer)
+char **create_parse_for_body(enum parser_status *status, struct fifo *lexer)
 {
     char **inside = NULL;
     struct lextoken *token = fifo_head(lexer);

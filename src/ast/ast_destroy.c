@@ -1,6 +1,6 @@
-#include "ast.h"
-
 #include <stdlib.h>
+
+#include "ast.h"
 
 void struct_ast_destroy(struct ast *node)
 {

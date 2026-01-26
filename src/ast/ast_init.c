@@ -1,6 +1,6 @@
-#include "ast.h"
-
 #include <stdlib.h>
+
+#include "ast.h"
 
 struct ast_cmd *ast_cmd_init(int neg)
 {

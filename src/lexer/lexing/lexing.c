@@ -29,7 +29,7 @@ char *lexing_words(char *input, size_t pos)
             tok[tok_pos++] = input[pos++];
             tok[tok_pos++] = input[pos++];
         }
-        
+
         else
         {
             if (tok_pos >= capacity - 1)

@@ -1,8 +1,10 @@
 #include "builtins.h"
-#include "../ast/variable.h"
+
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
+
+#include "../ast/variable.h"
 
 int builtins_true(void)
 {
@@ -149,4 +151,3 @@ int builtins_cd(char **argv)
         var_env_set("PWD", newpwd);
     return 0;
 }
-

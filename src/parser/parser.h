@@ -20,7 +20,7 @@ struct ast *parse_pipeline(enum parser_status *, struct fifo *);
 struct ast *parse_command(enum parser_status *, struct fifo *);
 struct ast *parse_simple_command(enum parser_status *, struct fifo *);
 void parse_element(enum parser_status *status, struct fifo *lexer,
-                        struct ast *in);
+                   struct ast *in);
 
 struct ast *parse_shell_command(enum parser_status *, struct fifo *);
 struct ast *parse_rule_if(enum parser_status *, struct fifo *);

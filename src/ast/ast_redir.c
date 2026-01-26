@@ -1,7 +1,6 @@
-#include "ast.h"
-
 #include <stdlib.h>
 
+#include "ast.h"
 
 struct redirection *redirection_init(char *fd, char *filename, char *operator)
 {

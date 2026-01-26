@@ -1,6 +1,6 @@
-#include "ast.h"
-
 #include <stdlib.h>
+
+#include "ast.h"
 
 void ast_cmd_add_word(struct ast_cmd *in, char *word)
 {

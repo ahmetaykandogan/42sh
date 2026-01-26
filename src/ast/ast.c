@@ -12,10 +12,10 @@
 #include "../builtins/builtins.h"
 #include "variable.h"
 
-struct shell_status shell = {0,0,0};
-//last status: what was the last command exit status
-//should_exit: whether the shell should exit (For exit builtin)
-//exit_status: the exit status to use when exiting the shell
+struct shell_status shell = { 0, 0, 0 };
+// last status: what was the last command exit status
+// should_exit: whether the shell should exit (For exit builtin)
+// exit_status: the exit status to use when exiting the shell
 static char *my_strdup(const char *s)
 {
     if (!s)
@@ -44,7 +44,8 @@ static char **dup_words(char **src)
     return dst;
 }
 
-static void expand_words(char **words, char **argv, int argc, struct shell_status shell)
+static void expand_words(char **words, char **argv, int argc,
+                         struct shell_status shell)
 {
     for (size_t i = 0; words && words[i]; i++)
         words[i] = expand_word(words[i], argv, argc, shell.last_status);
@@ -163,7 +164,8 @@ static void ast_run_and_or(struct ast *ast, int argc, char **argv)
         }
     }
 }
-static char *expand_for_value(char *word, char **argv, int argc, struct shell_status shell)
+static char *expand_for_value(char *word, char **argv, int argc,
+                              struct shell_status shell)
 {
     char *dup = my_strdup(word);
     return expand_word(dup, argv, argc, shell.last_status);
@@ -219,14 +221,13 @@ static int try_execute_builtin(char **argv)
     }
     else if (strcmp(argv[0], "break") == 0)
     {
-        
-        shell.should_exit = 2; //Indicate a break
-        //There's no need for a builtin actually
+        shell.should_exit = 2; // Indicate a break
+        // There's no need for a builtin actually
         return 0;
     }
     else if (strcmp(argv[0], "continue") == 0)
     {
-        shell.should_exit = 3; //Indicate a continue
+        shell.should_exit = 3; // Indicate a continue
         return 0;
     }
     else if (strcmp(argv[0], "cd") == 0)
@@ -479,7 +480,7 @@ void run_ast(struct ast *ast, int argc, char **argv)
     if (shell.should_exit == 2)
     {
         shell.should_exit = 0;
-        //the break happened, the rest may continue
+        // the break happened, the rest may continue
         return;
     }
     if (!ast)
