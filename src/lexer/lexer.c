@@ -13,6 +13,9 @@
 /* --------------------------- */
 /* -- MAIN LEXING FUNCTIONS -- */
 /* --------------------------- */
+
+// Lexing from a char[]
+// if the input is a file or stdin we convert it into a char[]
 struct fifo *lexer(char *input)
 {
     struct fifo *queue = fifo_init();

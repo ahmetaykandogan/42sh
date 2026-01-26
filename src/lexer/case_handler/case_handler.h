@@ -22,8 +22,7 @@ size_t handle_redirection(char *input, size_t i, struct fifo *queue);
 
 size_t handle_operator(char *input, size_t i, struct fifo *queue);
 
-size_t handle_variable(char *input, size_t i,
-                       struct fifo *queue);
+size_t handle_variable(char *input, size_t i, struct fifo *queue);
 
 size_t handle_single_char(char *input, size_t i, struct fifo *queue);
 
