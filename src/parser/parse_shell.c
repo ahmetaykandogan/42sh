@@ -6,6 +6,7 @@
 //| rule_while ;
 //| rule_until ;
 //| rule_for ;
+//| { compound_list } ;
 struct ast *parse_shell_command(enum parser_status *status,
                                        struct fifo *lexer)
 {
@@ -27,13 +28,42 @@ struct ast *parse_shell_command(enum parser_status *status,
                 child = parse_rule_for(status, lexer);
                 if (*status == PARSER_ERROR)
                 {
-                    return NULL; // error
+                    child = parse_command_block(status, lexer); // compound_list but with {}
                 }
             }
         }
     }
     if (*status == PARSER_CRITICAL_ERROR)
         return NULL;
+    return child;
+}
+struct ast *parse_command_block(enum parser_status *status,
+                                     struct fifo *lexer)
+{
+    //'{'
+    struct lextoken *token = fifo_head(lexer);
+    if (!token || token->tok != BRACE_OPEN)
+    {
+        *status = PARSER_ERROR;
+        return NULL;
+    }
+    fifo_pop(lexer);
+    // compound_list
+    struct ast *child = parse_compound_list(status, lexer);
+    if (*status != PARSER_OK)
+    {
+        *status = PARSER_CRITICAL_ERROR;
+        return NULL; // error
+    }
+    //' } '
+    token = fifo_head(lexer);
+    if (!token || token->tok != BRACE_CLOSE)
+    {
+        struct_ast_destroy(child);
+        *status = PARSER_CRITICAL_ERROR;
+        return NULL;
+    }
+    fifo_pop(lexer);
     return child;
 }
 

@@ -250,7 +250,7 @@ struct ast *parse_command(enum parser_status *status, struct fifo *lexer)
 
     // shell commands
     if (token->tok == IF || token->tok == WHILE || token->tok == UNTIL
-        || token->tok == FOR)
+        || token->tok == FOR || token->tok == BRACE_OPEN)
         out = parse_shell_command(status, lexer);
     else if (token->tok == WORDS || token->tok == RED_IN
              || token->tok == RED_OUT)
