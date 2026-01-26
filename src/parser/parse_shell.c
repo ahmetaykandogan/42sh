@@ -16,22 +16,24 @@ struct ast *parse_shell_command(enum parser_status *status,
         // rule_while
         *status = PARSER_OK; // reset status
         child = parse_rule_while(status, lexer);
-        if (*status != PARSER_ERROR)
+        if (*status == PARSER_ERROR)
         {
             // rule_until
             *status = PARSER_OK; // reset status
             child = parse_rule_until(status, lexer);
-            if (*status != PARSER_ERROR)
+            if (*status == PARSER_ERROR)
             {
                 *status = PARSER_OK; // reset status
                 child = parse_rule_for(status, lexer);
-                if (*status != PARSER_ERROR)
+                if (*status == PARSER_ERROR)
                 {
                     return NULL; // error
                 }
             }
         }
     }
+    if (*status == PARSER_CRITICAL_ERROR)
+        return NULL;
     return child;
 }
 
@@ -260,6 +262,7 @@ struct ast *parse_rule_while(enum parser_status *status,
     struct ast *condition = parse_compound_list(status, lexer);
     if (*status != PARSER_OK)
     {
+        *status = PARSER_CRITICAL_ERROR;
         return NULL; // Error
     }
     out_while->condition = condition;
@@ -277,6 +280,7 @@ struct ast *parse_rule_while(enum parser_status *status,
     if (*status != PARSER_OK)
     {
         struct_ast_destroy(&out_while->base);
+        *status = PARSER_CRITICAL_ERROR;
         return NULL;
     }
     out_while->body = body;
@@ -284,7 +288,7 @@ struct ast *parse_rule_while(enum parser_status *status,
     token = fifo_head(lexer);
     if (token->tok != DONE)
     {
-        *status = PARSER_ERROR;
+        *status = PARSER_CRITICAL_ERROR;
         struct_ast_destroy(&out_while->base);
         return NULL;
     }
@@ -310,6 +314,7 @@ struct ast *parse_rule_until(enum parser_status *status,
     struct ast *condition = parse_compound_list(status, lexer);
     if (*status != PARSER_OK)
     {
+        *status = PARSER_CRITICAL_ERROR;
         return NULL; // Error
     }
     out_until->condition = condition;
@@ -317,7 +322,7 @@ struct ast *parse_rule_until(enum parser_status *status,
     token = fifo_head(lexer);
     if (token->tok != DO)
     {
-        *status = PARSER_ERROR;
+        *status = PARSER_CRITICAL_ERROR;
         struct_ast_destroy(&out_until->base);
         return NULL;
     }
@@ -326,6 +331,7 @@ struct ast *parse_rule_until(enum parser_status *status,
     struct ast *body = parse_compound_list(status, lexer);
     if (*status != PARSER_OK)
     {
+        *status = PARSER_CRITICAL_ERROR;
         struct_ast_destroy(&out_until->base);
         return NULL;
     }
@@ -334,7 +340,7 @@ struct ast *parse_rule_until(enum parser_status *status,
     token = fifo_head(lexer);
     if (token->tok != DONE)
     {
-        *status = PARSER_ERROR;
+        *status = PARSER_CRITICAL_ERROR;
         struct_ast_destroy(&out_until->base);
         return NULL;
     }
@@ -361,7 +367,7 @@ struct ast *parse_rule_for(enum parser_status *status,
     token = fifo_head(lexer);
     if (!token || token->tok != WORDS)
     {
-        *status = PARSER_ERROR;
+        *status = PARSER_CRITICAL_ERROR;
         return NULL;
     }
     char *var_name = token->value;
@@ -369,13 +375,14 @@ struct ast *parse_rule_for(enum parser_status *status,
     char **inside = create_parse_for_body(status, lexer);
     if (*status != PARSER_OK)
     {
+        *status = PARSER_CRITICAL_ERROR;
         return NULL; // error
     }
     //'do'
     token = fifo_head(lexer);
     if (!token || token->tok != DO)
     {
-        *status = PARSER_ERROR;
+        *status =   PARSER_CRITICAL_ERROR;
         return NULL;
     }
     fifo_pop(lexer);
@@ -383,13 +390,14 @@ struct ast *parse_rule_for(enum parser_status *status,
     struct ast *body = parse_compound_list(status, lexer);
     if (*status != PARSER_OK)
     {
+        *status = PARSER_CRITICAL_ERROR;
         return NULL; // error
     }
     //'done'
     token = fifo_head(lexer);
     if (!token || token->tok != DONE)
     {
-        *status = PARSER_ERROR;
+        *status = PARSER_CRITICAL_ERROR;
         return NULL;
     }
     fifo_pop(lexer);
