@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 int builtins_true(void)
 {
@@ -97,4 +98,14 @@ int builtins_echo(char **words)
 
     fflush(stdout);
     return 0;
+}
+
+int builtins_exit(char **argv)
+{
+    int exit_status = 0;
+    if (argv[1])
+    {
+        exit_status = atoi(argv[1]);
+    }
+    return exit_status;
 }

@@ -6,6 +6,14 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+struct shell_status
+{
+    int last_status;
+    int should_exit;
+    int exit_status;
+};
+
+
 enum ast_type // All the pseudo types of AST nodes
 {
     AST_CMD,

@@ -107,8 +107,7 @@ size_t handle_operator(char *input, size_t i, struct fifo *queue)
     return i;
 }
 
-size_t handle_variable(char *input, size_t i, size_t input_len,
-                       struct fifo *queue)
+size_t handle_variable(char *input, size_t i, struct fifo *queue)
 {
     i++;
 

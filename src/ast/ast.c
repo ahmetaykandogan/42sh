@@ -12,8 +12,10 @@
 #include "../builtins/builtins.h"
 #include "variable.h"
 
-int return_value = 0;
-
+struct shell_status shell = {0,0,0};
+//last status: what was the last command exit status
+//should_exit: whether the shell should exit (For exit builtin)
+//exit_status: the exit status to use when exiting the shell
 static char *my_strdup(const char *s)
 {
     if (!s)
@@ -27,7 +29,7 @@ static char *my_strdup(const char *s)
 
 int return_value_to_main(void)
 {
-    return return_value;
+    return shell.last_status;
 }
 static char **dup_words(char **src)
 {
@@ -42,10 +44,10 @@ static char **dup_words(char **src)
     return dst;
 }
 
-static void expand_words(char **words, char **argv, int argc, int return_value)
+static void expand_words(char **words, char **argv, int argc, struct shell_status shell)
 {
     for (size_t i = 0; words && words[i]; i++)
-        words[i] = expand_word(words[i], argv, argc, return_value);
+        words[i] = expand_word(words[i], argv, argc, shell.last_status);
 }
 
 static void free_words(char **words)
@@ -71,7 +73,7 @@ static void ast_run_if(struct ast *ast, int argc, char **argv)
 
     run_ast(ast_if->condition, argc, argv);
 
-    if (return_value == 0)
+    if (shell.last_status == 0)
         run_ast(ast_if->then_body, argc, argv);
     else if (ast_if->else_body)
         run_ast(ast_if->else_body, argc, argv);
@@ -100,7 +102,7 @@ static void ast_run_while(struct ast *ast, int argc, char **argv)
     while (1)
     {
         run_ast(ast_w->condition, argc, argv);
-        if (return_value != 0)
+        if (shell.last_status != 0)
             break;
         run_ast(ast_w->body, argc, argv);
     }
@@ -112,7 +114,7 @@ static void ast_run_until(struct ast *ast, int argc, char **argv)
     while (1)
     {
         run_ast(ast_u->condition, argc, argv);
-        if (return_value == 0)
+        if (shell.last_status == 0)
             break;
         run_ast(ast_u->body, argc, argv);
     }
@@ -130,24 +132,24 @@ static void ast_run_and_or(struct ast *ast, int argc, char **argv)
         int operator= ast_ao->op[i];
         if (operator== 0) // &&
         {
-            if (return_value == 0)
+            if (shell.last_status == 0)
                 run_ast(ast_ao->children->children[i + 1], argc, argv);
             else
                 continue;
         }
         else if (operator== 1) // ||
         {
-            if (return_value != 0)
+            if (shell.last_status != 0)
                 run_ast(ast_ao->children->children[i + 1], argc, argv);
             else
                 continue;
         }
     }
 }
-static char *expand_for_value(char *word, char **argv, int argc)
+static char *expand_for_value(char *word, char **argv, int argc, struct shell_status shell)
 {
     char *dup = my_strdup(word);
-    return expand_word(dup, argv, argc, return_value);
+    return expand_word(dup, argv, argc, shell.last_status);
 }
 
 static void ast_run_for(struct ast *ast, int argc, char **argv)
@@ -162,7 +164,7 @@ static void ast_run_for(struct ast *ast, int argc, char **argv)
 
     for (size_t i = 0; list[i] != NULL; i++)
     {
-        char *value = expand_for_value(list[i], argv, argc);
+        char *value = expand_for_value(list[i], argv, argc, shell);
         var_env_set(var_name, value);
         free(value);
         run_ast(body, argc, argv);
@@ -187,6 +189,12 @@ static int try_execute_builtin(char **argv)
         return builtins_echo(argv);
     }
 
+    else if (strcmp(argv[0], "exit") == 0)
+    {
+        shell.should_exit = 1;
+        shell.exit_status = builtins_exit(argv);
+        return shell.exit_status;
+    }
     return -1;
 }
 static void restored_fds(int stdin_cp, int stdout_cp, int stderr_cp)
@@ -224,7 +232,7 @@ static pid_t fork_executor(struct ast_cmd *cmd, int in, int out,
         run_redirections(cmd->redirections);
 
     char **words = dup_words(cmd->words);
-    expand_words(words, argv, argc, return_value);
+    expand_words(words, argv, argc, shell);
 
     int builtin = try_execute_builtin(words);
     if (builtin != -1)
@@ -278,12 +286,12 @@ void run_pipe(struct ast *enter_pipe, int argc, char **argv)
         waitpid(pid_list[x], &wstatus, 0);
 
     if (WIFEXITED(wstatus))
-        return_value = WEXITSTATUS(wstatus);
+        shell.last_status = WEXITSTATUS(wstatus);
     else
-        return_value = 1;
+        shell.last_status = 1;
 
     if (pipe_node->negated)
-        return_value = !return_value;
+        shell.last_status = !shell.last_status;
 
     restored_fds(stdin_cp, stdout_cp, stderr_cp);
 
@@ -388,7 +396,7 @@ void run_command(struct ast_cmd *cmd, int argc, char **argv)
     if (cmd->assignments)
         run_assignment(cmd, 0); // we only add "" to everyone
     char **words = dup_words(cmd->words);
-    expand_words(words, argv, argc, return_value);
+    expand_words(words, argv, argc, shell);
     if (cmd->redirections)
         run_redirections(cmd->redirections);
     // case where var is only for this line
@@ -396,11 +404,11 @@ void run_command(struct ast_cmd *cmd, int argc, char **argv)
     int builtin_result = try_execute_builtin(words);
     if (builtin_result != -1)
     {
-        return_value = builtin_result;
+        shell.last_status = builtin_result;
         fflush(stdout);
         restored_fds(stdin_cp, stdout_cp, stderr_cp);
         if (cmd->negated)
-            return_value = !return_value;
+            shell.last_status = !shell.last_status;
         free_words(words);
         return;
     }
@@ -416,18 +424,20 @@ void run_command(struct ast_cmd *cmd, int argc, char **argv)
     waitpid(pid, &wstatus, 0);
 
     if (WIFEXITED(wstatus))
-        return_value = WEXITSTATUS(wstatus);
+        shell.last_status = WEXITSTATUS(wstatus);
     else
-        return_value = 1;
+        shell.last_status = 1;
     restored_fds(stdin_cp, stdout_cp, stderr_cp);
     if (cmd->negated)
-        return_value = !return_value;
+        shell.last_status = !shell.last_status;
 
     free_words(words);
 }
 
 void run_ast(struct ast *ast, int argc, char **argv)
 {
+    if (shell.should_exit)
+        return;
     if (!ast)
         return;
     static run_type run_functions[] = {
