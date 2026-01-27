@@ -8,7 +8,9 @@ libast_a_SOURCES =  \
   ast_redir.c \
   ast.h \
   variable.c \
-  variable.h
+  variable.h \
+  functions.c \
+  functions.h
 
 libast_a_CPPFLAGS = -I$(top_srcdir)/src
 

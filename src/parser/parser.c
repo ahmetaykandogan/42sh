@@ -234,6 +234,7 @@ struct ast *parse_pipeline(enum parser_status *status, struct fifo *lexer)
 // command =
 // simple_command
 //| shell_command { redirection } ;
+// funcdec { redirection }
 
 struct ast *parse_command(enum parser_status *status, struct fifo *lexer)
 {
@@ -252,7 +253,7 @@ struct ast *parse_command(enum parser_status *status, struct fifo *lexer)
         out = parse_shell_command(status, lexer);
     else if (token->tok == WORDS || token->tok == RED_IN
              || token->tok == RED_OUT)
-        out = parse_simple_command(status, lexer);
+        out = parse_words(status, lexer); //will check if its a simple command, or a funcdec
     else
     {
         *status = PARSER_ERROR;
@@ -280,4 +281,51 @@ struct ast *parse_command(enum parser_status *status, struct fifo *lexer)
             ast_add_redirection(out, redir);
     }
     return out;
+}
+
+struct ast *parse_words(enum parser_status *status, struct fifo *lexer)
+{
+    struct lextoken *token = fifo_head(lexer);
+    char *first_word = token->value;
+    // check if it's a function declaration
+    if (token->tok == RED_IN || token->tok == RED_OUT)
+    {
+        return parse_simple_command(status, lexer, NULL);
+    }
+    fifo_pop(lexer); // pop first word
+    token = fifo_head(lexer);
+    if (token && token->tok == BRACKET_OPEN)
+    {
+        fifo_pop(lexer); // pop '('
+        token = fifo_head(lexer);
+        if (token && token->tok == BRACKET_CLOSE)
+        {
+            fifo_pop(lexer); // pop ')'
+            // { \n }
+            while (1)
+            {
+                token = fifo_head(lexer);
+                if (!token || token->tok != NEWLINE)
+                    break;
+                fifo_pop(lexer);
+            }
+            struct ast *body = parse_shell_command(status, lexer);
+            if (*status != PARSER_OK)
+                return NULL; // error
+            struct ast_function *func = ast_function_init();
+            func->name = first_word;
+            func->body = body;
+            return &func->base;
+        }
+        else
+        {
+            *status = PARSER_ERROR;
+            return NULL; // error
+        }
+    }
+    else
+    {
+        // simple command
+        return parse_simple_command(status, lexer, first_word);
+    }
 }

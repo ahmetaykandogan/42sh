@@ -2,10 +2,12 @@
 
 // simple_command = { prefix } WORD { element }
 // prefix { prefix }; //TODO
-struct ast *parse_simple_command(enum parser_status *status, struct fifo *lexer)
+struct ast *parse_simple_command(enum parser_status *status, struct fifo *lexer, char *var)
 {
     // { prefix }
     struct ast_cmd *command = ast_cmd_init(0); // initialize command ast node
+    if (var)
+        ast_cmd_add_word(command, var); // if var is null will do nothing // TODO test it
     int redir_counter = 0;
     struct redirection **redir_to_add =
         NULL; // list of redirections to add to the command
@@ -38,21 +40,23 @@ struct ast *parse_simple_command(enum parser_status *status, struct fifo *lexer)
     }
     // WORD
     command->redirections = redir_to_add;
-    struct lextoken *token = fifo_head(lexer);
-    if (!token || token->tok != WORDS)
+    if (!var)
     {
-        if (redir_counter == 0) // no prefix total error
+        struct lextoken *token = fifo_head(lexer);
+        if (!token || token->tok != WORDS)
         {
-            *status = PARSER_ERROR;
-            struct_ast_destroy(&command->base);
-            return NULL;
+            if (redir_counter == 0) // no prefix total error
+            {
+                *status = PARSER_ERROR;
+                struct_ast_destroy(&command->base);
+                return NULL;
+            }
+            // this is where prefix { prefix } happens
+            return &command->base; // we only have redirections
         }
-        // this is where prefix { prefix } happens
-        return &command->base; // we only have redirections
+        ast_cmd_add_word(command, token->value);
+        fifo_pop(lexer);
     }
-    ast_cmd_add_word(command, token->value);
-    fifo_pop(lexer);
-
     // { element }
     while (1)
     {

@@ -18,7 +18,7 @@ struct ast *parse_and_or(enum parser_status *, struct fifo *);
 struct ast *parse_pipeline(enum parser_status *, struct fifo *);
 
 struct ast *parse_command(enum parser_status *, struct fifo *);
-struct ast *parse_simple_command(enum parser_status *, struct fifo *);
+struct ast *parse_simple_command(enum parser_status *status, struct fifo *lexer, char *var);
 void parse_element(enum parser_status *status, struct fifo *lexer,
                    struct ast *in);
 
@@ -31,6 +31,7 @@ struct ast *parse_compound_list(enum parser_status *, struct fifo *);
 struct ast *parse_else_clause(enum parser_status *, struct fifo *);
 struct ast *parse_command_block(enum parser_status *status,
                                      struct fifo *lexer);
+struct ast *parse_words(enum parser_status *status, struct fifo *lexer);
 
 struct redirection *parse_redirections(enum parser_status *, struct fifo *);
 struct redirection *parse_prefix(enum parser_status *, struct fifo *);

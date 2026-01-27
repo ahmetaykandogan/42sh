@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
 #include "ast.h"
-
+#include "functions.h"
 void struct_ast_destroy(struct ast *node)
 {
     if (!node)
@@ -15,6 +15,7 @@ void struct_ast_destroy(struct ast *node)
         [AST_PIPE] = (destroy_type)&ast_pipe_destroy,
         [AST_AND_OR] = (destroy_type)&ast_and_or_destroy,
         [AST_FOR] = (destroy_type)&ast_for_destroy,
+        [AST_FUNCTION] = (destroy_type)&ast_func_destroy,
     };
     (*destroy_functions[node->type])(node);
 }
@@ -107,6 +108,15 @@ void ast_for_destroy(struct ast_for *node)
         }
         free(node->list);
     }
+    struct_ast_destroy(node->body);
+    free(node);
+}
+
+void ast_func_destroy(struct ast_function *node)
+{
+    if (!node)
+        return;
+    free(node->name);
     struct_ast_destroy(node->body);
     free(node);
 }
