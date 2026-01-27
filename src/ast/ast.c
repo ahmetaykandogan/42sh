@@ -88,11 +88,11 @@ static void ast_run_list(struct ast *ast, int argc, char **argv)
     {
         if (shell.should_exit == 3)
         {
-            shell.should_exit = 0;
             break;
         }
         run_ast(ast_list->children[i], argc, argv);
     }
+    shell.should_exit = 0;
 }
 
 const char *ast_repr(enum ast_type type)
@@ -244,6 +244,19 @@ static int try_execute_builtin(char **argv)
         return builtins_cd(argv);
     }
     return -1;
+}
+
+static int try_execute_funcs(char **argv)
+{
+    if (!argv || !argv[0])
+        return -1;
+
+    struct ast *node = func_env_get(argv[0]);
+    if (node == NULL)
+        return -1;
+    struct ast *body = (struct ast *)node;
+    run_ast(body, 0, NULL);
+    return shell.last_status;
 }
 static void restored_fds(int stdin_cp, int stdout_cp, int stderr_cp)
 {
@@ -450,15 +463,22 @@ void run_command(struct ast_cmd *cmd, int argc, char **argv)
     // case where var is only for this line
     // run_assignment(cmd);
     int builtin_result = try_execute_builtin(words);
+    if (builtin_result == -1)
+    {
+        builtin_result = try_execute_funcs(words);
+    }
     if (builtin_result != -1)
     {
-        shell.last_status = builtin_result;
-        fflush(stdout);
-        restored_fds(stdin_cp, stdout_cp, stderr_cp);
-        if (cmd->negated)
-            shell.last_status = !shell.last_status;
-        free_words(words);
-        return;
+        if (builtin_result != -1)
+        {
+            shell.last_status = builtin_result;
+            fflush(stdout);
+            restored_fds(stdin_cp, stdout_cp, stderr_cp);
+            if (cmd->negated)
+                shell.last_status = !shell.last_status;
+            free_words(words);
+            return;
+        }
     }
 
     int pid = fork();

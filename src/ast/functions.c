@@ -1,8 +1,22 @@
 //This is just so we can have a global function
 
 #include "ast.h"
+#include "functions.h"
+#include <stdlib.h>
+#include <err.h>
 
 struct func_env *global_func_env = NULL;
+
+static char *my_strdup(const char *s)
+{
+    if (!s)
+        return NULL;
+    size_t len = strlen(s);
+    char *dup = malloc(len + 1);
+    if (dup)
+        strcpy(dup, s);
+    return dup;
+}
 
 struct func_env *func_env_init(void)
 {

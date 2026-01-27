@@ -177,7 +177,8 @@ void ast_until_destroy(struct ast_until *node);
 void ast_pipe_destroy(struct ast_pipe *node);
 void ast_and_or_destroy(struct ast_and_or *node);
 void ast_for_destroy(struct ast_for *node);
-void ast_function_destroy(struct ast_function *node);
+void ast_func_destroy(struct ast_function *node);
+
 //--------------------------------------redirections-----------------------------
 
 struct redirection *redirection_init(char *fd, char *filename, char *operator);
