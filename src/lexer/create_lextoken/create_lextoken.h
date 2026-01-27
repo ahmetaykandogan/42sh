@@ -7,7 +7,7 @@ struct lextoken *create_lextoken_words(enum token tok, char *value);
 
 struct lextoken *create_lextoken_commands(char *token);
 
-struct lextoken *create_lextoken_single_char(char *token);
+struct lextoken *create_lextoken_single_char(char token);
 
 struct lextoken *create_lextoken_redirection(char *token);
 
