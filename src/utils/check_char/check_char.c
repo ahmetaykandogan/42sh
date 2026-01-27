@@ -12,7 +12,7 @@ int check_char(char c)
     if (c == ';' || c == '\n' || c == '\0' || c == '!' || c == '&' || c == '|'
         || c == '<' || c == '>' || isspace(c))
         return 0;
-    if (c == '{' || c == '}' || c =='(' || c == ')')
+    if (c == '{' || c == '}' || c == '(' || c == ')')
         return 3;
     return 42;
 }

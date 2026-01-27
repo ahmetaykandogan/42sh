@@ -20,6 +20,15 @@ static struct lextoken *create_lextoken(enum token tok, char *token)
     return l_token;
 }
 
+static struct lextoken *create_lextoken_char(enum token tok)
+{
+    struct lextoken *l_token = malloc_err(sizeof(struct lextoken));
+    l_token->tok = tok;
+    l_token->value = NULL;
+
+    return l_token;
+}
+
 struct lextoken *create_lextoken_words(enum token tok, char *value)
 {
     struct lextoken *l_token = malloc_err(sizeof(struct lextoken));
@@ -87,53 +96,52 @@ struct lextoken *create_lextoken_commands(char *token)
     return create_lextoken_words(WORDS, token);
 }
 
-struct lextoken *create_lextoken_single_char(char *token)
+struct lextoken *create_lextoken_single_char(char token)
 {
     /* COLUMN */
-    if (strcmp(token, ";") == 0) // COLUMN
+    if (token == ';') // COLUMN
     {
-        return create_lextoken(COLUMN, token);
+        return create_lextoken_char(COLUMN);
     }
 
     /* NEWLINE */
-    else if (strcmp(token, "\n") == 0) // NEWLINE
+    else if (token == '\n') // NEWLINE
     {
-        return create_lextoken(NEWLINE, token);
+        return create_lextoken_char(NEWLINE);
     }
 
     /* NEGA */
-    else if (strcmp(token, "!") == 0) // NEGA
+    else if (token == '!') // NEGA
     {
-        return create_lextoken(NEGA, token);
+        return create_lextoken_char(NEGA);
     }
 
     /* ESCAPE */
-    else if (strcmp(token, "\\") == 0) // ESCAPE
+    else if (token == '\\') // ESCAPE
     {
-        return create_lextoken(ESCAPE, token);
+        return create_lextoken_char(ESCAPE);
     }
 
     /* BRACE */
-    else if (strcmp(token, "{") == 0) // BRACE_OPEN
+    else if (token == '{') // BRACE_OPEN
     {
-        return create_lextoken(BRACE_OPEN, token);
+        return create_lextoken_char(BRACE_OPEN);
     }
-    else if (strcmp(token, "}") == 0) // BRACE_CLOSE
+    else if (token == '}') // BRACE_CLOSE
     {
-        return create_lextoken(BRACE_CLOSE, token);
+        return create_lextoken_char(BRACE_CLOSE);
     }
 
     /* BRACKET */
-    else if (strcmp(token, "(") == 0) // BRACKET_OPEN
+    else if (token == '(') // BRACKET_OPEN
     {
-        return create_lextoken(BRACKET_OPEN, token);
+        return create_lextoken_char(BRACKET_OPEN);
     }
-    else if (strcmp(token, ")") == 0) // BRACKET_CLOSE
+    else if (token == ')') // BRACKET_CLOSE
     {
-        return create_lextoken(BRACKET_CLOSE, token);
+        return create_lextoken_char(BRACKET_CLOSE);
     }
 
-    free(token);
     err(2, "invalid token");
 }
 
