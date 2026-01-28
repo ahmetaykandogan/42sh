@@ -6,3 +6,5 @@ libfifo_a_SOURCES =  \
   fifo.h
 
 libfifo_a_CPPFLAGS = -I$(top_srcdir)/src
+
+libfifo_a_CFLAGS = -std=c99 -pedantic -Werror -Wall -Wextra -Wvla
