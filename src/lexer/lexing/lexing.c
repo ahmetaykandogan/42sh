@@ -93,6 +93,23 @@ char *lexing_double_quotes(char *input, size_t pos)
     size_t tok_pos = 0;
     while (pos < input_len && input[pos] != '\"')
     {
+        if (input[pos] == '\\' && pos + 1 < input_len)
+        {
+            char next_char = input[pos + 1];
+
+            if (next_char == '\"' || next_char == '\\' || next_char == '$' || next_char == '`' || next_char == '\n')
+            {
+                if (tok_pos >= capacity - 1)
+                {
+                    capacity *= 2;
+                    tok = realloc_err(tok, capacity);
+                }
+                tok[tok_pos++] = input[pos++];
+                tok[tok_pos++] = input[pos++];
+                continue;
+            }
+        }
+
         if (tok_pos >= capacity - 1)
         {
             capacity *= 2;

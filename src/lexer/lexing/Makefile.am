@@ -5,3 +5,5 @@ liblexing_a_SOURCES =  \
   lexing.h
 
 liblexing_a_CPPFLAGS = -I$(top_srcdir)/src
+
+liblexing_a_CFLAGS = -std=c99 -pedantic -Werror -Wall -Wextra -Wvla
