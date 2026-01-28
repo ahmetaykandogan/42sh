@@ -50,16 +50,20 @@ void fifo_pop(struct fifo *fifo)
     fifo->size--;
 }
 
-/*
-void fifo_print(const struct fifo *fifo)
+
+struct lextoken *fifo_access_i(const struct fifo *fifo, int i)
 {
     if (fifo == NULL)
-        return;
-    struct list *i = fifo->head;
-    while (i != 0)
+        return NULL;
+    struct list *current = fifo->head;
+    for (int j = 0; j < i; j++)
     {
-        printf("%d %d\n", i->data->type, i->data->value);
-        i = i->next;
+        if (current == NULL)
+            return NULL;
+        current = current->next;
     }
+    if (current == NULL)
+        return NULL;
+    return current->data;
 }
-*/
+

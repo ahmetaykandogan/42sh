@@ -286,16 +286,17 @@ struct ast *parse_command(enum parser_status *status, struct fifo *lexer)
 struct ast *parse_words(enum parser_status *status, struct fifo *lexer)
 {
     struct lextoken *token = fifo_head(lexer);
-    char *first_word = token->value;
+    struct lextoken *next_token = fifo_access_i(lexer, 1);
     // check if it's a function declaration
     if (token->tok == RED_IN || token->tok == RED_OUT)
     {
-        return parse_simple_command(status, lexer, NULL);
+        return parse_simple_command(status, lexer);
     }
-    fifo_pop(lexer); // pop first word
-    token = fifo_head(lexer);
-    if (token && token->tok == BRACKET_OPEN)
+    if (next_token && next_token->tok == BRACKET_OPEN)
     {
+        //this is a funcdec
+        char *first_word = token->value;
+        fifo_pop(lexer); // pop function name
         fifo_pop(lexer); // pop '('
         token = fifo_head(lexer);
         if (token && token->tok == BRACKET_CLOSE)
@@ -325,7 +326,7 @@ struct ast *parse_words(enum parser_status *status, struct fifo *lexer)
     }
     else
     {
-        // simple command
-        return parse_simple_command(status, lexer, first_word);
+        // simple command, since the token was never popped, no change
+        return parse_simple_command(status, lexer);
     }
 }

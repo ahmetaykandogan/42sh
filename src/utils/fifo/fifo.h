@@ -26,6 +26,7 @@ void fifo_pop(struct fifo *fifo);
 void fifo_clear(struct fifo *fifo);
 void fifo_destroy(struct fifo *fifo);
 void fifo_destroy_failed(struct fifo *fifo);
+struct lextoken *fifo_access_i(const struct fifo *fifo, int i);
 // void fifo_print(const struct fifo *fifo);
 
 #endif /* !FIFO_H */

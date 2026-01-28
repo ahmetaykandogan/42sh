@@ -71,7 +71,7 @@ struct ast *func_env_get(const char *name)
 {
     if (global_func_env == NULL)
     {
-        err(2, "Function dont exist");
+        return NULL;
     }
     for (size_t i = 0; i < global_func_env->func_count; i++)
     {
