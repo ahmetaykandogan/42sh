@@ -125,9 +125,9 @@ struct ast_function
 {
     struct ast base;
     char *name;
-    struct ast *body; //probably an ast_list
+    struct ast *body; // probably an ast_list
 };
-//Unlike others, we will just add it to the global struct in executing
+// Unlike others, we will just add it to the global struct in executing
 //-------------------------------------INITIALIZE AST TYPES-----------------//
 
 struct ast_cmd *ast_cmd_init(int neg);

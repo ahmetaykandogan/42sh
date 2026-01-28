@@ -2,12 +2,14 @@
 
 // simple_command = { prefix } WORD { element }
 // prefix { prefix }; //TODO
-struct ast *parse_simple_command(enum parser_status *status, struct fifo *lexer, char *var)
+struct ast *parse_simple_command(enum parser_status *status, struct fifo *lexer,
+                                 char *var)
 {
     // { prefix }
     struct ast_cmd *command = ast_cmd_init(0); // initialize command ast node
     if (var)
-        ast_cmd_add_word(command, var); // if var is null will do nothing // TODO test it
+        ast_cmd_add_word(command,
+                         var); // if var is null will do nothing // TODO test it
     int redir_counter = 0;
     struct redirection **redir_to_add =
         NULL; // list of redirections to add to the command

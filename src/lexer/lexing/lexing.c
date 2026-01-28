@@ -97,7 +97,8 @@ char *lexing_double_quotes(char *input, size_t pos)
         {
             char next_char = input[pos + 1];
 
-            if (next_char == '\"' || next_char == '\\' || next_char == '$' || next_char == '`' || next_char == '\n')
+            if (next_char == '\"' || next_char == '\\' || next_char == '$'
+                || next_char == '`' || next_char == '\n')
             {
                 if (tok_pos >= capacity - 1)
                 {

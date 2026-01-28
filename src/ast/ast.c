@@ -10,8 +10,8 @@
 #include <unistd.h>
 
 #include "../builtins/builtins.h"
-#include "variable.h"
 #include "functions.h"
+#include "variable.h"
 
 struct shell_status shell = { 0, 0, 0 };
 // last status: what was the last command exit status

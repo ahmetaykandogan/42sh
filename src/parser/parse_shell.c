@@ -7,8 +7,7 @@
 //| rule_until ;
 //| rule_for ;
 //| { compound_list } ;
-struct ast *parse_shell_command(enum parser_status *status,
-                                       struct fifo *lexer)
+struct ast *parse_shell_command(enum parser_status *status, struct fifo *lexer)
 {
     // rule_if
     struct ast *child = parse_rule_if(status, lexer);
@@ -28,7 +27,8 @@ struct ast *parse_shell_command(enum parser_status *status,
                 child = parse_rule_for(status, lexer);
                 if (*status == PARSER_ERROR)
                 {
-                    child = parse_command_block(status, lexer); // compound_list but with {}
+                    child = parse_command_block(
+                        status, lexer); // compound_list but with {}
                 }
             }
         }
@@ -37,8 +37,7 @@ struct ast *parse_shell_command(enum parser_status *status,
         return NULL;
     return child;
 }
-struct ast *parse_command_block(enum parser_status *status,
-                                     struct fifo *lexer)
+struct ast *parse_command_block(enum parser_status *status, struct fifo *lexer)
 {
     //'{'
     struct lextoken *token = fifo_head(lexer);

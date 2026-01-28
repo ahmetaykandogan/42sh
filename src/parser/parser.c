@@ -253,7 +253,8 @@ struct ast *parse_command(enum parser_status *status, struct fifo *lexer)
         out = parse_shell_command(status, lexer);
     else if (token->tok == WORDS || token->tok == RED_IN
              || token->tok == RED_OUT)
-        out = parse_words(status, lexer); //will check if its a simple command, or a funcdec
+        out = parse_words(
+            status, lexer); // will check if its a simple command, or a funcdec
     else
     {
         *status = PARSER_ERROR;

@@ -1,9 +1,11 @@
-//This is just so we can have a global function
+// This is just so we can have a global function
+
+#include "functions.h"
+
+#include <err.h>
+#include <stdlib.h>
 
 #include "ast.h"
-#include "functions.h"
-#include <stdlib.h>
-#include <err.h>
 
 struct func_env *global_func_env = NULL;
 
