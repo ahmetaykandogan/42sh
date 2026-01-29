@@ -1,9 +1,13 @@
+#define _POSIX_C_SOURCE 200112L
+
 #include "builtins.h"
+
+#include "../utils/malloc_err/malloc_err.h"
 
 #include <ctype.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 int builtins_true(void)
 {
@@ -120,7 +124,7 @@ static int is_valid_name(const char *name, size_t len)
     }
     
     /* First character must be letter or underscore */
-    if (!(name[0] == '_' || isalpha(name[0]) == 0))
+    if (!(name[0] == '_' || isalpha(name[0]) != 0))
     {
         return 1;
     }
@@ -128,7 +132,7 @@ static int is_valid_name(const char *name, size_t len)
     /* Remaining characters must be letter, digit, or underscore */
     for (size_t i = 1; i < len; i++)
     {
-        if (!(name[i] == '_' || isalnum(name[i]) == 0)) {
+        if (!(name[i] == '_' || isalnum(name[i]) != 0)) {
             return 1;
         }
     }
@@ -136,16 +140,15 @@ static int is_valid_name(const char *name, size_t len)
     return 0;
 }
 
-int builtin_export(char **argv)
+static variable_export(const char *arg)
 {
-    char *arg = argv[1];
     char *eq = strchr(arg, '=');
     
     if (eq == NULL)
     {
         /* No value: export NAME */
         size_t name_len = strlen(arg);
-        
+
         if (is_valid_name(arg, name_len) == 1)
         {
             fprintf(stderr, "export: `%s': not a valid identifier\n", arg);
@@ -158,12 +161,16 @@ int builtin_export(char **argv)
         {
             setenv(arg, value, 1);
         }
+        else
+        {
+            setenv(arg, "0", 1);
+        }
     }
     else
     {
         /* Has value: export NAME=VALUE */
         size_t name_len = eq - arg;
-        char name[name_len + 1];
+        char *name = malloc_err(name_len + 1);
         
         strncpy(name, arg, name_len);
         name[name_len] = '\0';
@@ -171,6 +178,7 @@ int builtin_export(char **argv)
         if (is_valid_name(name, name_len) == 1)
         {
             fprintf(stderr, "export: `%s': not a valid identifier\n", name);
+            free(name);
             return 1;
         }
         
@@ -180,8 +188,33 @@ int builtin_export(char **argv)
         if (setenv(name, value, 1) != 0)
         {
             perror("export");
+            free(name);
             return 1;
         }
+        free(name);
     }
     return 0;
+}
+
+int builtins_export(char **argv)
+{
+    int status = 0;
+    
+    while 
+
+    if (argc == 1) {
+        /* No arguments - in simplified version, just return success */
+        return 0;
+    }
+    
+    /* Process each argument */
+    for (int i = 1; i < argc; i++) {
+        
+        /* Export the variable */
+        if (variable_export(argv[i]) != 0) {
+            status = 1;
+        }
+    }
+    
+    return status;
 }
