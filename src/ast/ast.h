@@ -39,10 +39,10 @@ struct ast
 
 struct redirection
 {
-    char *fd; // if there is an IONUMBER (IF not NULL)
+    char* fd; // if there is an IONUMBER (IF not NULL)
     // int flags;//O_RDONLY, O_WRONLY, etc may be needed for future steps?
-    char *filename; // the file to redirect to/from
-    char *operator; // the redirection operator (>, <, >>, etc)
+    char* filename; // the file to redirect to/from
+    char* operator; // the redirection operator (>, <, >>, etc)
 };
 
 //--------------------------------------THE TYPES OF AST
@@ -52,147 +52,147 @@ struct ast_cmd
 {
     struct ast base;
     int negated; // 1 if the command is negated with '!'
-    char **words; // NULL terminated char* list */
-    char **assignments; // NULL terminated char* list of variable assignments
-    struct redirection **redirections; // NULL terminated redirection list
+    char** words; // NULL terminated char* list */
+    char** assignments; // NULL terminated char* list of variable assignments
+    struct redirection** redirections; // NULL terminated redirection list
     // if there are none, this is NULL
 };
 
 struct ast_if
 {
     struct ast base;
-    struct ast *condition; // the condition
-    struct ast *then_body; // the body of the then clause
-    struct ast *else_body; // the body of the else, may be NULL
-    struct redirection **redirections; // NULL terminated redirection list
+    struct ast* condition; // the condition
+    struct ast* then_body; // the body of the then clause
+    struct ast* else_body; // the body of the else, may be NULL
+    struct redirection** redirections; // NULL terminated redirection list
 };
 
 struct ast_list
 {
     struct ast base;
-    struct ast **children;
+    struct ast** children;
     size_t child_count;
-    struct redirection **redirections; // NULL terminated redirection list
+    struct redirection** redirections; // NULL terminated redirection list
 };
 
 struct ast_while
 {
     struct ast base;
-    struct ast *condition;
-    struct ast *body;
-    struct redirection **redirections; // NULL terminated redirection list
+    struct ast* condition;
+    struct ast* body;
+    struct redirection** redirections; // NULL terminated redirection list
 };
 
 struct ast_until
 {
     struct ast base;
-    struct ast *condition;
-    struct ast *body;
-    struct redirection **redirections; // NULL terminated redirection list
+    struct ast* condition;
+    struct ast* body;
+    struct redirection** redirections; // NULL terminated redirection list
 };
 
 struct ast_pipe
 {
     struct ast base;
-    struct ast_list *pipelines;
+    struct ast_list* pipelines;
     int negated;
-    struct redirection **redirections; // NULL terminated redirection list
+    struct redirection** redirections; // NULL terminated redirection list
 };
 
 struct ast_and_or //
 {
     struct ast base;
-    struct ast_list *children;
-    int *op; // 0 for &&, 1 for ||
+    struct ast_list* children;
+    int* op; // 0 for &&, 1 for ||
     // the way this will function is op[i] is the operator between
     // children[i] and children[i+1]
     // for example, if we have a || b && c, then op[0] = 1, op[1] = 0
     // This implementation dont work for case with parantheses, there is no and
     // or priority
     size_t child_count;
-    struct redirection **redirections; // NULL terminated redirection list
+    struct redirection** redirections; // NULL terminated redirection list
 };
 
 struct ast_for //
 {
     struct ast base;
-    char *var_name;
-    char **list; // NULL terminated list of words
-    struct ast *body;
+    char* var_name;
+    char** list; // NULL terminated list of words
+    struct ast* body;
 };
 
 struct ast_function
 {
     struct ast base;
-    char *name;
-    struct ast *body; // probably an ast_list
+    char* name;
+    struct ast* body; // probably an ast_list
 };
 // Unlike others, we will just add it to the global struct in executing
 //-------------------------------------INITIALIZE AST TYPES-----------------//
 
-struct ast_cmd *ast_cmd_init(int neg);
-struct ast_if *ast_if_init();
-struct ast_list *ast_list_init();
-struct ast_while *ast_while_init();
-struct ast_until *ast_until_init();
-struct ast_pipe *ast_pipeline_init(int neg);
-struct ast_and_or *ast_and_or_init();
-struct ast_for *ast_for_init();
-struct ast_function *ast_function_init();
+struct ast_cmd* ast_cmd_init(int neg);
+struct ast_if* ast_if_init();
+struct ast_list* ast_list_init();
+struct ast_while* ast_while_init();
+struct ast_until* ast_until_init();
+struct ast_pipe* ast_pipeline_init(int neg);
+struct ast_and_or* ast_and_or_init();
+struct ast_for* ast_for_init();
+struct ast_function* ast_function_init();
 //--------------------------------ADDINGS------------------------------------//
 
-void ast_cmd_add_word(struct ast_cmd *in, char *word);
+void ast_cmd_add_word(struct ast_cmd* in, char* word);
 // TODO realloc words array inside ast_cmd toincreaze size by 1
-void ast_list_add_ast(struct ast_list *in, struct ast *ast);
+void ast_list_add_ast(struct ast_list* in, struct ast* ast);
 // TODO same for this
-void ast_and_or_add_ast(struct ast_and_or *in, struct ast *ast, int type);
+void ast_and_or_add_ast(struct ast_and_or* in, struct ast* ast, int type);
 // type is 0 for &&, 1 for ||
-void add_vars(struct ast_cmd *cmd, char *new_var);
+void add_vars(struct ast_cmd* cmd, char* new_var);
 
 //---------------------LOOKUP TABLE FOR DESTROY FUNCTIONS-----------------//
 
-const char *ast_repr(enum ast_type type);
+const char* ast_repr(enum ast_type type);
 
-typedef void (*run_type)(struct ast *ast, int argc, char **argv);
-typedef void (*destroy_type)(struct ast *ast);
+typedef void (*run_type)(struct ast* ast, int argc, char** argv);
+typedef void (*destroy_type)(struct ast* ast);
 /* FIX: separate function pointer type for redirections */
-typedef void (*redir_type)(struct ast *ast, struct redirection *redir);
+typedef void (*redir_type)(struct ast* ast, struct redirection* redir);
 
-void run_ast(struct ast *ast, int argc, char **argv);
-void run_pipe(struct ast *enter_pipe, int argc, char **argv);
-void run_command(struct ast_cmd *cmd, int argc, char **argv);
-void run_redirections(struct redirection **redir);
+void run_ast(struct ast* ast, int argc, char** argv);
+void run_pipe(struct ast* enter_pipe, int argc, char** argv);
+void run_command(struct ast_cmd* cmd, int argc, char** argv);
+void run_redirections(struct redirection** redir);
 
 //----------------------------------DESTROY AST
 // TYPES------------------------------//
 
 void struct_ast_destroy(
-    struct ast *node); // generic destroy function for all ast types
+    struct ast* node); // generic destroy function for all ast types
 
-void ast_cmd_destroy(struct ast_cmd *node);
-void ast_if_destroy(struct ast_if *node);
-void ast_list_destroy(struct ast_list *node);
-void ast_while_destroy(struct ast_while *node);
-void ast_until_destroy(struct ast_until *node);
-void ast_pipe_destroy(struct ast_pipe *node);
-void ast_and_or_destroy(struct ast_and_or *node);
-void ast_for_destroy(struct ast_for *node);
-void ast_func_destroy(struct ast_function *node);
+void ast_cmd_destroy(struct ast_cmd* node);
+void ast_if_destroy(struct ast_if* node);
+void ast_list_destroy(struct ast_list* node);
+void ast_while_destroy(struct ast_while* node);
+void ast_until_destroy(struct ast_until* node);
+void ast_pipe_destroy(struct ast_pipe* node);
+void ast_and_or_destroy(struct ast_and_or* node);
+void ast_for_destroy(struct ast_for* node);
+void ast_func_destroy(struct ast_function* node);
 
 //--------------------------------------redirections-----------------------------
 
-struct redirection *redirection_init(char *fd, char *filename, char *operator);
-void redirection_destroy(struct redirection *redir);
-void ast_add_redirection(struct ast *node, struct redirection *redir);
+struct redirection* redirection_init(char* fd, char* filename, char* operator);
+void redirection_destroy(struct redirection* redir);
+void ast_add_redirection(struct ast* node, struct redirection* redir);
 
-void ast_cmd_add_redirection(struct ast *ast_node, struct redirection *redir);
-void ast_if_add_redirection(struct ast *ast_node, struct redirection *redir);
-void ast_while_add_redirection(struct ast *ast_node, struct redirection *redir);
-void ast_until_add_redirection(struct ast *ast_node, struct redirection *redir);
+void ast_cmd_add_redirection(struct ast* ast_node, struct redirection* redir);
+void ast_if_add_redirection(struct ast* ast_node, struct redirection* redir);
+void ast_while_add_redirection(struct ast* ast_node, struct redirection* redir);
+void ast_until_add_redirection(struct ast* ast_node, struct redirection* redir);
 
 /* FIX: pointer level corrected */
-void add_redirection(struct redirection ***ast_redir,
-                     struct redirection *new_redir);
+void add_redirection(struct redirection*** ast_redir,
+                     struct redirection* new_redir);
 
 int return_value_to_main(void);
 

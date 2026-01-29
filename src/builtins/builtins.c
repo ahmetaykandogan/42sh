@@ -1,3 +1,4 @@
+#define _POSIX_C_SOURCE 200112L
 #include "builtins.h"
 
 #include <ctype.h>
@@ -6,7 +7,6 @@
 #include <string.h>
 
 #include "../ast/variable.h"
-#include "../utils/malloc_err/malloc_err.h"
 
 int builtins_true(void)
 {
@@ -210,7 +210,9 @@ static int variable_export(const char* arg)
     {
         /* Has value: export NAME=VALUE */
         size_t name_len = eq - arg;
-        char* name = malloc_err(name_len + 1);
+        char* name = malloc(name_len + 1);
+        if (name == NULL)
+            return 1;
 
         strncpy(name, arg, name_len);
         name[name_len] = '\0';
