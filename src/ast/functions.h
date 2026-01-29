@@ -1,6 +1,8 @@
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
 
+#include <stddef.h>
+
 struct func
 {
     char *name;
