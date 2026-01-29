@@ -204,7 +204,7 @@ static void ast_run_func(struct ast *ast, int argc, char **argv)
     // We add the function to the global list
     func_env_set(ast_func->name, ast_func->body);
 }
-static int try_execute_builtin(char **argv)
+static int try_execute_builtin(char **argv, int argc)
 {
     if (!argv || !argv[0])
         return -1;
@@ -295,7 +295,7 @@ static pid_t fork_executor(struct ast_cmd *cmd, int in, int out,
     char **words = dup_words(cmd->words);
     expand_words(words, argv, argc, shell);
 
-    int builtin = try_execute_builtin(words);
+    int builtin = try_execute_builtin(words, argc);
     if (builtin != -1)
     {
         fflush(stdout);
