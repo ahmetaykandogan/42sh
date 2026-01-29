@@ -383,12 +383,24 @@ void run_redirections(struct redirection** redir)
         }
 
         int flags;
-        if (strcmp(r->operator, ">") == 0)
+        if (strcmp(r->operator, ">") == 0 || strcmp(r->operator, ">|") == 0)
             flags = O_WRONLY | O_CREAT | O_TRUNC;
         else if (strcmp(r->operator, ">>") == 0)
             flags = O_WRONLY | O_CREAT | O_APPEND;
         else if (strcmp(r->operator, "<") == 0)
             flags = O_RDONLY;
+        else if (strcmp(r->operator, ">&") == 0)
+        {
+            char *end;
+            int target = strtol(r->filename, &end, 10);
+            if (*end == '\0')
+            {
+                if (dup2(target, fd) < 0)
+                    err(2, "dup2 failed");
+                continue;
+            }
+            flags = O_WRONLY | O_CREAT | O_TRUNC;
+        }
         else
         {
             errx(2, "redirection operator %s not implemented", r->operator);
