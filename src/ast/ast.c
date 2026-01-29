@@ -206,6 +206,7 @@ static void ast_run_func(struct ast *ast, int argc, char **argv)
 }
 static int try_execute_builtin(char **argv, int argc)
 {
+    (void)argc;
     if (!argv || !argv[0])
         return -1;
 
@@ -462,7 +463,7 @@ void run_command(struct ast_cmd *cmd, int argc, char **argv)
         run_redirections(cmd->redirections);
     // case where var is only for this line
     // run_assignment(cmd);
-    int builtin_result = try_execute_builtin(words);
+    int builtin_result = try_execute_builtin(words, argc);
     if (builtin_result == -1)
     {
         builtin_result = try_execute_funcs(words);
