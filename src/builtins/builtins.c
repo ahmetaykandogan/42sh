@@ -104,6 +104,16 @@ int builtins_echo(char** words)
     return 0;
 }
 
+int builtins_exit(char** argv)
+{
+    int exit_status = 0;
+    if (argv[1])
+    {
+        exit_status = atoi(argv[1]);
+    }
+    return exit_status;
+}
+
 int builtins_cd(char** argv)
 {
     const char* target = NULL;

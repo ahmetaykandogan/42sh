@@ -17,12 +17,12 @@ struct shell_status shell = { 0, 0, 0 };
 // last status: what was the last command exit status
 // should_exit: whether the shell should exit (For exit builtin)
 // exit_status: the exit status to use when exiting the shell
-static char *my_strdup(const char *s)
+static char* my_strdup(const char* s)
 {
     if (!s)
         return NULL;
     size_t len = strlen(s);
-    char *dup = malloc(len + 1);
+    char* dup = malloc(len + 1);
     if (dup)
         strcpy(dup, s);
     return dup;
@@ -32,27 +32,27 @@ int return_value_to_main(void)
 {
     return shell.last_status;
 }
-static char **dup_words(char **src)
+static char** dup_words(char** src)
 {
     size_t n = 0;
     while (src && src[n])
         n++;
 
-    char **dst = calloc(n + 1, sizeof(char *));
+    char** dst = calloc(n + 1, sizeof(char*));
     for (size_t i = 0; i < n; i++)
         dst[i] = my_strdup(src[i]);
     dst[n] = NULL;
     return dst;
 }
 
-static void expand_words(char **words, char **argv, int argc,
+static void expand_words(char** words, char** argv, int argc,
                          struct shell_status shell)
 {
     for (size_t i = 0; words && words[i]; i++)
         words[i] = expand_word(words[i], argv, argc, shell.last_status);
 }
 
-static void free_words(char **words)
+static void free_words(char** words)
 {
     if (!words)
         return;
@@ -63,15 +63,15 @@ static void free_words(char **words)
 
 //-----------------LOOKUP TABLE FOR RUN FUNCTIONS-----------------
 
-static void ast_run_cmd(struct ast *ast, int argc, char **argv)
+static void ast_run_cmd(struct ast* ast, int argc, char** argv)
 {
-    struct ast_cmd *ast_cmd = (struct ast_cmd *)ast;
+    struct ast_cmd* ast_cmd = (struct ast_cmd*)ast;
     run_command(ast_cmd, argc, argv);
 }
 
-static void ast_run_if(struct ast *ast, int argc, char **argv)
+static void ast_run_if(struct ast* ast, int argc, char** argv)
 {
-    struct ast_if *ast_if = (struct ast_if *)ast;
+    struct ast_if* ast_if = (struct ast_if*)ast;
 
     run_ast(ast_if->condition, argc, argv);
 
@@ -81,9 +81,9 @@ static void ast_run_if(struct ast *ast, int argc, char **argv)
         run_ast(ast_if->else_body, argc, argv);
 }
 
-static void ast_run_list(struct ast *ast, int argc, char **argv)
+static void ast_run_list(struct ast* ast, int argc, char** argv)
 {
-    struct ast_list *ast_list = (struct ast_list *)ast;
+    struct ast_list* ast_list = (struct ast_list*)ast;
     for (size_t i = 0; i < ast_list->child_count; i++)
     {
         if (shell.should_exit == 3)
@@ -95,9 +95,9 @@ static void ast_run_list(struct ast *ast, int argc, char **argv)
     shell.should_exit = 0;
 }
 
-const char *ast_repr(enum ast_type type)
+const char* ast_repr(enum ast_type type)
 {
-    static const char *const names[] = {
+    static const char* const names[] = {
         [AST_CMD] = "CMD",       [AST_IF] = "IF",       [AST_LIST] = "LIST",
         [AST_WHILE] = "WHILE",   [AST_UNTIL] = "UNTIL", [AST_PIPE] = "PIPE",
         [AST_AND_OR] = "AND_OR",
@@ -105,9 +105,9 @@ const char *ast_repr(enum ast_type type)
     return names[type];
 }
 
-static void ast_run_while(struct ast *ast, int argc, char **argv)
+static void ast_run_while(struct ast* ast, int argc, char** argv)
 {
-    struct ast_while *ast_w = (struct ast_while *)ast;
+    struct ast_while* ast_w = (struct ast_while*)ast;
     while (1)
     {
         if (shell.should_exit == 2)
@@ -122,9 +122,9 @@ static void ast_run_while(struct ast *ast, int argc, char **argv)
     }
 }
 
-static void ast_run_until(struct ast *ast, int argc, char **argv)
+static void ast_run_until(struct ast* ast, int argc, char** argv)
 {
-    struct ast_until *ast_u = (struct ast_until *)ast;
+    struct ast_until* ast_u = (struct ast_until*)ast;
     while (1)
     {
         if (shell.should_exit == 2)
@@ -139,9 +139,9 @@ static void ast_run_until(struct ast *ast, int argc, char **argv)
     }
 }
 
-static void ast_run_and_or(struct ast *ast, int argc, char **argv)
+static void ast_run_and_or(struct ast* ast, int argc, char** argv)
 {
-    struct ast_and_or *ast_ao = (struct ast_and_or *)ast;
+    struct ast_and_or* ast_ao = (struct ast_and_or*)ast;
     if (ast_ao->child_count == 0)
         return;
 
@@ -165,19 +165,19 @@ static void ast_run_and_or(struct ast *ast, int argc, char **argv)
         }
     }
 }
-static char *expand_for_value(char *word, char **argv, int argc,
+static char* expand_for_value(char* word, char** argv, int argc,
                               struct shell_status shell)
 {
-    char *dup = my_strdup(word);
+    char* dup = my_strdup(word);
     return expand_word(dup, argv, argc, shell.last_status);
 }
 
-static void ast_run_for(struct ast *ast, int argc, char **argv)
+static void ast_run_for(struct ast* ast, int argc, char** argv)
 {
-    struct ast_for *ast_for = (struct ast_for *)ast;
-    char *var_name = ast_for->var_name;
-    char **list = ast_for->list;
-    struct ast *body = ast_for->body;
+    struct ast_for* ast_for = (struct ast_for*)ast;
+    char* var_name = ast_for->var_name;
+    char** list = ast_for->list;
+    struct ast* body = ast_for->body;
 
     if (!list)
         return;
@@ -189,22 +189,22 @@ static void ast_run_for(struct ast *ast, int argc, char **argv)
             shell.should_exit = 0;
             break;
         }
-        char *value = expand_for_value(list[i], argv, argc, shell);
+        char* value = expand_for_value(list[i], argv, argc, shell);
         var_env_set(var_name, value);
         free(value);
         run_ast(body, argc, argv);
     }
 }
 
-static void ast_run_func(struct ast *ast, int argc, char **argv)
+static void ast_run_func(struct ast* ast, int argc, char** argv)
 {
     (void)argc;
     (void)argv;
-    struct ast_function *ast_func = (struct ast_function *)ast;
+    struct ast_function* ast_func = (struct ast_function*)ast;
     // We add the function to the global list
     func_env_set(ast_func->name, ast_func->body);
 }
-static int try_execute_builtin(char **argv, int argc)
+static int try_execute_builtin(char** argv, int argc)
 {
     if (!argv || !argv[0])
         return -1;
@@ -221,7 +221,6 @@ static int try_execute_builtin(char **argv, int argc)
     {
         return builtins_echo(argv);
     }
-
     else if (strcmp(argv[0], "exit") == 0)
     {
         shell.should_exit = 1;
@@ -243,18 +242,22 @@ static int try_execute_builtin(char **argv, int argc)
     {
         return builtins_cd(argv);
     }
+    else if (strcmp(argv[0], "export") == 0)
+    {
+        return builtins_export(argc, argv);
+    }
     return -1;
 }
 
-static int try_execute_funcs(char **argv)
+static int try_execute_funcs(char** argv)
 {
     if (!argv || !argv[0])
         return -1;
 
-    struct ast *node = func_env_get(argv[0]);
+    struct ast* node = func_env_get(argv[0]);
     if (node == NULL)
         return -1;
-    struct ast *body = (struct ast *)node;
+    struct ast* body = (struct ast*)node;
     run_ast(body, 0, NULL);
     return shell.last_status;
 }
@@ -267,8 +270,8 @@ static void restored_fds(int stdin_cp, int stdout_cp, int stderr_cp)
     close(stdout_cp);
     close(stderr_cp);
 }
-static pid_t fork_executor(struct ast_cmd *cmd, int in, int out,
-                           int (*filedes)[2], size_t nb_child, char **argv,
+static pid_t fork_executor(struct ast_cmd* cmd, int in, int out,
+                           int (*filedes)[2], size_t nb_child, char** argv,
                            int argc)
 {
     pid_t pid = fork();
@@ -292,7 +295,7 @@ static pid_t fork_executor(struct ast_cmd *cmd, int in, int out,
     if (cmd->redirections)
         run_redirections(cmd->redirections);
 
-    char **words = dup_words(cmd->words);
+    char** words = dup_words(cmd->words);
     expand_words(words, argv, argc, shell);
 
     int builtin = try_execute_builtin(words, argc);
@@ -307,21 +310,21 @@ static pid_t fork_executor(struct ast_cmd *cmd, int in, int out,
     errx(1, "Couldn't execvp");
 }
 
-void run_pipe(struct ast *enter_pipe, int argc, char **argv)
+void run_pipe(struct ast* enter_pipe, int argc, char** argv)
 {
     int stdin_cp = dup(STDIN_FILENO);
     int stdout_cp = dup(STDOUT_FILENO);
     int stderr_cp = dup(STDERR_FILENO);
 
-    struct ast_pipe *pipe_node = (struct ast_pipe *)enter_pipe;
-    struct ast_list *pipelines = pipe_node->pipelines;
+    struct ast_pipe* pipe_node = (struct ast_pipe*)enter_pipe;
+    struct ast_list* pipelines = pipe_node->pipelines;
     size_t nb_child = pipelines->child_count;
 
     if (nb_child < 2)
         return;
 
     int(*filedes)[2] = calloc(nb_child - 1, sizeof(int[2]));
-    pid_t *pid_list = calloc(nb_child, sizeof(pid_t));
+    pid_t* pid_list = calloc(nb_child, sizeof(pid_t));
 
     for (size_t i = 0; i < nb_child - 1; i++)
         if (pipe(filedes[i]) < 0)
@@ -332,8 +335,8 @@ void run_pipe(struct ast *enter_pipe, int argc, char **argv)
         int in = (j == 0) ? STDIN_FILENO : filedes[j - 1][0];
         int out = (j == nb_child - 1) ? STDOUT_FILENO : filedes[j][1];
 
-        pid_list[j] = fork_executor((struct ast_cmd *)pipelines->children[j],
-                                    in, out, filedes, nb_child, argv, argc);
+        pid_list[j] = fork_executor((struct ast_cmd*)pipelines->children[j], in,
+                                    out, filedes, nb_child, argv, argc);
     }
 
     for (size_t k = 0; k < nb_child - 1; k++)
@@ -360,13 +363,13 @@ void run_pipe(struct ast *enter_pipe, int argc, char **argv)
     free(pid_list);
 }
 
-void run_redirections(struct redirection **redir)
+void run_redirections(struct redirection** redir)
 {
     if (!redir)
         return;
     for (size_t i = 0; redir[i] != NULL; i++)
     {
-        struct redirection *r = redir[i];
+        struct redirection* r = redir[i];
         int fd;
         if (r->fd)
             fd = atoi(r->fd);
@@ -403,18 +406,18 @@ void run_redirections(struct redirection **redir)
     }
 }
 
-static void run_assignment(struct ast_cmd *cmd, int check)
+static void run_assignment(struct ast_cmd* cmd, int check)
 {
     if (check == 1)
     {
         for (size_t i = 0; cmd->assignments[i] != NULL; i++)
         {
-            char *eq = strchr(cmd->assignments[i], '=');
+            char* eq = strchr(cmd->assignments[i], '=');
             if (eq)
             {
                 *eq = '\0';
-                char *name = cmd->assignments[i];
-                char *value = eq + 1;
+                char* name = cmd->assignments[i];
+                char* value = eq + 1;
                 var_env_set(name, value);
             }
         }
@@ -423,18 +426,18 @@ static void run_assignment(struct ast_cmd *cmd, int check)
     {
         for (size_t i = 0; cmd->assignments[i] != NULL; i++)
         {
-            char *eq = strchr(cmd->assignments[i], '=');
+            char* eq = strchr(cmd->assignments[i], '=');
             if (eq)
             {
                 *eq = '\0';
-                char *name = cmd->assignments[i];
+                char* name = cmd->assignments[i];
                 var_env_set(name, "");
             }
         }
     }
 }
 
-void run_command(struct ast_cmd *cmd, int argc, char **argv)
+void run_command(struct ast_cmd* cmd, int argc, char** argv)
 {
     int stdin_cp = dup(STDIN_FILENO);
     int stdout_cp = dup(STDOUT_FILENO);
@@ -456,7 +459,7 @@ void run_command(struct ast_cmd *cmd, int argc, char **argv)
     }
     if (cmd->assignments)
         run_assignment(cmd, 0); // we only add "" to everyone
-    char **words = dup_words(cmd->words);
+    char** words = dup_words(cmd->words);
     expand_words(words, argv, argc, shell);
     if (cmd->redirections)
         run_redirections(cmd->redirections);
@@ -502,7 +505,7 @@ void run_command(struct ast_cmd *cmd, int argc, char **argv)
     free_words(words);
 }
 
-void run_ast(struct ast *ast, int argc, char **argv)
+void run_ast(struct ast* ast, int argc, char** argv)
 {
     if (shell.should_exit == 1)
         return;
