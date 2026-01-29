@@ -50,7 +50,6 @@ void fifo_pop(struct fifo *fifo)
     fifo->size--;
 }
 
-
 struct lextoken *fifo_access_i(const struct fifo *fifo, int i)
 {
     if (fifo == NULL)
@@ -66,4 +65,3 @@ struct lextoken *fifo_access_i(const struct fifo *fifo, int i)
         return NULL;
     return current->data;
 }
-

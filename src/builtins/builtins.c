@@ -19,7 +19,7 @@ int builtins_false(void)
 }
 
 /* Print depending on interpret whether it is a -e or a -E */
-static void print_word(const char* s, int interpret)
+static void print_word(const char *s, int interpret)
 {
     int i = 0;
 
@@ -48,7 +48,7 @@ static void print_word(const char* s, int interpret)
     }
 }
 
-int builtins_echo(char** words)
+int builtins_echo(char **words)
 {
     int i = 1;
     int newline = 1;
@@ -104,7 +104,7 @@ int builtins_echo(char** words)
     return 0;
 }
 
-int builtins_exit(char** argv)
+int builtins_exit(char **argv)
 {
     int exit_status = 0;
     if (argv[1])
@@ -114,9 +114,9 @@ int builtins_exit(char** argv)
     return exit_status;
 }
 
-int builtins_cd(char** argv)
+int builtins_cd(char **argv)
 {
-    const char* target = NULL;
+    const char *target = NULL;
     // cd
     if (!argv[1])
     {
@@ -155,7 +155,7 @@ int builtins_cd(char** argv)
 }
 
 /* Validate variable name according to POSIX rules */
-static int is_valid_name(const char* name, size_t len)
+static int is_valid_name(const char *name, size_t len)
 {
     if (len == 0)
     {
@@ -180,9 +180,9 @@ static int is_valid_name(const char* name, size_t len)
     return 0;
 }
 
-static int variable_export(const char* arg)
+static int variable_export(const char *arg)
 {
-    char* eq = strchr(arg, '=');
+    char *eq = strchr(arg, '=');
 
     if (eq == NULL)
     {
@@ -196,7 +196,7 @@ static int variable_export(const char* arg)
         }
 
         /* If variable exists in environment, keep its value */
-        char* value = getenv(arg);
+        char *value = getenv(arg);
         if (value != NULL)
         {
             setenv(arg, value, 1);
@@ -210,7 +210,7 @@ static int variable_export(const char* arg)
     {
         /* Has value: export NAME=VALUE */
         size_t name_len = eq - arg;
-        char* name = malloc(name_len + 1);
+        char *name = malloc(name_len + 1);
         if (name == NULL)
             return 1;
 
@@ -224,7 +224,7 @@ static int variable_export(const char* arg)
             return 1;
         }
 
-        char* value = eq + 1;
+        char *value = eq + 1;
 
         /* Set the environment variable */
         if (setenv(name, value, 1) != 0)
@@ -238,7 +238,7 @@ static int variable_export(const char* arg)
     return 0;
 }
 
-int builtins_export(int argc, char** argv)
+int builtins_export(int argc, char **argv)
 {
     int status = 0;
 

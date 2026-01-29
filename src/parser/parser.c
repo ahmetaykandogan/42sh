@@ -295,7 +295,7 @@ struct ast *parse_words(enum parser_status *status, struct fifo *lexer)
     }
     if (next_token && next_token->tok == BRACKET_OPEN)
     {
-        //this is a funcdec
+        // this is a funcdec
         char *first_word = token->value;
         fifo_pop(lexer); // pop function name
         fifo_pop(lexer); // pop '('
