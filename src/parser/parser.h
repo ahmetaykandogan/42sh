@@ -18,8 +18,7 @@ struct ast *parse_and_or(enum parser_status *, struct fifo *);
 struct ast *parse_pipeline(enum parser_status *, struct fifo *);
 
 struct ast *parse_command(enum parser_status *, struct fifo *);
-struct ast *parse_simple_command(enum parser_status *status, struct fifo *lexer,
-                                 char *var);
+struct ast *parse_simple_command(enum parser_status *status, struct fifo *lexer);
 void parse_element(enum parser_status *status, struct fifo *lexer,
                    struct ast *in);
 
